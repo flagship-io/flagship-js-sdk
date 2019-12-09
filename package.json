@@ -20,11 +20,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/canarybay/sdk/node-sdk.git"
+    "url": "git+https://github.com/abtasty/flagship-js-sdk"
   },
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://gitlab.com/canarybay/sdk/node-sdk/issues",
+    "url": "https://github.com/abtasty/flagship-js-sdk/issues",
     "email": "emilien.domenge-heritier@abtasty.com"
   },
   "contributors": [
@@ -50,7 +50,7 @@
     "README.md",
     "package.json"
   ],
-  "homepage": "https://gitlab.com/canarybay/sdk/node-sdk#readme",
+  "homepage": "https://github.com/abtasty/flagship-js-sdk",
   "devDependencies": {
     "@babel/core": "^7.7.2",
     "@babel/preset-env": "^7.7.1",
