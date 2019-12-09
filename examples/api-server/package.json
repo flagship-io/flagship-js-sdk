@@ -1,0 +1,32 @@
+{
+  "name": "api-server",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "start:mac": "DEBUG=api-server:* nodemon start",
+    "start:linux": "DEBUG=api-server:* nodemon start",
+    "start:windows": "set DEBUG=api-server:* & nodemon start"
+  },
+  "contributors": [
+    {
+      "name": "Emilien Domenge-Heritier",
+      "email": "emilien.domenge-heritier@abtasty.com",
+      "url": "https://domenge.fr"
+    },
+    {
+      "name": "Guillaume Jacquart",
+      "email": "guillaume.jacquart@abtasty.com"
+    }
+  ],
+  "dependencies": {
+    "@flagship.io/node-sdk": "0.0.1",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "morgan": "~1.9.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.1"
+  }
+}
