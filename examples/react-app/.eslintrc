@@ -1,0 +1,22 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
+    "extends": [
+        "plugin:@typescript-eslint/recommended",
+        "airbnb",
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:jsx-a11y/recommended"
+    ], 
+    "env": {
+      "browser": true
+    },
+    "rules": {
+        "react/jsx-filename-extension": [0, { "extensions": [".js", ".jsx"] }],
+        "import/no-extraneous-dependencies": "off",
+        "jsx-a11y/anchor-has-content": "off",
+        "jsx-a11y/anchor-is-valid": "off"
+      }
+}

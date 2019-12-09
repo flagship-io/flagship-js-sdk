@@ -1,0 +1,11 @@
+node_modules
+
+dist/
+
+test/flagshipNodeSdkLogs/
+
+src/assets/.DS_Store
+
+stats.json
+
+*.tgz

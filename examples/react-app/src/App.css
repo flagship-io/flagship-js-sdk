@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css?family=Work+Sans&display=swap');
+body {
+  font-family: 'Work Sans';
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.logoAdjust {
+  height: 30px;
+  padding-right: 15px;
+}
+
+.bfLightBtn {
+  color: black !important;
+  background-color: white !important;
+  border-color: white !important;
+}
+
+.bfDarkBtn {
+  color: white !important;
+  background-color: black !important;
+  border-color: black !important;
+}
+
+.fsNavbar,
+.alert-dark.fs-alert {
+  background-color: #343434;
+}
+
+.fsNavbar .nav-link,
+.fsNavbar .navbar-brand {
+  color: #ffffff !important;
+}
+
+.fsContainer {
+  background-color: #272727;
+  padding-top: 55px;
+}
+
+.alert-dark.fs-alert {
+  color: #ffffff;
+  border-color: #343434;
+  border-radius: 4px;
+}
+
+.alert-info.fs-alert {
+  color: #ffffff;
+  border-radius: 4px;
+  border: solid 1px #4f4f4f;
+  background-color: #343434;
+}
+
+.fsAnchor {
+  display: block;
+  position: relative;
+  top: -80px;
+  visibility: hidden;
+}
