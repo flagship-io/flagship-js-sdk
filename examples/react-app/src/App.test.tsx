@@ -1,4 +1,4 @@
-import flagship from '@flagship.io/node-sdk';
+import flagship from '@flagship.io/js-sdk';
 import Enzyme from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import { EventEmitter } from 'events';

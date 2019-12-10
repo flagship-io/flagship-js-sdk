@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@flagship.io/node-sdk": "0.0.1",
+    "@flagship.io/js-sdk": "^0.0.4",
     "@tenon-io/tenon-codeblock": "^1.0.0",
     "@types/node": "12.12.14",
     "@types/react": "16.9.13",

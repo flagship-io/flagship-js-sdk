@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable max-len */
 /* eslint-disable jsx-a11y/accessible-emoji */
-import flagship, { IFlagship, IFlagshipVisitor, EventHit } from '@flagship.io/node-sdk';
+import flagship, { IFlagship, IFlagshipVisitor, EventHit } from '@flagship.io/js-sdk';
 import CodeBlock from '@tenon-io/tenon-codeblock';
 import React, { useEffect, useState } from 'react';
 import {
@@ -254,7 +254,7 @@ Considering you're using jest:
               <CodeBlock
                 className="mv3"
                 codeString={`
-import flagship from '@flagship.io/node-sdk';
+import flagship from '@flagship.io/js-sdk';
 import { EventEmitter } from 'events';
 
 flagship.initSdk = jest.fn().mockImplementation(() => ({

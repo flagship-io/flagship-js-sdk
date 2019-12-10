@@ -38,7 +38,7 @@
   
 
 ```
-npm install @flagship.io/node-sdk
+npm install @flagship.io/js-sdk
 ```
 
   
@@ -48,9 +48,9 @@ npm install @flagship.io/node-sdk
   
 
 ```
-import flagship from "@flagship.io/node-sdk"; // ES6 ++
+import flagship from "@flagship.io/js-sdk"; // ES6 ++
 
-const flagship = require("@flagship.io/node-sdk"); // ES5
+const flagship = require("@flagship.io/js-sdk"); // ES5
 ```
 
   
