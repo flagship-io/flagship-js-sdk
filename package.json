@@ -1,5 +1,5 @@
 {
-  "name": "@flagship.io/node-sdk",
+  "name": "@flagship.io/js-sdk",
   "version": "0.0.4",
   "description": "Flagship JS SDK",
   "main": "dist/index.js",
