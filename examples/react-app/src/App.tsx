@@ -40,7 +40,7 @@ const App: React.FC = () => {
             key: 'backgroundColor',
             defaultValue: '#007bff',
           },
-        ], true).then((data) => setCustomBtnData(data));
+        ], true).then((data) => setCustomBtnData(data as {[key: string]: string}));
       }
     }, [fsVisitor],
   );

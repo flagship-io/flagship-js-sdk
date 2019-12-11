@@ -28,6 +28,10 @@ function DtsClean() {
   newValue = newValue.replace(`} from './class/flagshipVisitor/flagshipVisitor.d';`, '');
   newValue = newValue.replace(`\n\n\n\n`, '\n');
   newValue = newValue.replace(`\n\n\n`, '\n');
+  newValue = `import flagship from './index';
+` + newValue + `
+export default flagship as FlagshipNodeSdk;
+  `;
   fs.writeFileSync('dist/flagship.d.ts', newValue, 'utf-8');
   console.log('DtsClean complete');
 }
