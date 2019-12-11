@@ -19,7 +19,7 @@
 - Typescript supported ✅
 </ul>
 <ul style="line-height:1.4;">
-- Light weight SDK 🏋 : <span style="color:grey">Gzipped size=38KB~)</span>
+- Light weight SDK 🏋  <span style="color: gray;">(Gzipped size=38KB~)</span>
 
 </ul>
 <ul style="line-height:1.4;">
