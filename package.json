@@ -1,6 +1,6 @@
 {
   "name": "@flagship.io/js-sdk",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Flagship JS SDK",
   "main": "dist/index.js",
   "types": "dist/flagship.d.ts",
