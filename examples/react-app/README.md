@@ -5,6 +5,8 @@
 # Sample of React app using [Flagship - JS SDK](../../README.md)
 
   
+## Online demo
+<ul style="line-height:1.4;"><li><a href='https://abtasty.github.io/flagship-js-sdk/'>👉click here ! 😎</a></li></ul>
 
 ### Prerequisites
 

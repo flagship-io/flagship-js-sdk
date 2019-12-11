@@ -25,7 +25,11 @@
 <ul style="line-height:1.4;">
 - How to use the SDK in practice ☕ : 
 <ul style="line-height:1.4;">
-<li><a href='examples/react-app/README.md'>with React</a></li>
+<li>
+<a href='examples/react-app/README.md'>with React</a>
+<ul style="line-height:1.4;"><li><a href='https://abtasty.github.io/flagship-js-sdk/'>👉online demo 😎</a></li></ul>
+</li>
+<li><a href='examples/api-server/README.md'>with Express</a></li>
 </ul>
 </ul>
 

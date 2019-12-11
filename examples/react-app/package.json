@@ -1,8 +1,8 @@
 {
   "name": "react-app",
   "version": "0.1.0",
-  "private": true,
-  "homepage": "https://abtasty.github.io/flagship-js-sdk/examples/react",
+  "private": false,
+  "homepage": "https://abtasty.github.io/flagship-js-sdk/",
   "dependencies": {
     "@flagship.io/js-sdk": "^0.0.4",
     "@tenon-io/tenon-codeblock": "^1.0.0",
