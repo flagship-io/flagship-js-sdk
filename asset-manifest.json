@@ -1,25 +1,25 @@
 {
   "files": {
-    "main.css": "/flagship-js-sdk/examples/react/static/css/main.d34c9ba3.chunk.css",
-    "main.js": "/flagship-js-sdk/examples/react/static/js/main.ed9c3312.chunk.js",
-    "main.js.map": "/flagship-js-sdk/examples/react/static/js/main.ed9c3312.chunk.js.map",
-    "runtime-main.js": "/flagship-js-sdk/examples/react/static/js/runtime-main.5fd2a70e.js",
-    "runtime-main.js.map": "/flagship-js-sdk/examples/react/static/js/runtime-main.5fd2a70e.js.map",
-    "static/css/2.30f7bf04.chunk.css": "/flagship-js-sdk/examples/react/static/css/2.30f7bf04.chunk.css",
-    "static/js/2.58c0e028.chunk.js": "/flagship-js-sdk/examples/react/static/js/2.58c0e028.chunk.js",
-    "static/js/2.58c0e028.chunk.js.map": "/flagship-js-sdk/examples/react/static/js/2.58c0e028.chunk.js.map",
-    "index.html": "/flagship-js-sdk/examples/react/index.html",
-    "precache-manifest.c0f5031249d8476db65d1cca08670ea3.js": "/flagship-js-sdk/examples/react/precache-manifest.c0f5031249d8476db65d1cca08670ea3.js",
-    "service-worker.js": "/flagship-js-sdk/examples/react/service-worker.js",
-    "static/css/2.30f7bf04.chunk.css.map": "/flagship-js-sdk/examples/react/static/css/2.30f7bf04.chunk.css.map",
-    "static/css/main.d34c9ba3.chunk.css.map": "/flagship-js-sdk/examples/react/static/css/main.d34c9ba3.chunk.css.map",
-    "static/media/Flagship-horizontal-product-white.png": "/flagship-js-sdk/examples/react/static/media/Flagship-horizontal-product-white.6e8b90f3.png"
+    "main.css": "/flagship-js-sdk/static/css/main.d34c9ba3.chunk.css",
+    "main.js": "/flagship-js-sdk/static/js/main.a6330b3a.chunk.js",
+    "main.js.map": "/flagship-js-sdk/static/js/main.a6330b3a.chunk.js.map",
+    "runtime-main.js": "/flagship-js-sdk/static/js/runtime-main.47281e6c.js",
+    "runtime-main.js.map": "/flagship-js-sdk/static/js/runtime-main.47281e6c.js.map",
+    "static/css/2.30f7bf04.chunk.css": "/flagship-js-sdk/static/css/2.30f7bf04.chunk.css",
+    "static/js/2.224fde64.chunk.js": "/flagship-js-sdk/static/js/2.224fde64.chunk.js",
+    "static/js/2.224fde64.chunk.js.map": "/flagship-js-sdk/static/js/2.224fde64.chunk.js.map",
+    "index.html": "/flagship-js-sdk/index.html",
+    "precache-manifest.3ea452cded7165c79436a34283239b4c.js": "/flagship-js-sdk/precache-manifest.3ea452cded7165c79436a34283239b4c.js",
+    "service-worker.js": "/flagship-js-sdk/service-worker.js",
+    "static/css/2.30f7bf04.chunk.css.map": "/flagship-js-sdk/static/css/2.30f7bf04.chunk.css.map",
+    "static/css/main.d34c9ba3.chunk.css.map": "/flagship-js-sdk/static/css/main.d34c9ba3.chunk.css.map",
+    "static/media/Flagship-horizontal-product-white.png": "/flagship-js-sdk/static/media/Flagship-horizontal-product-white.6e8b90f3.png"
   },
   "entrypoints": [
-    "static/js/runtime-main.5fd2a70e.js",
+    "static/js/runtime-main.47281e6c.js",
     "static/css/2.30f7bf04.chunk.css",
-    "static/js/2.58c0e028.chunk.js",
+    "static/js/2.224fde64.chunk.js",
     "static/css/main.d34c9ba3.chunk.css",
-    "static/js/main.ed9c3312.chunk.js"
+    "static/js/main.a6330b3a.chunk.js"
   ]
 }
