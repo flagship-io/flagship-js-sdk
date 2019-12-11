@@ -133,7 +133,7 @@ You can check logs generated using your browser inspect tools :)
           key: 'backgroundColor',
           defaultValue: '#007bff',
         },
-      ]).then((data) => setCustomBtnData(data));
+      ], true).then((data) => setCustomBtnData(data as {[key: string]: string}));
     }
   }, [fsVisitor],
 );`}
