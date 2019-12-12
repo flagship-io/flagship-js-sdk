@@ -33,5 +33,4 @@ function DtsClean() {
 export default flagship as FlagshipNodeSdk;
   `;
   fs.writeFileSync('dist/flagship.d.ts', newValue, 'utf-8');
-  console.log('DtsClean complete');
 }
