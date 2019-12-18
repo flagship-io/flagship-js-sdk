@@ -14,6 +14,9 @@ import {
   DecisionApiSimpleResponse,
   HitShape,
   GetModificationsOutput,
+  TransactionHit,
+  ItemHit,
+  EventHit,
 } from './flagshipVisitor.d';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import { FsLogger } from '../../lib/index.d';
@@ -337,8 +340,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
   private generateCustomTypeParamsOf(hitData: HitShape): object | null {
     const optionalAttributes: { [key: string]: string | number | boolean} = {};
-    switch (hitData.type) {
-      case 'Screen': {
+    switch (hitData.type.toUpperCase()) {
+      case 'SCREEN': {
         const { documentLocation, pageTitle } = hitData.data;
         if (!documentLocation || !pageTitle) {
           if (!documentLocation) this.log.error('sendHits(Screen): failed because attribute "documentLocation" is missing...');
@@ -351,11 +354,21 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           pt: pageTitle,
         };
       }
-      case 'Transaction': {
+      case 'TRANSACTION': {
         const {
-          documentLocation, pageTitle, transactionId, affiliation, totalRevenue, shippingCost, taxes, currency, couponCode, paymentMethod,
-          shippingMethod, itemCount,
-        } = hitData.data;
+          documentLocation,
+          pageTitle,
+          transactionId,
+          affiliation,
+          totalRevenue,
+          shippingCost,
+          taxes,
+          currency,
+          couponCode,
+          paymentMethod,
+          shippingMethod,
+          itemCount,
+        } = hitData.data as TransactionHit;
 
         if (totalRevenue) {
           optionalAttributes.tr = totalRevenue;
@@ -402,10 +415,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           ...optionalAttributes,
         };
       }
-      case 'Item': {
+      case 'ITEM': {
         const {
           transactionId, name, documentLocation, pageTitle, price, code, category, quantity,
-        } = hitData.data;
+        } = hitData.data as ItemHit;
 
         if (category) {
           optionalAttributes.iv = category;
@@ -438,10 +451,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           ...optionalAttributes,
         };
       }
-      case 'Event': {
+      case 'EVENT': {
         const {
           label, value, documentLocation, category, pageTitle, action,
-        } = hitData.data;
+        } = hitData.data as EventHit;
 
         if (label) {
           optionalAttributes.el = label;

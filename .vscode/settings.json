@@ -23,5 +23,8 @@
     "eslint.workingDirectories": [
         {"directory":"examples/react-app", "changeProcessCWD": true},
         {"directory":"", "changeProcessCWD": true}
-      ]
+    ],
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    }
 }
