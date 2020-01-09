@@ -14,6 +14,9 @@ import {
   DecisionApiSimpleResponse,
   HitShape,
   GetModificationsOutput,
+  TransactionHit,
+  ItemHit,
+  EventHit,
 } from './flagshipVisitor.d';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import { FsLogger } from '../../lib/index.d';
@@ -71,7 +74,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   }
 
   private activateCampaign(variationId: string, variationGroupId: string, customLogs?: {success: string; fail: string}): Promise<void> {
-    return axios.post('https://decision-api.flagship.io/v1/activate', {
+    return axios.post(`${this.config.flagshipApi}activate`, {
       vid: this.id,
       cid: this.envId,
       caid: variationId,
@@ -237,8 +240,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   }
 
   private fetchAllModifications(activate = false, campaignCustomID: string | null = null, fetchMode: 'simple' | 'normal' = 'normal', force = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
-    const url = `https://decision-api.flagship.io/v1/${this.envId}/campaigns?mode=${fetchMode}`;
-    const urlNormal = `https://decision-api.flagship.io/v1/${this.envId}/campaigns?mode=normal`;
+    const url = `${this.config.flagshipApi}${this.envId}/campaigns?mode=${fetchMode}`;
+    const urlNormal = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
     const postProcess = (response: DecisionApiResponse, resolve: Function): void => {
       if (fetchMode === 'simple') {
         const simpleResult: DecisionApiResponseDataSimpleComputed = {};
@@ -337,8 +340,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
   private generateCustomTypeParamsOf(hitData: HitShape): object | null {
     const optionalAttributes: { [key: string]: string | number | boolean} = {};
-    switch (hitData.type) {
-      case 'Screen': {
+    switch (hitData.type.toUpperCase()) {
+      case 'SCREEN': {
         const { documentLocation, pageTitle } = hitData.data;
         if (!documentLocation || !pageTitle) {
           if (!documentLocation) this.log.error('sendHits(Screen): failed because attribute "documentLocation" is missing...');
@@ -351,11 +354,21 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           pt: pageTitle,
         };
       }
-      case 'Transaction': {
+      case 'TRANSACTION': {
         const {
-          documentLocation, pageTitle, transactionId, affiliation, totalRevenue, shippingCost, taxes, currency, couponCode, paymentMethod,
-          shippingMethod, itemCount,
-        } = hitData.data;
+          documentLocation,
+          pageTitle,
+          transactionId,
+          affiliation,
+          totalRevenue,
+          shippingCost,
+          taxes,
+          currency,
+          couponCode,
+          paymentMethod,
+          shippingMethod,
+          itemCount,
+        } = hitData.data as TransactionHit;
 
         if (totalRevenue) {
           optionalAttributes.tr = totalRevenue;
@@ -402,10 +415,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           ...optionalAttributes,
         };
       }
-      case 'Item': {
+      case 'ITEM': {
         const {
           transactionId, name, documentLocation, pageTitle, price, code, category, quantity,
-        } = hitData.data;
+        } = hitData.data as ItemHit;
 
         if (category) {
           optionalAttributes.iv = category;
@@ -438,10 +451,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           ...optionalAttributes,
         };
       }
-      case 'Event': {
+      case 'EVENT': {
         const {
           label, value, documentLocation, category, pageTitle, action,
-        } = hitData.data;
+        } = hitData.data as EventHit;
 
         if (label) {
           optionalAttributes.el = label;
