@@ -74,7 +74,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   }
 
   private activateCampaign(variationId: string, variationGroupId: string, customLogs?: {success: string; fail: string}): Promise<void> {
-    return axios.post('https://decision-api.flagship.io/v1/activate', {
+    return axios.post(`${this.config.flagshipApi}activate`, {
       vid: this.id,
       cid: this.envId,
       caid: variationId,
@@ -240,8 +240,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   }
 
   private fetchAllModifications(activate = false, campaignCustomID: string | null = null, fetchMode: 'simple' | 'normal' = 'normal', force = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
-    const url = `https://decision-api.flagship.io/v1/${this.envId}/campaigns?mode=${fetchMode}`;
-    const urlNormal = `https://decision-api.flagship.io/v1/${this.envId}/campaigns?mode=normal`;
+    const url = `${this.config.flagshipApi}${this.envId}/campaigns?mode=${fetchMode}`;
+    const urlNormal = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
     const postProcess = (response: DecisionApiResponse, resolve: Function): void => {
       if (fetchMode === 'simple') {
         const simpleResult: DecisionApiResponseDataSimpleComputed = {};

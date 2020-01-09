@@ -10,7 +10,8 @@ export type FlagshipSdkConfig = {
   logPathName?: string;
   enableConsoleLogs?: boolean;
   nodeEnv?: string;
-}
+  flagshipApi?: string;
+};
 
 export interface IFlagshipVisitor extends EventEmitter {
   config: FlagshipSdkConfig;

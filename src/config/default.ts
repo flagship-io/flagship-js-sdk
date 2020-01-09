@@ -4,6 +4,7 @@ const defaultConfig = {
   logPathName: 'flagshipNodeSdkLogs',
   enableConsoleLogs: false,
   nodeEnv: 'production',
+  flagshipApi: 'https://decision-api.flagship.io/v1/',
 };
 
 export default defaultConfig;
