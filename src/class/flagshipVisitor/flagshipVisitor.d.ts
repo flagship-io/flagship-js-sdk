@@ -13,6 +13,11 @@ export type DecisionApiResponse = {
     status: number;
 }
 
+export type ErrorApiResponse = {
+    [key: string]: any;
+    fail: boolean;
+};
+
 export type DecisionApiSimpleResponse = {
     data: DecisionApiResponseDataSimpleComputed;
     status: number;

@@ -17,6 +17,7 @@ import {
   TransactionHit,
   ItemHit,
   EventHit,
+  ErrorApiResponse,
 } from './flagshipVisitor.d';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import { FsLogger } from '../../lib/index.d';
@@ -95,6 +96,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         this.log.fatal(failLog);
       });
   }
+
+  // TODO: create a function to activate a modification base on either modif name or ids...
 
   private triggerActivateIfNeeded(detailsModifications: object): void {
     const campaignsActivated: Array<string> = [];
@@ -242,11 +245,22 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   private fetchAllModifications(activate = false, campaignCustomID: string | null = null, fetchMode: 'simple' | 'normal' = 'normal', force = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
     const url = `${this.config.flagshipApi}${this.envId}/campaigns?mode=${fetchMode}`;
     const urlNormal = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
-    const postProcess = (response: DecisionApiResponse, resolve: Function): void => {
+    const postProcess = (
+      response: DecisionApiResponse | ErrorApiResponse,
+      resolve: Function,
+      reject: Function,
+    ): void => {
+      const errResponse = response as ErrorApiResponse;
+      const normalResponse = response as DecisionApiResponse;
+      if (errResponse.fail) {
+        reject(errResponse);
+      }
       if (fetchMode === 'simple') {
         const simpleResult: DecisionApiResponseDataSimpleComputed = {};
-        if (response.data.campaigns) {
-          const filteredArray: Array<DecisionApiCampaign> = response.data.campaigns.filter((item) => item.id === campaignCustomID);
+        if (normalResponse.data.campaigns) {
+          const filteredArray: Array<DecisionApiCampaign> = normalResponse.data.campaigns.filter(
+            (item) => item.id === campaignCustomID,
+          );
           filteredArray.map((campaign) => {
             Object.entries(campaign.variation.modifications.value).forEach(
               ([key, value]) => {
@@ -255,27 +269,38 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             );
           });
           if (activate) {
-            this.activateCampaign(filteredArray[0].variation.id, filteredArray[0].variationGroupId);
+            this.activateCampaign(
+              filteredArray[0].variation.id,
+              filteredArray[0].variationGroupId,
+            );
           }
         } else {
-          this.log.warn(`No modification(s) found for campaignId="${campaignCustomID}"`);
+          this.log.warn(
+            `No modification(s) found for campaignId="${campaignCustomID}"`,
+          );
         }
         resolve({
-          ...response,
+          ...normalResponse,
           data: {
             ...simpleResult,
           },
         });
       } else {
         // default behaviour: fetchMode==='normal
-        if (response && response.data && response.data.campaigns) {
-          const filteredArray: Array<DecisionApiCampaign> = response.data && response.data.campaigns.filter((item) => item.id === campaignCustomID);
+        if (normalResponse && normalResponse.data && normalResponse.data.campaigns) {
+          const filteredArray: Array<DecisionApiCampaign> = normalResponse.data
+            && normalResponse.data.campaigns.filter(
+              (item) => item.id === campaignCustomID,
+            );
           if (filteredArray && filteredArray.length > 0) {
             if (activate) {
-              this.activateCampaign(filteredArray[0].variation.id, filteredArray[0].variationGroupId);
+              this.activateCampaign(
+                filteredArray[0].variation.id,
+                filteredArray[0].variationGroupId,
+              );
             }
             resolve({
-              ...response,
+              ...normalResponse,
               data: {
                 visitorId: this.id,
                 campaigns: filteredArray,
@@ -284,9 +309,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           }
         }
 
-        this.log.warn(`No modification(s) found for campaignId="${campaignCustomID}"`);
+        this.log.warn(
+          `No modification(s) found for campaignId="${campaignCustomID}"`,
+        );
         resolve({
-          ...response,
+          ...normalResponse,
           data: {
             visitorId: this.id,
             campaigns: [],
@@ -318,7 +345,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       });
     }
 
-    return new Promise((resolve2) => {
+    return new Promise((resolve2, reject2) => {
       const httpBody = {
         visitor_id: this.id,
         trigger_hit: false,
@@ -326,13 +353,20 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       };
 
       if (this.fetchedModifications && !force) {
-        this.log.info('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
-        postProcess(this.fetchedModifications, resolve2);
+        this.log.info(
+          'fetchAllModifications: no calls to the Decision API because it has already been fetched before',
+        );
+        postProcess(this.fetchedModifications, resolve2, reject2);
       } else {
-        axios.post(urlNormal, httpBody)
+        axios
+          .post(urlNormal, httpBody)
           .then((response: DecisionApiResponse) => {
             this.fetchedModifications = response;
-            postProcess(response, resolve2);
+            postProcess(response, resolve2, reject2);
+          })
+          .catch((error: any) => {
+            this.fetchedModifications = null;
+            postProcess({ ...error, fail: true }, resolve2, reject2);
           });
       }
     });
