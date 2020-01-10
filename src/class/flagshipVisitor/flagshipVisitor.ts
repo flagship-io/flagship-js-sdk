@@ -253,7 +253,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       const errResponse = response as ErrorApiResponse;
       const normalResponse = response as DecisionApiResponse;
       if (errResponse.fail) {
-        reject(errResponse);
+        const { fail, ...other } = errResponse;
+        this.log.fatal(
+          `No modification(s) found for campaignId="${campaignCustomID}"`,
+        );
+        reject(other);
       }
       if (fetchMode === 'simple') {
         const simpleResult: DecisionApiResponseDataSimpleComputed = {};
@@ -337,9 +341,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
               this.fetchedModifications = response;
               resolve1(response);
             })
-            .catch((error) => {
+            .catch(({ response }) => {
               this.log.fatal('fetchAllModifications: an error occured while fetching...');
-              reject1(error);
+              reject1(response);
             });
         }
       });

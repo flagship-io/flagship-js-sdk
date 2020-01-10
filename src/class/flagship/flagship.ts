@@ -30,10 +30,16 @@ class Flagship implements IFlagship {
 
     if (this.config.fetchNow || this.config.activateNow) {
       this.log.info(`new visitor (id="${id}") calling decision API for initialization (waiting to be ready...)`);
-      flagshipVisitorInstance.getAllModifications(this.config.activateNow).then(() => {
-        this.log.info(`new visitor (id="${id}") decision API finished (ready !)`);
-        flagshipVisitorInstance.emit('ready');
-      });
+      flagshipVisitorInstance.getAllModifications(this.config.activateNow)
+        .then(() => {
+          this.log.info(`new visitor (id="${id}") decision API finished (ready !)`);
+          flagshipVisitorInstance.emit('ready');
+        }).catch((response) => {
+          this.log.fatal(
+            `new visitor (id="${id}") decision API failed during initialization with error ${response.data.toString()}`,
+          );
+          flagshipVisitorInstance.emit('ready');
+        });
     } else {
       // Before emit('ready'), make sure there is listener to it
       flagshipVisitorInstance.once('newListener', (event, listener) => {
