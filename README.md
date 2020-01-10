@@ -1,19 +1,14 @@
-
 ![Flagship logo](src/assets/img/flagshipLogo.jpg)
-
-  
 
 # Flagship - JS SDK
 
 ### Prerequisites
 
-  
-
 - **Node.js**: version 6.0.0 or later...
 
 - **Npm**: version 3.0.0 or later...
 
-## Good to know 
+## Good to know
 
 <ul style="line-height:1.4;">
 - Typescript supported ✅
@@ -33,23 +28,15 @@
 </ul>
 </ul>
 
-## Getting Started 
-
-  
+## Getting Started
 
 - **Install** the node module:
-
-  
 
 ```
 npm install @flagship.io/js-sdk
 ```
 
-  
-
 - Then **import** it in your code :
-
-  
 
 ```
 import flagship from "@flagship.io/js-sdk"; // ES6 ++
@@ -57,7 +44,8 @@ import flagship from "@flagship.io/js-sdk"; // ES6 ++
 const flagship = require("@flagship.io/js-sdk"); // ES5
 ```
 
-  
+<!-- TODO: explain a bit more -->
+
 ## SDK Settings
 
 This is all available settings which you can set on the SDK.
@@ -113,9 +101,12 @@ Here are the attributes which you can set inside the SDK settings object:
 
 Don't hesitate to have a look to the main [Flagship technical doc](http://developers.flagship.io/) as well 😊.
 
-### *flagshipSdk* object
+### _flagshipSdk_ object
+
+<!-- TODO: summary of api -->
 
 #### `initSdk`
+
 > return a `Flagship` instance.
 
 <table class="table table-bordered table-striped">
@@ -143,20 +134,24 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
     </tbody>
 </table>
 
-**Demo:** 
+**Demo:**
 
-````
+```
 const sdk = flagship.initSdk("YOUR_ENV_ID",
 {
     enableConsoleLogs: true,
     fetchNow: false,
 });
-````
+```
 
-### <i>Flagship</i> class 
+### <i>Flagship</i> class
+
+<!-- TODO: summary of api -->
+
 #### `newVisitor`
 
 > return a <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a> instance.
+
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
@@ -182,9 +177,9 @@ const sdk = flagship.initSdk("YOUR_ENV_ID",
     </tbody>
 </table>
 
-**Demo:** 
+**Demo:**
 
-````
+```
 const visitorInstance = sdk.newVisitor("YOUR_VISITOR_ID",{
     //...
     some: "VISITOR_CONTEXT",
@@ -194,13 +189,18 @@ const visitorInstance = sdk.newVisitor("YOUR_VISITOR_ID",{
 visitorInstance.on('ready', () => {
     console.log('visitorInstance is ready ! ✨')
 });
-````
+```
 
-### <i>FlagshipVisitor</i> class 
+### <i>FlagshipVisitor</i> class
+
+<!-- TODO: summary of api -->
 
 #### `setContext`
+
 edit the context of the visitor
+
 > return nothing
+
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
@@ -220,21 +220,21 @@ edit the context of the visitor
     </tbody>
 </table>
 
-**Demo:** 
+**Demo:**
 
-````
+```
 const visitorInstance = sdk.setContext({
     //...
     some: "NEW_VISITOR_CONTEXT",
     //...
 });
-````
+```
 
 #### `synchronizeModifications`
 
 > return a `Promise(number)`
 
-Add/update all modifications data which are in cache. 
+Add/update all modifications data which are in cache.
 Might be useful when your visitor instance has been initialized a while ago and some change have been done on Flagship platform meanwhile. From there some modifications may have changes, so calling `synchronizeModifications` make sure everything is fine. 😃
 
 It returns a <i>number</i> (=response status code) when promise is resolved.
@@ -258,16 +258,15 @@ It returns a <i>number</i> (=response status code) when promise is resolved.
     </tbody>
 </table>
 
-**Demo:** 
+**Demo:**
 
-````
+```
 visitorInstance.synchronizeModifications().then(
     (statusCode) => console.log(`synchronizeModifications responded with status code:${statusCode}`)
 )
-````
+```
 
 #### `getAllModifications`
-
 
 > return an `Promise(object)` which contains all data for all campaigns which the visitor can have
 
@@ -298,19 +297,21 @@ The shape of the object look like same as [decision api response, normal mode](h
     </tbody>
 </table>
 
-**Demo:** 
+**Demo:**
 
-````
+```
 visitorInstance.getAllModifications()
   .then((normalModeResponse) => {
     // do something...
   });
-````
+```
 
 #### `getModificationsForCampaign`
+
 > return a `promise(object)` which contains the data for a specific campaign
 
 The shape of the object look like same as [decision api response, normal or simple mode](http://developers.flagship.io/#mode) depending on value of `fetchMode` argument.
+
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
@@ -342,20 +343,21 @@ The shape of the object look like same as [decision api response, normal or simp
     </tbody>
 </table>
 
-**Demo:** 
+**Demo:**
 
-````
+```
 visitorInstance.getModificationsForCampaign()
   .then((normalModeResponse) => {
     // do something...
   });
-````
+```
 
 #### `getModifications`
 
 > return an `object` where each key is a modification with corresponding value
 
 The data returned will be the data from all modifications that you specify in the `modificationsRequested` argument
+
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
@@ -404,13 +406,11 @@ The data returned will be the data from all modifications that you specify in th
 
 **Demo:**
 
-
-
     visitorInstance.getModifications([
         {
             key: "btnColor", // required
             defaultValue: "#ff0000", // required
-            activate: true // optional 
+            activate: true // optional
         },
         {
             key: "customLabel", // required
@@ -418,22 +418,21 @@ The data returned will be the data from all modifications that you specify in th
         }
     ], /* ActivateAllModifications */)
 
-
 will return:
 
-````
+```
 {
   btnColor: '#dcbc02',
   customLabel: 'Flagship is awesome' // default value set (ie: no campaigns have specified this modification)
 }
-````
-
+```
 
 #### `sendHits`
 
 > return a `Promise(void)`
 
-This function allow you to send any kind of hit. All details of each hit below 👇. 
+This function allow you to send any kind of hit. All details of each hit below 👇.
+
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
@@ -459,9 +458,9 @@ This function allow you to send any kind of hit. All details of each hit below �
     </tbody>
 </table>
 
-**Demo:** 
+**Demo:**
 
-````
+```
 
 visitorInstance.sendHits(
     [
@@ -515,11 +514,12 @@ visitorInstance.sendHits(
         },
     ]
 ).then(() => console.log('All hits send !')
-````
+```
 
-### <i>Shape</i> of possible hits to send  
+### <i>Shape</i> of possible hits to send
 
 #### `Transaction Hit`
+
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
@@ -593,6 +593,7 @@ visitorInstance.sendHits(
 </table>
 
 #### `Screen Hit`
+
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
@@ -616,6 +617,7 @@ visitorInstance.sendHits(
 </table>
 
 #### `Item Hit`
+
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
@@ -671,6 +673,7 @@ visitorInstance.sendHits(
 </table>
 
 #### `Event Hit`
+
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
@@ -713,14 +716,10 @@ visitorInstance.sendHits(
     </tbody>
 </table>
 
-
 ## Contributing
-
-  
 
 Take a look to the [Contributors Guide](CONTRIBUTING.md).
 
-  
 ## What is Flagship ?
 
 Have a look [here](https://www.abtasty.com/solutions-product-teams/).
