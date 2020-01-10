@@ -24,24 +24,26 @@ export type DecisionApiResponseData = {
 }
 
 export type GetModificationsOutput = {
-    [key: string]: string | boolean | number;
-}
-
-export type DecisionApiCampaign = {
-    id: string;
-    variationGroupId: string;
-    variation: {
-        id: string;
-        modifications: {
-            type: string;
-            value: object;
-        };
-    };
+    [key: string]: any;
 }
 
 export type DecisionApiResponseDataSimpleComputed = {
-    [key: string]: string | number | boolean;
-}
+  [key: string]: any;
+};
+
+export type DecisionApiCampaign = {
+  id: string;
+  variationGroupId: string;
+  variation: {
+    id: string;
+    modifications: {
+      type: string;
+      value: {
+        [key: string]: any;
+      };
+    };
+  };
+};
 
 export type DecisionApiResponseDataFullComputed = {
     [key: string]: {
