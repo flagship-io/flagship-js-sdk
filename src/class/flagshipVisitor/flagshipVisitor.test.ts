@@ -183,6 +183,7 @@ describe('FlagshipVisitor', () => {
     beforeEach(() => {
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       spyActivateCampaign = jest.spyOn(visitorInstance, 'activateCampaign');
+      spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
     });
     it('should return decision API response (mode=normal) when there is no optional argument set', () => {
       visitorInstance.fetchAllModifications();
@@ -274,6 +275,36 @@ describe('FlagshipVisitor', () => {
         done();
       });
       expect(mockAxios.post).not.toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
+    });
+    it('should logs specifically when error and already fetched before and forced', (done) => {
+      const responseObj = {
+        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
+        status: 200,
+        statusText: 'OK',
+      };
+      const errorObj = {
+        data: 'Oh no, error is coming !',
+        status: '422',
+        source: { pointer: '/data/attributes/envId' },
+        title: 'Invalid Attribute',
+        detail: 'Env id must contain at least three characters.',
+      };
+      visitorInstance.fetchedModifications = responseObj;
+      spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
+      const spyThen = jest.fn();
+      visitorInstance.fetchAllModifications(false, 'bmjdprsjan0g01uq2ceg', 'simple', true).then(spyThen).catch((errorResponse) => {
+        try {
+          expect(errorResponse).toEqual({ ...errorObj, fail: true });
+          expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+          expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'No modification(s) found for campaignId="bmjdprsjan0g01uq2ceg"');
+          done();
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      mockAxios.mockError(errorObj);
+      expect(spyThen).toHaveBeenCalledTimes(0);
+      expect(mockAxios.post).toHaveBeenCalledTimes(1);
     });
     it('should call Desicion API only for activate when using simple mode and already fetched before', (done) => {
       const responseObj = {
@@ -443,8 +474,13 @@ describe('FlagshipVisitor', () => {
   });
 
   describe('GetModifications function', () => {
+    beforeEach(() => {
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
+    });
     it('should return empty object if decision API had an error', (done) => {
       const thenGetModification = jest.fn();
+      const spyFetchAllModifications = jest.spyOn(visitorInstance, 'fetchAllModifications');
       const responseObj = {
         data: 'Oh no, error is coming !',
         status: '422',
@@ -453,7 +489,6 @@ describe('FlagshipVisitor', () => {
         detail: 'Env id must contain at least three characters.',
       };
 
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
 
       const spyGetModifs = jest.spyOn(visitorInstance, 'getModifications');
       const spyModifsDetails = jest.spyOn(visitorInstance, 'extractDesiredModifications');
@@ -463,6 +498,9 @@ describe('FlagshipVisitor', () => {
         try {
           expect(errorResponse).toMatchObject(responseObj);
           expect(visitorInstance.fetchedModifications).toBe(null);
+          expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications: an error occured while fetching...');
+          expect(spyFatalLogs).toHaveBeenNthCalledWith(2, `Get modifications failed with error:\n${responseObj.status}`);
+          expect(spyFetchAllModifications).toHaveBeenNthCalledWith(1, false);
         } catch (error) {
           done.fail(error);
         }

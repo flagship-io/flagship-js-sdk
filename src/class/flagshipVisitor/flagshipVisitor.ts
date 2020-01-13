@@ -152,7 +152,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             modificationsRequested.some((item) => {
               if (item.key === key) {
                 detailsModifications[key].isRequested = true;
-                if (activateAllModifications === null && !!item.activate) {
+                if (!activateAllModifications && !!item.activate) {
                   detailsModifications[key].isActivateNeeded = item.activate;
                 }
               }
@@ -206,7 +206,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           }
         },
       ).catch((error) => {
-        this.log.fatal(`Get modifications failed with error:\n${error.status || JSON.stringify(error)}`);
+        this.log.fatal(`Get modifications failed with error:\n${(error && error.status) || JSON.stringify(error)}`);
         reject(error);
       });
     });
@@ -253,11 +253,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       const errResponse = response as ErrorApiResponse;
       const normalResponse = response as DecisionApiResponse;
       if (errResponse.fail) {
-        const { fail, ...other } = errResponse;
         this.log.fatal(
           `No modification(s) found for campaignId="${campaignCustomID}"`,
         );
-        reject(other);
+        reject(errResponse);
       }
       if (fetchMode === 'simple') {
         const simpleResult: DecisionApiResponseDataSimpleComputed = {};
@@ -341,7 +340,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
               this.fetchedModifications = response;
               resolve1(response);
             })
-            .catch(({ response }) => {
+            .catch((response) => {
+              this.fetchedModifications = null;
               this.log.fatal('fetchAllModifications: an error occured while fetching...');
               reject1(response);
             });
