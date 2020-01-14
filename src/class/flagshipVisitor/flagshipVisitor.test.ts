@@ -702,6 +702,28 @@ describe('FlagshipVisitor', () => {
       mockAxios.mockResponse(responseObj);
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
     });
+    it('should return the data of only one campaign + simple fetch mode enabled', (done) => {
+      const responseObj = {
+        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
+        status: 200,
+        statusText: 'OK',
+      };
+      const spyFetchAll = jest.spyOn(visitorInstance, 'fetchAllModifications');
+      const campaignId = 'blntcamqmdvg04g371f0';
+      visitorInstance.getModificationsForCampaign(campaignId, 'simple')
+        .then((response) => {
+          try {
+            expect(response.data.campaigns).toBe({ psp: 'dalenys' });
+            expect(response.data.visitorId).toBe(visitorInstance.id);
+            expect(spyFetchAll).toHaveBeenCalled();
+          } catch (error) {
+            done.fail(error);
+          }
+          done();
+        });
+      mockAxios.mockResponse(responseObj);
+      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
+    });
   });
 
   describe('GetAllModifications function', () => {
@@ -915,6 +937,43 @@ describe('FlagshipVisitor', () => {
       expect(spyErrorLogs).toBeCalledTimes(2);
       expect(spyFatalLogs).toBeCalledTimes(0);
     });
+  });
+
+  let spyFetchModifs;
+  describe('GetModificationsCache function', () => {
+    beforeEach(() => {
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      spyGenerateCustomTypeParamsOf = jest.spyOn(visitorInstance, 'generateCustomTypeParamsOf');
+      spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
+      spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
+      spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
+      spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
+      spyFetchModifs = jest.spyOn(visitorInstance, 'fetchAllModifications');
+      responseObject = {
+        data: null,
+        status: 200,
+        statusText: 'OK',
+      };
+    });
+    it('should not use promise when fetching modifications', (done) => {
+      responseObject = {
+        ...responseObject,
+        data: { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns },
+      };
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance.fetchedModifications = { ...responseObject }; // Mock a previous fetch
+      const cacheResponse = visitorInstance.getModificationsCache();
+      try {
+        expect(spyFetchModifs).toHaveBeenCalledWith([{ tt: 34 }, 2]);
+        expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
+        expect(cacheResponse.status).toBe(responseObject.status);
+        done();
+      } catch (error) {
+        done.fail(error);
+      }
+    });
+    // TODO:
+    it('should return null if nothing in cache', (done) => { expect(1).toBe(1); });
   });
 
   describe('CheckContext function', () => {

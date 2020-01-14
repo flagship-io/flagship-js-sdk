@@ -189,6 +189,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return { desiredModifications, detailsModifications };
   }
 
+  // private getModificationsPostProcess() {
+
+  // }
+
   public getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean|null = null): Promise<GetModificationsOutput> {
     return new Promise((resolve, reject) => {
       const fetchedModif = this.fetchAllModifications(!!activateAllModifications) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
@@ -276,67 +280,31 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         return errResponse;
       }
     }
-    if (fetchMode === 'simple') {
-      const simpleResult: DecisionApiResponseDataSimpleComputed = {};
-      if (normalResponse.data.campaigns) {
-        const filteredArray: Array<DecisionApiCampaign> = normalResponse.data.campaigns.filter(
-          (item) => item.id === campaignCustomID,
-        );
-        filteredArray.map((campaign) => {
-          Object.entries(campaign.variation.modifications.value).forEach(
-            ([key, value]) => {
-              simpleResult[key] = value;
-            },
-          );
-        });
+
+    // default behaviour: fetchMode==='normal
+    if (normalResponse && normalResponse.data && normalResponse.data.campaigns) {
+      const filteredArray: Array<DecisionApiCampaign> = normalResponse.data
+            && normalResponse.data.campaigns.filter(
+              (item) => item.id === campaignCustomID,
+            );
+      if (filteredArray && filteredArray.length > 0) {
         if (activate) {
           this.activateCampaign(
             filteredArray[0].variation.id,
             filteredArray[0].variationGroupId,
           );
         }
-      } else {
-        this.log.warn(
-          `No modification(s) found for campaignId="${campaignCustomID}"`,
-        );
-      }
-      output = {
-        ...normalResponse,
-        data: {
-          ...simpleResult,
-        },
-      };
-      if (resolve) {
-        resolve(output);
-      } else {
-        return output;
-      }
-    } else {
-      // default behaviour: fetchMode==='normal
-      if (normalResponse && normalResponse.data && normalResponse.data.campaigns) {
-        const filteredArray: Array<DecisionApiCampaign> = normalResponse.data
-            && normalResponse.data.campaigns.filter(
-              (item) => item.id === campaignCustomID,
-            );
-        if (filteredArray && filteredArray.length > 0) {
-          if (activate) {
-            this.activateCampaign(
-              filteredArray[0].variation.id,
-              filteredArray[0].variationGroupId,
-            );
-          }
-          output = {
-            ...normalResponse,
-            data: {
-              visitorId: this.id,
-              campaigns: filteredArray,
-            },
-          };
-          if (resolve) {
-            resolve(output);
-          } else {
-            return output;
-          }
+        output = {
+          ...normalResponse,
+          data: {
+            visitorId: this.id,
+            campaigns: filteredArray,
+          },
+        };
+        if (resolve) {
+          resolve(output);
+        } else {
+          return output;
         }
       }
 
@@ -369,10 +337,20 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       fetchMode,
     };
 
+    // TODO: can be deleted and refacto inside the second promise
     if (!campaignCustomID) {
       this.log.debug('fetchAllModifications: fetching all campaigns of current visitor');
+      if (this.fetchedModifications && loadFromCache && !force) {
+        this.log.info('fetchAllModifications [cache mode]: no calls to the Decision API because it has already been fetched before');
+
+        if (activate) {
+          // TODO: do the activate
+        }
+        return this.fetchedModifications;
+      }
       return new Promise((resolve1, reject1) => {
         if (this.fetchedModifications && !activate && !force) {
+          // TODO: remove activate in the "if condition" and do activate separately
           this.log.info('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
           resolve1(this.fetchedModifications);
         } else {
