@@ -206,7 +206,11 @@ describe('FlagshipVisitor', () => {
       visitorInstance.fetchedModifications = responseObj;
       spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
       const spyThen = jest.fn();
-      visitorInstance.fetchAllModifications(false, 'bmjdprsjan0g01uq2ceg', 'simple', true).then(spyThen).catch((errorResponse) => {
+      visitorInstance.fetchAllModifications({
+        activate: false,
+        campaignCustomID: 'bmjdprsjan0g01uq2ceg',
+        force: true,
+      }).then(spyThen).catch((errorResponse) => {
         try {
           expect(errorResponse).toEqual({ ...errorObj, fail: true });
           expect(spyFatalLogs).toHaveBeenCalledTimes(1);
@@ -226,7 +230,9 @@ describe('FlagshipVisitor', () => {
         status: 200,
         statusText: 'OK',
       };
-      visitorInstance.fetchAllModifications(false, 'bmjdprsjan0g01uq2ceg').then(({ data, status }) => {
+      visitorInstance.fetchAllModifications({
+        campaignCustomID: 'bmjdprsjan0g01uq2ceg',
+      }).then(({ data, status }) => {
         try {
           expect(data).toEqual({
             campaigns: [{
@@ -262,7 +268,7 @@ describe('FlagshipVisitor', () => {
         status: 200,
         statusText: 'OK',
       };
-      visitorInstance.fetchAllModifications(false, 'unknowId').then(({ data, status }) => {
+      visitorInstance.fetchAllModifications({ campaignCustomID: 'unknowId' }).then(({ data, status }) => {
         try {
           expect(data).toEqual({ campaigns: [], visitorId: demoData.visitor.id[0] });
           expect(status).toBe(200);
@@ -280,7 +286,7 @@ describe('FlagshipVisitor', () => {
         status: 200,
         statusText: 'OK',
       };
-      visitorInstance.fetchAllModifications(true, 'bmjdprsjan0g01uq2ceg').then(({ data, status }) => {
+      visitorInstance.fetchAllModifications({ activate: true, campaignCustomID: 'bmjdprsjan0g01uq2ceg' }).then(({ data, status }) => {
         expect(status).toBe(200);
         expect(spyActivateCampaign).toHaveBeenCalledTimes(1);
         done();
@@ -294,7 +300,7 @@ describe('FlagshipVisitor', () => {
         status: 200,
         statusText: 'OK',
       };
-      visitorInstance.fetchAllModifications(true).then(({ data, status }) => {
+      visitorInstance.fetchAllModifications({ activate: true }).then(({ data, status }) => {
         expect(status).toBe(200);
         expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
         done();
@@ -310,7 +316,7 @@ describe('FlagshipVisitor', () => {
       };
       spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
       visitorInstance.fetchedModifications = responseObj; // Mock a already fetch
-      visitorInstance.fetchAllModifications(false).then(({ data, status }) => {
+      visitorInstance.fetchAllModifications().then(({ data, status }) => {
         try {
           expect(status).toBe(200);
           expect(data).toMatchObject(visitorInstance.fetchedModifications.data);
@@ -331,7 +337,7 @@ describe('FlagshipVisitor', () => {
       };
       spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
       visitorInstance.fetchedModifications = responseObj; // Mock a already fetch
-      visitorInstance.fetchAllModifications(true).then(({ data, status }) => {
+      visitorInstance.fetchAllModifications({ activate: true }).then(({ data, status }) => {
         try {
           expect(status).toBe(200);
           expect(data).toMatchObject(visitorInstance.fetchedModifications.data);
@@ -377,8 +383,6 @@ describe('FlagshipVisitor', () => {
         title: 'Invalid Attribute',
         detail: 'Env id must contain at least three characters.',
       };
-
-
       const spyGetModifs = jest.spyOn(visitorInstance, 'getModifications');
       const spyModifsDetails = jest.spyOn(visitorInstance, 'extractDesiredModifications');
       const spyTriggerActivateIfNeeded = jest.spyOn(visitorInstance, 'triggerActivateIfNeeded');
@@ -389,7 +393,7 @@ describe('FlagshipVisitor', () => {
           expect(visitorInstance.fetchedModifications).toBe(null);
           expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications: an error occurred while fetching...');
           expect(spyFatalLogs).toHaveBeenNthCalledWith(2, `Get modifications failed with error:\n${responseObj.status}`);
-          expect(spyFetchAllModifications).toHaveBeenNthCalledWith(1, false);
+          expect(spyFetchAllModifications).toHaveBeenCalledWith({ activate: false });
         } catch (error) {
           done.fail(error);
         }

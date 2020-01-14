@@ -195,7 +195,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
   public getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean|null = null): Promise<GetModificationsOutput> {
     return new Promise((resolve, reject) => {
-      const fetchedModif = this.fetchAllModifications(!!activateAllModifications) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+      const fetchedModif = this.fetchAllModifications({ activate: !!activateAllModifications }) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
       fetchedModif.then(
         (response: DecisionApiResponse | DecisionApiSimpleResponse) => {
           const castResponse = response as DecisionApiResponse;
@@ -218,7 +218,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   }
 
   public getModificationsCache(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null = null): GetModificationsOutput {
-    const response = this.fetchAllModifications(!!activateAllModifications) as DecisionApiSimpleResponse;
+    const response = this.fetchAllModifications({ activate: !!activateAllModifications }) as DecisionApiSimpleResponse;
     return response;
   }
 
@@ -229,7 +229,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   public synchronizeModifications(activate = false): Promise<number> {
     return new Promise(
       (resolve, reject) => {
-        const fetchedModif = this.fetchAllModifications(activate, null, true) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+        const fetchedModif = this.fetchAllModifications({ activate, force: true }) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
         fetchedModif.then(
           (response: DecisionApiResponse | DecisionApiSimpleResponse) => {
             const castResponse = response as DecisionApiResponse;
@@ -246,11 +246,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   }
 
   public getModificationsForCampaign(campaignId: string, activate = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
-    return this.fetchAllModifications(activate, campaignId) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+    return this.fetchAllModifications({ activate, campaignCustomID: campaignId }) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
   }
 
   public getAllModifications(activate = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
-    return this.fetchAllModifications(activate, null) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+    return this.fetchAllModifications({ activate }) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
   }
 
   private fetchAllModificationsPostProcess(
@@ -312,14 +312,18 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return output;
   }
 
-  // TODO: refacto all args into json
-  private fetchAllModifications(activate = false, campaignCustomID: string | null = null, force = false, loadFromCache = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> |DecisionApiResponse | DecisionApiSimpleResponse {
+  private fetchAllModifications(args: {activate?: boolean; campaignCustomID?: string | null; force?: boolean; loadFromCache?: boolean}): Promise<DecisionApiResponse | DecisionApiSimpleResponse> |DecisionApiResponse | DecisionApiSimpleResponse {
+    const defaultArgs = {
+      activate: false,
+      campaignCustomID: null,
+      force: false,
+      loadFromCache: false,
+    };
+    const {
+      activate, campaignCustomID, force, loadFromCache,
+    } = { ...defaultArgs, ...args };
     const url = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
     const urlNormal = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
-    const args = {
-      activate,
-      campaignCustomID,
-    };
 
     // TODO: can be deleted and refacto inside the second promise
     if (!campaignCustomID) {
@@ -359,7 +363,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       this.log.info(
         'fetchAllModifications [cache mode]: no calls to the Decision API because it has already been fetched before',
       );
-      return this.fetchAllModificationsPostProcess(this.fetchedModifications, args);
+      return this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args });
     }
     return new Promise((resolve2, reject2) => {
       const httpBody = {
@@ -371,17 +375,17 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         this.log.info(
           'fetchAllModifications: no calls to the Decision API because it has already been fetched before',
         );
-        this.fetchAllModificationsPostProcess(this.fetchedModifications, args, resolve2, reject2);
+        this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args }, resolve2, reject2);
       } else {
         axios
           .post(urlNormal, httpBody)
           .then((response: DecisionApiResponse) => {
             this.fetchedModifications = response;
-            this.fetchAllModificationsPostProcess(response, args, resolve2, reject2);
+            this.fetchAllModificationsPostProcess(response, { ...defaultArgs, ...args }, resolve2, reject2);
           })
           .catch((error: any) => {
             this.fetchedModifications = null;
-            this.fetchAllModificationsPostProcess({ ...error, fail: true }, args, resolve2, reject2);
+            this.fetchAllModificationsPostProcess({ ...error, fail: true }, { ...defaultArgs, ...args }, resolve2, reject2);
           });
       }
     });
