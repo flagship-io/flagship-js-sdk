@@ -190,92 +190,6 @@ describe('FlagshipVisitor', () => {
       expect(mockAxios.post).toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
       expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
     });
-    it('should return decision API response (mode=simple) when argument "mode" is set to "simple"', () => {
-      visitorInstance.fetchAllModifications(false, null, 'simple');
-      expect(mockAxios.post).toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=simple`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
-      expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
-    });
-    it('should return empty object if no modification found for a specific campaign (taking into account simple fetch mode when enabled)', (done) => {
-      const responseObj = {
-        data: [],
-        status: 200,
-        statusText: 'OK',
-      };
-      visitorInstance.fetchAllModifications(false, 'bmjdprsjan0g01uq2ceg', 'simple').then(({ data, status }) => {
-        expect(data).toEqual({});
-        expect(status).toBe(200);
-        expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
-        done();
-      });
-      mockAxios.mockResponse(responseObj);
-    });
-    it('should call activate only ONCE when specific campaign is set (taking into account simple fetch mode when enabled)', (done) => {
-      const responseObj = {
-        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
-        status: 200,
-        statusText: 'OK',
-      };
-      visitorInstance.fetchAllModifications(true, 'bmjdprsjan0g01uq2ceg', 'simple').then(({ data, status }) => {
-        try {
-          expect(mockAxios.post).toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
-          expect(data).toEqual({
-            algorithmVersion: 'yolo2',
-            hello: 'world',
-            psp: 'yolo',
-          });
-          expect(status).toBe(200);
-          expect(spyActivateCampaign).toHaveBeenCalledTimes(1);
-          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj);
-          done();
-        } catch (error) {
-          done.fail(error);
-        }
-      });
-      mockAxios.mockResponse(responseObj);
-    });
-    it('should return correct modification found for a specific campaign (taking into account simple fetch mode when enabled)', (done) => {
-      const responseObj = {
-        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
-        status: 200,
-        statusText: 'OK',
-      };
-      visitorInstance.fetchAllModifications(false, 'bmjdprsjan0g01uq2ceg', 'simple').then(({ data, status }) => {
-        expect(data).toEqual({
-          algorithmVersion: 'yolo2',
-          hello: 'world',
-          psp: 'yolo',
-        });
-        expect(status).toBe(200);
-        expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
-        done();
-      });
-      mockAxios.mockResponse(responseObj);
-    });
-    it('should not call Desicion API when using simple mode and already fetched before', (done) => {
-      const responseObj = {
-        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
-        status: 200,
-        statusText: 'OK',
-      };
-      visitorInstance.fetchedModifications = responseObj;
-      spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
-      visitorInstance.fetchAllModifications(false, 'bmjdprsjan0g01uq2ceg', 'simple').then(({ data, status }) => {
-        try {
-          expect(data).toEqual({
-            algorithmVersion: 'yolo2',
-            hello: 'world',
-            psp: 'yolo',
-          });
-          expect(status).toBe(200);
-          expect(spyInfoLogs).toBeCalledWith('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
-          expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
-        } catch (error) {
-          done.fail(error);
-        }
-        done();
-      });
-      expect(mockAxios.post).not.toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
-    });
     it('should logs specifically when error and already fetched before and forced', (done) => {
       const responseObj = {
         data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -305,31 +219,6 @@ describe('FlagshipVisitor', () => {
       mockAxios.mockError(errorObj);
       expect(spyThen).toHaveBeenCalledTimes(0);
       expect(mockAxios.post).toHaveBeenCalledTimes(1);
-    });
-    it('should call Desicion API only for activate when using simple mode and already fetched before', (done) => {
-      const responseObj = {
-        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
-        status: 200,
-        statusText: 'OK',
-      };
-      visitorInstance.fetchedModifications = responseObj;
-      spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
-      visitorInstance.fetchAllModifications(true, 'bmjdprsjan0g01uq2ceg', 'simple').then(({ data, status }) => {
-        try {
-          expect(data).toEqual({
-            algorithmVersion: 'yolo2',
-            hello: 'world',
-            psp: 'yolo',
-          });
-          expect(status).toBe(200);
-          expect(spyInfoLogs).toBeCalledWith('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
-          expect(spyActivateCampaign).toHaveBeenCalledTimes(1);
-        } catch (error) {
-          done.fail(error);
-        }
-        done();
-      });
-      expect(mockAxios.post).not.toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
     });
     it('should return correct modification found for a specific campaign', (done) => {
       const responseObj = {
@@ -378,10 +267,10 @@ describe('FlagshipVisitor', () => {
           expect(data).toEqual({ campaigns: [], visitorId: demoData.visitor.id[0] });
           expect(status).toBe(200);
           expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
+          done();
         } catch (error) {
           done.fail(error);
         }
-        done();
       });
       mockAxios.mockResponse(responseObj);
     });
@@ -694,32 +583,10 @@ describe('FlagshipVisitor', () => {
             expect(response.data.campaigns).toEqual([]);
             expect(response.data.visitorId).toBe(visitorInstance.id);
             expect(spyFetchAll).toHaveBeenCalled();
+            done();
           } catch (error) {
             done.fail(error);
           }
-          done();
-        });
-      mockAxios.mockResponse(responseObj);
-      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
-    });
-    it('should return the data of only one campaign + simple fetch mode enabled', (done) => {
-      const responseObj = {
-        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
-        status: 200,
-        statusText: 'OK',
-      };
-      const spyFetchAll = jest.spyOn(visitorInstance, 'fetchAllModifications');
-      const campaignId = 'blntcamqmdvg04g371f0';
-      visitorInstance.getModificationsForCampaign(campaignId, 'simple')
-        .then((response) => {
-          try {
-            expect(response.data.campaigns).toBe({ psp: 'dalenys' });
-            expect(response.data.visitorId).toBe(visitorInstance.id);
-            expect(spyFetchAll).toHaveBeenCalled();
-          } catch (error) {
-            done.fail(error);
-          }
-          done();
         });
       mockAxios.mockResponse(responseObj);
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
@@ -939,42 +806,42 @@ describe('FlagshipVisitor', () => {
     });
   });
 
-  let spyFetchModifs;
-  describe('GetModificationsCache function', () => {
-    beforeEach(() => {
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-      spyGenerateCustomTypeParamsOf = jest.spyOn(visitorInstance, 'generateCustomTypeParamsOf');
-      spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
-      spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
-      spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
-      spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
-      spyFetchModifs = jest.spyOn(visitorInstance, 'fetchAllModifications');
-      responseObject = {
-        data: null,
-        status: 200,
-        statusText: 'OK',
-      };
-    });
-    it('should not use promise when fetching modifications', (done) => {
-      responseObject = {
-        ...responseObject,
-        data: { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns },
-      };
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-      visitorInstance.fetchedModifications = { ...responseObject }; // Mock a previous fetch
-      const cacheResponse = visitorInstance.getModificationsCache();
-      try {
-        expect(spyFetchModifs).toHaveBeenCalledWith([{ tt: 34 }, 2]);
-        expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
-        expect(cacheResponse.status).toBe(responseObject.status);
-        done();
-      } catch (error) {
-        done.fail(error);
-      }
-    });
-    // TODO:
-    it('should return null if nothing in cache', (done) => { expect(1).toBe(1); });
-  });
+  // let spyFetchModifs;
+  // describe('GetModificationsCache function', () => {
+  //   beforeEach(() => {
+  //     visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+  //     spyGenerateCustomTypeParamsOf = jest.spyOn(visitorInstance, 'generateCustomTypeParamsOf');
+  //     spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
+  //     spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
+  //     spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
+  //     spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
+  //     spyFetchModifs = jest.spyOn(visitorInstance, 'fetchAllModifications');
+  //     responseObject = {
+  //       data: null,
+  //       status: 200,
+  //       statusText: 'OK',
+  //     };
+  //   });
+  //   it('should not use promise when fetching modifications', (done) => {
+  //     responseObject = {
+  //       ...responseObject,
+  //       data: { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns },
+  //     };
+  //     visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+  //     visitorInstance.fetchedModifications = { ...responseObject }; // Mock a previous fetch
+  //     const cacheResponse = visitorInstance.getModificationsCache();
+  //     try {
+  //       expect(spyFetchModifs).toHaveBeenCalledWith([{ tt: 34 }, 2]);
+  //       expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
+  //       expect(cacheResponse.status).toBe(responseObject.status);
+  //       done();
+  //     } catch (error) {
+  //       done.fail(error);
+  //     }
+  //   });
+  //   // TODO:
+  //   it('should return null if nothing in cache', (done) => { expect(1).toBe(1); });
+  // });
 
   describe('CheckContext function', () => {
     it('should not send warn logs if visitor context is clean', (done) => {

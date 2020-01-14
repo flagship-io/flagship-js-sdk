@@ -229,7 +229,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   public synchronizeModifications(activate = false): Promise<number> {
     return new Promise(
       (resolve, reject) => {
-        const fetchedModif = this.fetchAllModifications(activate, null, 'normal', true) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+        const fetchedModif = this.fetchAllModifications(activate, null, true) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
         fetchedModif.then(
           (response: DecisionApiResponse | DecisionApiSimpleResponse) => {
             const castResponse = response as DecisionApiResponse;
@@ -245,12 +245,12 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     );
   }
 
-  public getModificationsForCampaign(campaignId: string, activate = false, fetchMode: 'simple' | 'normal' = 'normal'): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
-    return this.fetchAllModifications(activate, campaignId, fetchMode) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+  public getModificationsForCampaign(campaignId: string, activate = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
+    return this.fetchAllModifications(activate, campaignId) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
   }
 
-  public getAllModifications(activate = false, fetchMode: 'simple' | 'normal' = 'normal'): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
-    return this.fetchAllModifications(activate, null, fetchMode) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+  public getAllModifications(activate = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
+    return this.fetchAllModifications(activate, null) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
   }
 
   private fetchAllModificationsPostProcess(
@@ -258,10 +258,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     {
       activate,
       campaignCustomID,
-      fetchMode,
     }: {
         activate: boolean;
-        fetchMode: 'simple' | 'normal';
         campaignCustomID: string | null;
     },
     resolve?: Function,
@@ -274,40 +272,26 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       this.log.fatal(
         `No modification(s) found for campaignId="${campaignCustomID}"`,
       );
-      if (reject) {
-        reject(errResponse);
-      } else {
-        return errResponse;
-      }
-    }
-
-    // default behaviour: fetchMode==='normal
-    if (normalResponse && normalResponse.data && normalResponse.data.campaigns) {
+      output = errResponse;
+    } else if (normalResponse && normalResponse.data && normalResponse.data.campaigns) {
       const filteredArray: Array<DecisionApiCampaign> = normalResponse.data
             && normalResponse.data.campaigns.filter(
               (item) => item.id === campaignCustomID,
             );
-      if (filteredArray && filteredArray.length > 0) {
-        if (activate) {
-          this.activateCampaign(
-            filteredArray[0].variation.id,
-            filteredArray[0].variationGroupId,
-          );
-        }
-        output = {
-          ...normalResponse,
-          data: {
-            visitorId: this.id,
-            campaigns: filteredArray,
-          },
-        };
-        if (resolve) {
-          resolve(output);
-        } else {
-          return output;
-        }
+      if (activate && filteredArray.length > 0) {
+        this.activateCampaign(
+          filteredArray[0].variation.id,
+          filteredArray[0].variationGroupId,
+        );
       }
-
+      output = {
+        ...normalResponse,
+        data: {
+          visitorId: this.id,
+          campaigns: filteredArray,
+        },
+      };
+    } else {
       this.log.warn(
         `No modification(s) found for campaignId="${campaignCustomID}"`,
       );
@@ -318,23 +302,23 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           campaigns: [],
         },
       };
-      if (resolve) {
-        resolve(output);
-      } else {
-        return output;
-      }
     }
-    return { error: 'FlagshipSDK: fetchAllModificationsPostProcess no valid ouput' };
+    if (reject && output === errResponse) {
+      return reject(output);
+    }
+    if (resolve) {
+      return resolve(output);
+    }
+    return output;
   }
 
   // TODO: refacto all args into json
-  private fetchAllModifications(activate = false, campaignCustomID: string | null = null, fetchMode: 'simple' | 'normal' = 'normal', force = false, loadFromCache = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> |DecisionApiResponse | DecisionApiSimpleResponse {
-    const url = `${this.config.flagshipApi}${this.envId}/campaigns?mode=${fetchMode}`;
+  private fetchAllModifications(activate = false, campaignCustomID: string | null = null, force = false, loadFromCache = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> |DecisionApiResponse | DecisionApiSimpleResponse {
+    const url = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
     const urlNormal = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
     const args = {
       activate,
       campaignCustomID,
-      fetchMode,
     };
 
     // TODO: can be deleted and refacto inside the second promise

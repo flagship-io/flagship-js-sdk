@@ -24,8 +24,8 @@ export interface IFlagshipVisitor extends EventEmitter {
   getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean | null): Promise<GetModificationsOutput>;
   setContext(context: FlagshipVisitorContext): void;
   synchronizeModifications(activate?: boolean): Promise<number>;
-  getModificationsForCampaign(campaignId: string, activate?: boolean, fetchMode?: 'simple' | 'normal'): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
-  getAllModifications(activate?: boolean, fetchMode?: 'simple' | 'normal'): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+  getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+  getAllModifications(activate?: boolean): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
   sendHits(hitsArray: Array<HitShape>): Promise<void>;
 }
 export interface IFlagship {
