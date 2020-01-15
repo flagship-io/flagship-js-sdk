@@ -36,7 +36,7 @@ class Flagship implements IFlagship {
           flagshipVisitorInstance.emit('ready');
         }).catch((response) => {
           this.log.fatal(
-            `new visitor (id="${id}") decision API failed during initialization with error ${response.data.toString()}`,
+            `new visitor (id="${id}") decision API failed during initialization with error ${response && ((response.data && response.data.toString()) || response.toString())}`,
           );
           flagshipVisitorInstance.emit('ready');
         });
