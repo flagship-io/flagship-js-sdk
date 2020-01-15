@@ -288,12 +288,6 @@ The shape of the object look like same as [decision api response, normal mode](h
           <td>false</td>
           <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation</td>
         </tr>
-        <tr>
-          <td>fetchMode</td>
-          <td>String</td>
-          <td>'normal'</td>
-          <td>The mode which will specify the shape of object returned.<br>Value can be either <i>simple</i> or <i>normal</i></td>
-        </tr>
     </tbody>
 </table>
 
@@ -310,7 +304,7 @@ visitorInstance.getAllModifications()
 
 > return a `promise(object)` which contains the data for a specific campaign
 
-The shape of the object look like same as [decision api response, normal or simple mode](http://developers.flagship.io/#mode) depending on value of `fetchMode` argument.
+The shape of the object look like same as [decision api response](http://developers.flagship.io/#mode).
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -333,12 +327,6 @@ The shape of the object look like same as [decision api response, normal or simp
           <td>Boolean</td>
           <td>false</td>
           <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation</td>
-        </tr>
-        <tr>
-          <td>fetchMode</td>
-          <td>String</td>
-          <td>'normal'</td>
-          <td>The mode which will specify the shape of object returned.<br>Value can be either <i>simple</i> or <i>normal</i></td>
         </tr>
     </tbody>
 </table>
