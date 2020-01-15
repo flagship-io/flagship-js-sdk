@@ -167,7 +167,9 @@ describe('FlagshipVisitor', () => {
         try {
           expect(visitorInstance.fetchedModifications).toBe(null);
           expect(spyCheckFormat).toHaveReturnedWith(null);
-          expect(spyWarnLogs).toBeCalledWith('Unknow Decision Api response received');
+          expect(spyWarnLogs).toHaveBeenCalledTimes(2);
+          expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'No modification(s) found');
+          expect(spyWarnLogs).toHaveBeenNthCalledWith(2, 'Unknow Decision Api response received or error happened');
           expect(responseStatus).toBe(200);
         } catch (error) {
           done.fail(error);
@@ -184,6 +186,7 @@ describe('FlagshipVisitor', () => {
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       spyActivateCampaign = jest.spyOn(visitorInstance, 'activateCampaign');
       spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
+      spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
     });
     it('should return decision API response (mode=normal) when there is no optional argument set', () => {
       visitorInstance.fetchAllModifications();
@@ -212,9 +215,10 @@ describe('FlagshipVisitor', () => {
         force: true,
       }).then(spyThen).catch((errorResponse) => {
         try {
-          expect(errorResponse).toEqual({ ...errorObj, fail: true });
+          expect(errorResponse).toEqual(errorObj);
+          expect(spyWarnLogs).toHaveBeenCalledTimes(0);
           expect(spyFatalLogs).toHaveBeenCalledTimes(1);
-          expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'No modification(s) found for campaignId="bmjdprsjan0g01uq2ceg"');
+          expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications: an error occurred while fetching...');
           done();
         } catch (error) {
           done.fail(error);
@@ -294,7 +298,7 @@ describe('FlagshipVisitor', () => {
       mockAxios.mockResponse(responseObj);
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
     });
-    it('should set activate param to "true" if set and no specific campaign requested', (done) => {
+    it('should get all modifications and then activate individually each campaign if activate=true', (done) => {
       const responseObj = {
         data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
         status: 200,
@@ -302,11 +306,20 @@ describe('FlagshipVisitor', () => {
       };
       visitorInstance.fetchAllModifications({ activate: true }).then(({ data, status }) => {
         expect(status).toBe(200);
-        expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
+        expect(spyActivateCampaign).toHaveBeenCalledTimes(3);
+        expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
+          caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
+        });
+        expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
+          caid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
+        });
+        expect(mockAxios.post).toHaveBeenNthCalledWith(4, 'https://decision-api.flagship.io/v1/activate', {
+          caid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
+        });
         done();
       });
       mockAxios.mockResponse(responseObj);
-      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] });
+      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
     });
     it('should not call decision API if already fetched before', (done) => {
       const responseObj = {
@@ -329,7 +342,7 @@ describe('FlagshipVisitor', () => {
       });
       expect(mockAxios.post).not.toHaveBeenCalled();
     });
-    it('should call decision API if already fetched before and need to activate (fetchMode=Normal)', (done) => {
+    it('should call decision API if already fetched before and need to activate', (done) => {
       const responseObj = {
         data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
         status: 200,
@@ -341,15 +354,23 @@ describe('FlagshipVisitor', () => {
         try {
           expect(status).toBe(200);
           expect(data).toMatchObject(visitorInstance.fetchedModifications.data);
-          expect(spyInfoLogs).not.toHaveBeenCalledWith('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
-          expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
+          expect(spyInfoLogs).toHaveBeenCalledWith('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
+          expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
+            caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
+          });
+          expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
+            caid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
+          });
+          expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
+            caid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
+          });
         } catch (error) {
           done.fail(error);
         }
         done();
       });
       mockAxios.mockResponse(responseObj);
-      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] });
+      expect(mockAxios.post).not.toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`);
     });
   });
 
@@ -611,7 +632,7 @@ describe('FlagshipVisitor', () => {
       visitorInstance.getAllModifications()
         .then((response) => {
           try {
-            expect(response).toMatchObject(responseObj);
+            expect(response.data).toBe(responseObj.data);
             expect(spyFetchAll).toHaveBeenCalled();
           } catch (error) {
             done.fail(error);

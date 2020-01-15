@@ -81,14 +81,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       caid: variationId,
       vaid: variationGroupId,
     })
-      .then((response) => {
+      .then((response: DecisionApiResponse) => {
         let successLog = `VariationId "${variationId}" successfully activate with status code:${response.status}`;
         if (customLogs && customLogs.success) {
           successLog = `${customLogs.success}\nStatus code:${response.status}`;
         }
         this.log.debug(successLog);
       })
-      .catch((error) => {
+      .catch((error: any) => {
         let failLog = `Trigger activate of variationId "${variationId}" failed with error:\n${error}`;
         if (customLogs && customLogs.fail) {
           failLog = `${customLogs.fail}\nFailed with error:\n${error}`;
@@ -122,11 +122,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     );
   }
 
-  private extractDesiredModifications({ campaigns }: DecisionApiResponseData, modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null = null): { desiredModifications: GetModificationsOutput; detailsModifications: object } {
-    const desiredModifications: DecisionApiResponseDataSimpleComputed = {};
-    const mergedModifications: DecisionApiResponseDataSimpleComputed = {};
+  private analyseModifications({ campaigns }: DecisionApiResponseData, activate = false, modificationsRequested?: FsModifsRequestedList): { detailsModifications: DecisionApiResponseDataFullComputed; mergedModifications: DecisionApiResponseDataSimpleComputed} {
     const detailsModifications: DecisionApiResponseDataFullComputed = {};
-    // Extract all modifications from "normal" answer and put them in "mergedModifications" as "simple" mode would do but with additional info.
+    const mergedModifications: DecisionApiResponseDataSimpleComputed = {};
     campaigns.forEach((campaign) => {
       Object.entries(campaign.variation.modifications.value).forEach(
         ([key, value]) => {
@@ -147,22 +145,31 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
               variationId: [campaign.variation.id],
               variationGroupId: [campaign.variationGroupId],
               isRequested: false,
-              isActivateNeeded: !!activateAllModifications,
+              isActivateNeeded: !!activate,
             };
-            modificationsRequested.some((item) => {
-              if (item.key === key) {
-                detailsModifications[key].isRequested = true;
-                if (!activateAllModifications && !!item.activate) {
-                  detailsModifications[key].isActivateNeeded = item.activate;
+            if (modificationsRequested) {
+              modificationsRequested.some((item) => {
+                if (item.key === key) {
+                  detailsModifications[key].isRequested = true;
+                  if (!activate && !!item.activate) {
+                    detailsModifications[key].isActivateNeeded = item.activate;
+                  }
                 }
-              }
-            });
+              });
+            }
           }
         },
       );
       return null;
     });
     this.log.debug(`detailsModifications:\n${JSON.stringify(detailsModifications)}`);
+    return { detailsModifications, mergedModifications };
+  }
+
+  private extractDesiredModifications(response: DecisionApiResponseData, modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null = null): { desiredModifications: GetModificationsOutput; detailsModifications: object } {
+    const desiredModifications: DecisionApiResponseDataSimpleComputed = {};
+    // Extract all modifications from "normal" answer and put them in "mergedModifications" as "simple" mode would do but with additional info.
+    const { detailsModifications, mergedModifications } = this.analyseModifications(response, !!activateAllModifications, modificationsRequested);
     // Notify modifications which have campaign conflict
     Object.entries(detailsModifications).forEach(
       ([key]) => {
@@ -259,60 +266,59 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       activate,
       campaignCustomID,
     }: {
-        activate: boolean;
-        campaignCustomID: string | null;
+      activate: boolean;
+      campaignCustomID: string | null;
     },
-    resolve?: Function,
-    reject?: Function,
   ): any {
-    const errResponse = response as ErrorApiResponse;
     const normalResponse = response as DecisionApiResponse;
-    let output;
-    if (errResponse.fail) {
-      this.log.fatal(
-        `No modification(s) found for campaignId="${campaignCustomID}"`,
-      );
-      output = errResponse;
-    } else if (normalResponse && normalResponse.data && normalResponse.data.campaigns) {
-      const filteredArray: Array<DecisionApiCampaign> = normalResponse.data
-            && normalResponse.data.campaigns.filter(
-              (item) => item.id === campaignCustomID,
-            );
-      if (activate && filteredArray.length > 0) {
-        this.activateCampaign(
-          filteredArray[0].variation.id,
-          filteredArray[0].variationGroupId,
-        );
+    let output = {};
+    let analysedModifications = {};
+    let filteredCampaigns: Array<DecisionApiCampaign> = [];
+
+    // PART 1: Compute the data (if needed)
+    if (normalResponse && normalResponse.data && normalResponse.data.campaigns) {
+      if (campaignCustomID) {
+        filteredCampaigns = normalResponse.data.campaigns.filter((item) => item.id === campaignCustomID);
+        output = {
+          ...normalResponse,
+          data: {
+            visitorId: this.id,
+            campaigns: filteredCampaigns,
+          },
+        };
+      } else { // default behaviour
+        const { detailsModifications /* , mergedModifications */ } = this.analyseModifications(normalResponse.data, !!activate);
+        analysedModifications = detailsModifications;
+        output = { ...normalResponse };
       }
-      output = {
-        ...normalResponse,
-        data: {
-          visitorId: this.id,
-          campaigns: filteredArray,
-        },
-      };
     } else {
-      this.log.warn(
-        `No modification(s) found for campaignId="${campaignCustomID}"`,
-      );
-      output = {
-        ...normalResponse,
-        data: {
-          visitorId: this.id,
-          campaigns: [],
-        },
-      };
+      let warningMsg = 'No modification(s) found';
+      if (campaignCustomID) {
+        warningMsg += ` for campaignId="${campaignCustomID}"`;
+        output = { ...normalResponse, data: { campaigns: [], visitorId: this.id } };
+      } else {
+        output = { ...normalResponse };
+      }
+      this.log.warn(warningMsg);
     }
-    if (reject && output === errResponse) {
-      return reject(output);
+
+    // PART 2: Handle activate (if needed)
+    if (activate) {
+      if (filteredCampaigns.length > 0) {
+        this.activateCampaign(
+          filteredCampaigns[0].variation.id,
+          filteredCampaigns[0].variationGroupId,
+        );
+      } else {
+        this.triggerActivateIfNeeded(analysedModifications);
+      }
     }
-    if (resolve) {
-      return resolve(output);
-    }
+
+    // PART 3: Return the data
     return output;
   }
 
-  private fetchAllModifications(args: {activate?: boolean; campaignCustomID?: string | null; force?: boolean; loadFromCache?: boolean}): Promise<DecisionApiResponse | DecisionApiSimpleResponse> |DecisionApiResponse | DecisionApiSimpleResponse {
+  private fetchAllModifications(args: { activate?: boolean; campaignCustomID?: string | null; force?: boolean; loadFromCache?: boolean }): Promise<DecisionApiResponse | DecisionApiSimpleResponse> | DecisionApiResponse | DecisionApiSimpleResponse {
     const defaultArgs = {
       activate: false,
       campaignCustomID: null,
@@ -320,72 +326,34 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       loadFromCache: false,
     };
     const {
-      activate, campaignCustomID, force, loadFromCache,
+      activate, force, /* loadFromCache, campaignCustomID, */
     } = { ...defaultArgs, ...args };
     const url = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
-    const urlNormal = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
-
-    // TODO: can be deleted and refacto inside the second promise
-    if (!campaignCustomID) {
-      this.log.debug('fetchAllModifications: fetching all campaigns of current visitor');
-      if (this.fetchedModifications && loadFromCache && !force) {
-        this.log.info('fetchAllModifications [cache mode]: no calls to the Decision API because it has already been fetched before');
-
-        if (activate) {
-          // TODO: do the activate
-        }
-        return this.fetchedModifications;
-      }
-      return new Promise((resolve1, reject1) => {
-        if (this.fetchedModifications && !activate && !force) {
-          // TODO: remove activate in the "if condition" and do activate separately
-          this.log.info('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
-          resolve1(this.fetchedModifications);
-        } else {
-          axios.post(url, {
-            visitor_id: this.id,
-            trigger_hit: !!activate,
-            context: this.context,
-          })
-            .then((response: DecisionApiResponse) => {
-              this.fetchedModifications = response;
-              resolve1(response);
-            })
-            .catch((response) => {
-              this.fetchedModifications = null;
-              this.log.fatal('fetchAllModifications: an error occurred while fetching...');
-              reject1(response);
-            });
-        }
-      });
-    }
-    if (this.fetchedModifications && loadFromCache && !force) {
-      this.log.info(
-        'fetchAllModifications [cache mode]: no calls to the Decision API because it has already been fetched before',
-      );
-      return this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args });
-    }
-    return new Promise((resolve2, reject2) => {
-      const httpBody = {
-        visitor_id: this.id,
-        trigger_hit: false,
-        context: this.context,
-      };
+    return new Promise((resolve, reject) => {
       if (this.fetchedModifications && !force) {
-        this.log.info(
-          'fetchAllModifications: no calls to the Decision API because it has already been fetched before',
+        this.log.info('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
+        resolve(
+          this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args }),
         );
-        this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args }, resolve2, reject2);
       } else {
-        axios
-          .post(urlNormal, httpBody)
+        axios.post(url, {
+          visitor_id: this.id,
+          trigger_hit: false,
+          context: this.context,
+        })
           .then((response: DecisionApiResponse) => {
             this.fetchedModifications = response;
-            this.fetchAllModificationsPostProcess(response, { ...defaultArgs, ...args }, resolve2, reject2);
+            resolve(
+              this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args }),
+            );
           })
-          .catch((error: any) => {
+          .catch((response: any) => {
             this.fetchedModifications = null;
-            this.fetchAllModificationsPostProcess({ ...error, fail: true }, { ...defaultArgs, ...args }, resolve2, reject2);
+            this.log.fatal('fetchAllModifications: an error occurred while fetching...');
+            if (activate) {
+              this.log.fatal('fetchAllModifications: activate canceled due to errors...');
+            }
+            reject(response);
           });
       }
     });
