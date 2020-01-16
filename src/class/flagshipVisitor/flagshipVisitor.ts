@@ -16,7 +16,6 @@ import {
   TransactionHit,
   ItemHit,
   EventHit,
-  ErrorApiResponse,
 } from './flagshipVisitor.d';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import { FsLogger } from '../../lib/index.d';
