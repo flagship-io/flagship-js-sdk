@@ -44,7 +44,38 @@ import flagship from "@flagship.io/js-sdk"; // ES6 ++
 const flagship = require("@flagship.io/js-sdk"); // ES5
 ```
 
-<!-- TODO: explain a bit more -->
+- Then initialize:
+
+```
+const sdk = flagship.initSdk("YOUR_ENV_ID", { /* sdk settings */ });
+```
+
+- Then create a visitor:
+
+```
+const visitorInstance = sdk.newVisitor("YOUR_VISITOR_ID",{
+    //...
+    some: "VISITOR_CONTEXT",
+    //...
+});
+
+visitorInstance.on('ready', () => {
+    console.log('visitorInstance is ready ! ✨')
+});
+```
+
+- Then get modifications:
+
+```
+visitorInstance.getModifications([{key: "btnColor", defaultValue: "#ff0000"}, {key: "btnText", defaultValue: "Wahoo !"}])
+.then(({btnColor, btnText}) => {
+  // do some stuff
+  myButton.setColor(btnColor);
+  myButton.setText(btnText);
+})
+```
+
+This is one of the basic workflow you can achieve with the SDK. 🙂
 
 ## SDK Settings
 
@@ -103,7 +134,32 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 
 ### _flagshipSdk_ object
 
-<!-- TODO: summary of api -->
+- [initSdk](####initSdk)
+
+### <i>Flagship</i> class
+
+- [newVisitor](####newVisitor)
+
+### <i>FlagshipVisitor</i> class
+
+- [setContext](####setContext)
+- [synchronizeModifications](####synchronizeModifications)
+- [getAllModifications](####getAllModifications)
+- [getModificationsForCampaign](####getModificationsForCampaign)
+- [getModifications](####getModifications)
+- [getModificationsCache](####getModificationsCache)
+- [sendHits](####sendHits)
+
+### <i>Shape</i> of possible hits to send
+
+- [Transaction Hit](####transaction-hit)
+- [Screen Hit](####screen-hit)
+- [Item Hit](####item-hit)
+- [Event Hit](####event-hit)
+
+---
+
+### _flagshipSdk_ object
 
 #### `initSdk`
 
@@ -146,7 +202,7 @@ const sdk = flagship.initSdk("YOUR_ENV_ID",
 
 ### <i>Flagship</i> class
 
-<!-- TODO: summary of api -->
+- [newVisitor](####newVisitor)
 
 #### `newVisitor`
 
@@ -193,7 +249,13 @@ visitorInstance.on('ready', () => {
 
 ### <i>FlagshipVisitor</i> class
 
-<!-- TODO: summary of api -->
+- [setContext](####setContext)
+- [synchronizeModifications](####synchronizeModifications)
+- [getAllModifications](####getAllModifications)
+- [getModificationsForCampaign](####getModificationsForCampaign)
+- [getModifications](####getModifications)
+- [getModificationsCache](####getModificationsCache)
+- [sendHits](####sendHits)
 
 #### `setContext`
 
@@ -263,7 +325,7 @@ It returns a <i>number</i> (=response status code) when promise is resolved.
 ```
 visitorInstance.synchronizeModifications().then(
     (statusCode) => console.log(`synchronizeModifications responded with status code:${statusCode}`)
-)
+);
 ```
 
 #### `getAllModifications`
@@ -295,7 +357,7 @@ The shape of the object look like same as [decision api response, normal mode](h
 
 ```
 visitorInstance.getAllModifications()
-  .then((normalModeResponse) => {
+  .then((response) => {
     // do something...
   });
 ```
@@ -335,7 +397,7 @@ The shape of the object look like same as [decision api response](http://develop
 
 ```
 visitorInstance.getModificationsForCampaign()
-  .then((normalModeResponse) => {
+  .then((response) => {
     // do something...
   });
 ```
@@ -405,7 +467,7 @@ The data returned will be the data from all modifications that you specify in th
             defaultValue: "Flagship is awesome", // required
         }
     ], /* ActivateAllModifications */)
-    .then(modifications => {
+    .then(({btnColor, customLabel}) => {
       // do some stuff
     })
     .catch((error) => {
@@ -589,6 +651,11 @@ visitorInstance.sendHits(
 ```
 
 ### <i>Shape</i> of possible hits to send
+
+- [Transaction Hit](####transaction-hit)
+- [Screen Hit](####screen-hit)
+- [Item Hit](####item-hit)
+- [Event Hit](####event-hit)
 
 #### `Transaction Hit`
 
