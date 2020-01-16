@@ -307,7 +307,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             campaigns: filteredCampaigns,
           },
         };
-      } else { // default behaviour
+      } else { // default behavior
         const { detailsModifications /* , mergedModifications */ } = this.analyseModifications(responseData, !!activate);
         analysedModifications = detailsModifications;
         output = { ...reshapeResponse } as DecisionApiResponse;

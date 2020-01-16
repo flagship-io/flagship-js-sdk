@@ -362,6 +362,31 @@ visitorInstance.getAllModifications()
   });
 ```
 
+with the following data:
+
+```
+// response.data gives this kind of shape:
+{
+  visitorId: 'VISITOR_ID',
+  campaigns: [
+    {
+      id: 'CAMPAIGN_ID',
+      variationGroupId: 'VARIATION_GROUP_ID',
+      variation: {
+        id: 'VARIATION_ID',
+        modifications: {
+          type: 'FLAG',
+          value: {
+            btnColor: '#fff',
+          },
+        },
+      },
+    },
+    // {...}
+  ]
+}
+```
+
 #### `getModificationsForCampaign`
 
 > return a `promise<object>` which contains the data for a specific campaign
@@ -400,6 +425,31 @@ visitorInstance.getModificationsForCampaign()
   .then((response) => {
     // do something...
   });
+```
+
+with the following data:
+
+```
+// response.data gives this kind of shape:
+{
+  visitorId: 'VISITOR_ID',
+  campaigns: [
+    {
+      id: 'CAMPAIGN_ID',
+      variationGroupId: 'VARIATION_GROUP_ID',
+      variation: {
+        id: 'VARIATION_ID',
+        modifications: {
+          type: 'FLAG',
+          value: {
+            btnColor: '#fff',
+          },
+        },
+      },
+    },
+    // {...}
+  ]
+}
 ```
 
 #### `getModifications`
@@ -488,7 +538,7 @@ will return:
 
 > return an `object` where each key is a modification with corresponding value
 
-Same behaviour as [getModifications](###getModifications) function but without returning a promise.
+Same behavior as [getModifications](###getModifications) function but without returning a promise.
 
 NOTE: You need to fetch modifications to automatically save them in cache. You can achieve it using [synchronizeModifications](###synchronizeModifications) or [fetchNow=true](##SDK-Settings).
 
