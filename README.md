@@ -232,7 +232,7 @@ const visitorInstance = sdk.setContext({
 
 #### `synchronizeModifications`
 
-> return a `Promise(number)`
+> return a `Promise<number>`
 
 Add/update all modifications data which are in cache.
 Might be useful when your visitor instance has been initialized a while ago and some change have been done on Flagship platform meanwhile. From there some modifications may have changes, so calling `synchronizeModifications` make sure everything is fine. 😃
@@ -268,7 +268,7 @@ visitorInstance.synchronizeModifications().then(
 
 #### `getAllModifications`
 
-> return an `Promise(object)` which contains all data for all campaigns which the visitor can have
+> return an `Promise<object>` which contains all data for all campaigns which the visitor can have
 
 The shape of the object look like same as [decision api response, normal mode](http://developers.flagship.io/#mode).
 
@@ -302,7 +302,7 @@ visitorInstance.getAllModifications()
 
 #### `getModificationsForCampaign`
 
-> return a `promise(object)` which contains the data for a specific campaign
+> return a `promise<object>` which contains the data for a specific campaign
 
 The shape of the object look like same as [decision api response](http://developers.flagship.io/#mode).
 
@@ -342,7 +342,7 @@ visitorInstance.getModificationsForCampaign()
 
 #### `getModifications`
 
-> return an `object` where each key is a modification with corresponding value
+> return a `Promise<object>` where each key is a modification with corresponding value
 
 The data returned will be the data from all modifications that you specify in the `modificationsRequested` argument
 
@@ -405,6 +405,90 @@ The data returned will be the data from all modifications that you specify in th
             defaultValue: "Flagship is awesome", // required
         }
     ], /* ActivateAllModifications */)
+    .then(modifications => {
+      // do some stuff
+    })
+    .catch((error) => {
+      // error :(
+    })
+
+will return:
+
+```
+// modifications shape:
+{
+  btnColor: '#dcbc02',
+  customLabel: 'Flagship is awesome' // default value set (ie: no campaigns have specified this modification)
+}
+```
+
+#### `getModificationsCache`
+
+> return an `object` where each key is a modification with corresponding value
+
+Same behaviour as [getModifications](###getModifications) function but without returning a promise.
+
+NOTE: You need to fetch modifications to automatically save them in cache. You can achieve it using [synchronizeModifications](###synchronizeModifications) or [fetchNow=true](##SDK-Settings).
+
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th style="width: 100px;">argument</th>
+        <th style="width: 50px;">type</th>
+        <th style="width: 50px;">default</th>
+        <th>description</th>
+    </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>modificationsRequested</td>
+          <td>Array(Object)</td>
+          <td>*required*</td>
+          <td>List of all modifications you're looking for. Each element of the array follow this object structure:
+            <table> 
+              <tbody><tr>
+                  <th style="width:25%">Argument</th>
+                  <th>Description</th>
+                </tr>  
+                <tr>
+                  <td><em>key</em></td>
+                  <td>Required. The name of the modification</td>
+                </tr>
+                <tr>
+                  <td><em>defaultValue</em></td>
+                  <td>Required. The default value if no value for this modification is found.</td>
+                </tr>
+                  <tr>
+                  <td><em>activate</em></td>
+                  <td>Optional. </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td>activateAllModifications</td>
+          <td>Boolean</td>
+          <td>null</td>
+          <td>If set to true, all modifications will be activated. If set to false, none will be activated.
+          <br>Be aware that if this argument is set, the attribute <i>activate</i> set in each element of array <b>modificationsRequested</b> will be ignored.</td>
+        </tr>
+    </tbody>
+</table>
+
+**Demo:**
+
+    visitorInstance.getModificationsCache([
+        {
+            key: "btnColor", // required
+            defaultValue: "#ff0000", // required
+            activate: true // optional
+        },
+        {
+            key: "customLabel", // required
+            defaultValue: "Flagship is awesome", // required
+        }
+    ], /* ActivateAllModifications */)
 
 will return:
 
@@ -417,7 +501,7 @@ will return:
 
 #### `sendHits`
 
-> return a `Promise(void)`
+> return a `Promise<void>`
 
 This function allow you to send any kind of hit. All details of each hit below 👇.
 
