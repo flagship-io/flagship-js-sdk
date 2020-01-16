@@ -11,7 +11,6 @@ import {
   FlagshipVisitorContext,
   FsModifsRequestedList,
   DecisionApiCampaign,
-  DecisionApiSimpleResponse,
   HitShape,
   GetModificationsOutput,
   TransactionHit,
@@ -35,7 +34,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
   isAllModificationsFetched: boolean;
 
-  fetchedModifications: DecisionApiResponse | null;
+  fetchedModifications: DecisionApiResponseData | null;
 
   constructor(envId: string, config: FlagshipSdkConfig, id: string, context: FlagshipVisitorContext = {}) {
     super();
@@ -196,15 +195,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return { desiredModifications, detailsModifications };
   }
 
-  // private getModificationsPostProcess() {
-
-  // }
-
   public getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean|null = null): Promise<GetModificationsOutput> {
     return new Promise((resolve, reject) => {
-      const fetchedModif = this.fetchAllModifications({ activate: !!activateAllModifications }) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+      const fetchedModif = this.fetchAllModifications({ activate: !!activateAllModifications }) as Promise<DecisionApiResponse >;
       fetchedModif.then(
-        (response: DecisionApiResponse | DecisionApiSimpleResponse) => {
+        (response: DecisionApiResponse) => {
           const castResponse = response as DecisionApiResponse;
           if (castResponse && typeof castResponse.data === 'object' && !Array.isArray(castResponse.data)) {
             this.log.info(`Get modifications succeed with status code:${castResponse.status}`);
@@ -224,9 +219,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     });
   }
 
-  public getModificationsCache(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null = null): GetModificationsOutput {
-    const response = this.fetchAllModifications({ activate: !!activateAllModifications }) as DecisionApiSimpleResponse;
-    return response;
+  public getModificationsCache(
+    modificationsRequested: FsModifsRequestedList,
+    activateAllModifications: boolean | null = null,
+  ): GetModificationsOutput {
+    return this.fetchAllModifications({ activate: !!activateAllModifications, loadFromCache: true }) as DecisionApiResponseData;
   }
 
   public setContext(context: FlagshipVisitorContext): void {
@@ -236,9 +233,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   public synchronizeModifications(activate = false): Promise<number> {
     return new Promise(
       (resolve, reject) => {
-        const fetchedModif = this.fetchAllModifications({ activate, force: true }) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+        const fetchedModif = this.fetchAllModifications({ activate, force: true }) as Promise<DecisionApiResponse >;
         fetchedModif.then(
-          (response: DecisionApiResponse | DecisionApiSimpleResponse) => {
+          (response: DecisionApiResponse) => {
             const castResponse = response as DecisionApiResponse;
             this.fetchedModifications = flagshipSdkHelper.checkDecisionApiResponseFormat(castResponse, this.log);
             resolve(castResponse.status);
@@ -252,16 +249,16 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     );
   }
 
-  public getModificationsForCampaign(campaignId: string, activate = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
-    return this.fetchAllModifications({ activate, campaignCustomID: campaignId }) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+  public getModificationsForCampaign(campaignId: string, activate = false): Promise<DecisionApiResponse > {
+    return this.fetchAllModifications({ activate, campaignCustomID: campaignId }) as Promise<DecisionApiResponse >;
   }
 
-  public getAllModifications(activate = false): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
-    return this.fetchAllModifications({ activate }) as Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+  public getAllModifications(activate = false): Promise<DecisionApiResponse> {
+    return this.fetchAllModifications({ activate }) as Promise<DecisionApiResponse >;
   }
 
   private fetchAllModificationsPostProcess(
-    response: DecisionApiResponse | ErrorApiResponse,
+    response: DecisionApiResponseData | DecisionApiResponse,
     {
       activate,
       campaignCustomID,
@@ -269,35 +266,37 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       activate: boolean;
       campaignCustomID: string | null;
     },
-  ): any {
-    const normalResponse = response as DecisionApiResponse;
-    let output = {};
+  ): { data: DecisionApiResponseData; [key: string]: any } {
+    const completeResponse = response as DecisionApiResponse;
+    const reshapeResponse = completeResponse.data ? completeResponse : { data: response };
+    const responseData = completeResponse.data ? completeResponse.data : response as DecisionApiResponseData;
+    let output = { data: {} } as { data: DecisionApiResponseData; [key: string]: any };
     let analysedModifications = {};
     let filteredCampaigns: Array<DecisionApiCampaign> = [];
 
     // PART 1: Compute the data (if needed)
-    if (normalResponse && normalResponse.data && normalResponse.data.campaigns) {
+    if (responseData && responseData.campaigns) {
       if (campaignCustomID) {
-        filteredCampaigns = normalResponse.data.campaigns.filter((item) => item.id === campaignCustomID);
+        filteredCampaigns = responseData.campaigns.filter((item) => item.id === campaignCustomID);
         output = {
-          ...normalResponse,
+          ...reshapeResponse,
           data: {
             visitorId: this.id,
             campaigns: filteredCampaigns,
           },
         };
       } else { // default behaviour
-        const { detailsModifications /* , mergedModifications */ } = this.analyseModifications(normalResponse.data, !!activate);
+        const { detailsModifications /* , mergedModifications */ } = this.analyseModifications(responseData, !!activate);
         analysedModifications = detailsModifications;
-        output = { ...normalResponse };
+        output = { ...reshapeResponse } as DecisionApiResponse;
       }
     } else {
       let warningMsg = 'No modification(s) found';
       if (campaignCustomID) {
         warningMsg += ` for campaignId="${campaignCustomID}"`;
-        output = { ...normalResponse, data: { campaigns: [], visitorId: this.id } };
+        output = { ...reshapeResponse, data: { campaigns: [], visitorId: this.id } };
       } else {
-        output = { ...normalResponse };
+        output = { ...reshapeResponse } as DecisionApiResponse;
       }
       this.log.warn(warningMsg);
     }
@@ -318,7 +317,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return output;
   }
 
-  private fetchAllModifications(args: { activate?: boolean; campaignCustomID?: string | null; force?: boolean; loadFromCache?: boolean }): Promise<DecisionApiResponse | DecisionApiSimpleResponse> | DecisionApiResponse | DecisionApiSimpleResponse {
+  private fetchAllModifications(
+    args: {
+      activate?: boolean;
+      campaignCustomID?: string | null;
+      force?: boolean;
+      loadFromCache?: boolean;
+    },
+  ): Promise<DecisionApiResponse> | DecisionApiResponseData {
     const defaultArgs = {
       activate: false,
       campaignCustomID: null,
@@ -326,14 +332,26 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       loadFromCache: false,
     };
     const {
-      activate, force, /* loadFromCache, campaignCustomID, */
+      activate, force, loadFromCache, /* , campaignCustomID, */
     } = { ...defaultArgs, ...args };
     const url = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
+
+    // check if need to return without promise
+    if (loadFromCache) {
+      if (this.fetchedModifications && !force) {
+        this.log.info('fetchAllModifications: loadFromCache enabled');
+        return this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args }).data;
+      }
+      this.log.fatal('fetchAllModifications: loadFromCache enabled but no data in cache. Make sure you fetched at least once before.');
+      return this.fetchedModifications as DecisionApiResponseData;
+    }
+
+    // default: return a promise
     return new Promise((resolve, reject) => {
       if (this.fetchedModifications && !force) {
         this.log.info('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
         resolve(
-          this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args }),
+          this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args }) as DecisionApiResponse,
         );
       } else {
         axios.post(url, {
@@ -342,9 +360,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           context: this.context,
         })
           .then((response: DecisionApiResponse) => {
-            this.fetchedModifications = response;
+            this.fetchedModifications = response.data;
             resolve(
-              this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args }),
+              this.fetchAllModificationsPostProcess(response, { ...defaultArgs, ...args }) as DecisionApiResponse,
             );
           })
           .catch((response: any) => {

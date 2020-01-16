@@ -81,7 +81,7 @@ describe('FlagshipVisitor', () => {
       expect(visitorInstance.fetchedModifications).toBe(null);
       visitorInstance.synchronizeModifications().then((response) => {
         try {
-          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj);
+          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
           expect(response).toBe(responseObj.status);
         } catch (error) {
           done.fail(error);
@@ -98,10 +98,10 @@ describe('FlagshipVisitor', () => {
         statusText: 'OK',
       };
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-      visitorInstance.fetchedModifications = { ...responseObj, data: { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns } }; // Mock a previous fetch
+      visitorInstance.fetchedModifications = { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns }; // Mock a previous fetch
       visitorInstance.synchronizeModifications().then((response) => {
         try {
-          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj);
+          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
           expect(response).toBe(responseObj.status);
         } catch (error) {
           done.fail(error);
@@ -143,7 +143,7 @@ describe('FlagshipVisitor', () => {
       expect(visitorInstance.fetchedModifications).toBe(null);
       visitorInstance.synchronizeModifications().then((response) => {
         try {
-          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj);
+          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
           expect(response).toBe(responseObj.status);
         } catch (error) {
           done.fail(error);
@@ -206,7 +206,7 @@ describe('FlagshipVisitor', () => {
         title: 'Invalid Attribute',
         detail: 'Env id must contain at least three characters.',
       };
-      visitorInstance.fetchedModifications = responseObj;
+      visitorInstance.fetchedModifications = responseObj.data;
       spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
       const spyThen = jest.fn();
       visitorInstance.fetchAllModifications({
@@ -258,7 +258,7 @@ describe('FlagshipVisitor', () => {
           });
           expect(status).toBe(200);
           expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
-          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj);
+          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
         } catch (error) {
           done.fail(error);
         }
@@ -328,11 +328,10 @@ describe('FlagshipVisitor', () => {
         statusText: 'OK',
       };
       spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
-      visitorInstance.fetchedModifications = responseObj; // Mock a already fetch
-      visitorInstance.fetchAllModifications().then(({ data, status }) => {
+      visitorInstance.fetchedModifications = responseObj.data; // Mock a already fetch
+      visitorInstance.fetchAllModifications().then(({ data }) => {
         try {
-          expect(status).toBe(200);
-          expect(data).toMatchObject(visitorInstance.fetchedModifications.data);
+          expect(data).toMatchObject(visitorInstance.fetchedModifications);
           expect(spyInfoLogs).toBeCalledWith('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
           expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
         } catch (error) {
@@ -349,11 +348,10 @@ describe('FlagshipVisitor', () => {
         statusText: 'OK',
       };
       spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
-      visitorInstance.fetchedModifications = responseObj; // Mock a already fetch
-      visitorInstance.fetchAllModifications({ activate: true }).then(({ data, status }) => {
+      visitorInstance.fetchedModifications = responseObj.data; // Mock a already fetch
+      visitorInstance.fetchAllModifications({ activate: true }).then(({ data }) => {
         try {
-          expect(status).toBe(200);
-          expect(data).toMatchObject(visitorInstance.fetchedModifications.data);
+          expect(data).toMatchObject(visitorInstance.fetchedModifications);
           expect(spyInfoLogs).toHaveBeenCalledWith('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
           expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
             caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
@@ -484,7 +482,7 @@ describe('FlagshipVisitor', () => {
             expect(spyModifsDetails).toHaveReturnedWith(
               expect.objectContaining({ detailsModifications: demoData.flagshipVisitor.getModifications.detailsModifications.oneModifInMoreThanOneCampaign }),
             );
-            expect(visitorInstance.fetchedModifications).toMatchObject(responseObj);
+            expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
           } catch (error) {
             done.fail(error);
           }
@@ -500,6 +498,7 @@ describe('FlagshipVisitor', () => {
     it('should return a bundle of modifications with correct params (manyModifInManyCampaigns)', (done) => {
       const catchGetModification = jest.fn();
       const thenGetModification = jest.fn();
+
       const responseObj = {
         data: { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns },
         status: 200,
@@ -632,7 +631,7 @@ describe('FlagshipVisitor', () => {
       visitorInstance.getAllModifications()
         .then((response) => {
           try {
-            expect(response.data).toBe(responseObj.data);
+            expect(response).toMatchObject(responseObj);
             expect(spyFetchAll).toHaveBeenCalled();
           } catch (error) {
             done.fail(error);
@@ -831,42 +830,60 @@ describe('FlagshipVisitor', () => {
     });
   });
 
-  // let spyFetchModifs;
-  // describe('GetModificationsCache function', () => {
-  //   beforeEach(() => {
-  //     visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-  //     spyGenerateCustomTypeParamsOf = jest.spyOn(visitorInstance, 'generateCustomTypeParamsOf');
-  //     spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
-  //     spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
-  //     spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
-  //     spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
-  //     spyFetchModifs = jest.spyOn(visitorInstance, 'fetchAllModifications');
-  //     responseObject = {
-  //       data: null,
-  //       status: 200,
-  //       statusText: 'OK',
-  //     };
-  //   });
-  //   it('should not use promise when fetching modifications', (done) => {
-  //     responseObject = {
-  //       ...responseObject,
-  //       data: { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns },
-  //     };
-  //     visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-  //     visitorInstance.fetchedModifications = { ...responseObject }; // Mock a previous fetch
-  //     const cacheResponse = visitorInstance.getModificationsCache();
-  //     try {
-  //       expect(spyFetchModifs).toHaveBeenCalledWith([{ tt: 34 }, 2]);
-  //       expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
-  //       expect(cacheResponse.status).toBe(responseObject.status);
-  //       done();
-  //     } catch (error) {
-  //       done.fail(error);
-  //     }
-  //   });
-  //   // TODO:
-  //   it('should return null if nothing in cache', (done) => { expect(1).toBe(1); });
-  // });
+  describe('GetModificationsCache function', () => {
+    let spyFetchModifs;
+    beforeEach(() => {
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      spyGenerateCustomTypeParamsOf = jest.spyOn(visitorInstance, 'generateCustomTypeParamsOf');
+      spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
+      spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
+      spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
+      spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
+      spyFetchModifs = jest.spyOn(visitorInstance, 'fetchAllModifications');
+      responseObject = {
+        data: null,
+        status: 200,
+        statusText: 'OK',
+      };
+    });
+    it('should not use promise when fetching modifications', (done) => {
+      responseObject = {
+        ...responseObject,
+        data: { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns },
+      };
+      visitorInstance.fetchedModifications = responseObject.data; // Mock a previous fetch
+      const cacheResponse = visitorInstance.getModificationsCache();
+      try {
+        expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
+        expect(spyFetchModifs).toHaveBeenCalledTimes(1);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled');
+        expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
+        expect(cacheResponse).toMatchObject(demoData.decisionApi.normalResponse.manyModifInManyCampaigns);
+        done();
+      } catch (error) {
+        done.fail(error);
+      }
+    });
+    it('should return null if nothing in cache', (done) => {
+      const cacheResponse = visitorInstance.getModificationsCache();
+      try {
+        expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
+        expect(spyFetchModifs).toHaveBeenCalledTimes(1);
+        expect(spyFetchModifs).toHaveBeenCalledTimes(1);
+        expect(spyFatalLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled but no data in cache. Make sure you fetched at least once before.');
+        expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+        expect(cacheResponse).toBe(null);
+        done();
+      } catch (error) {
+        done.fail(error);
+      }
+    });
+    // TODO: activate
+  });
 
   describe('CheckContext function', () => {
     it('should not send warn logs if visitor context is clean', (done) => {

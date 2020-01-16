@@ -1,4 +1,5 @@
-import { DecisionApiResponse } from '../class/flagshipVisitor/flagshipVisitor.d';
+import { DecisionApiResponseData, DecisionApiResponse } from '../class/flagshipVisitor/flagshipVisitor.d';
+
 import defaultConfig from '../config/default';
 import { FsLogger } from './index.d';
 
@@ -33,12 +34,12 @@ const flagshipSdkHelper = {
     );
     return { cleanConfig: { ...cleanObject }, ignoredConfig: { ...dirtyObject } };
   },
-  checkDecisionApiResponseFormat: (response: DecisionApiResponse, log: FsLogger): DecisionApiResponse | null => {
+  checkDecisionApiResponseFormat: (response: DecisionApiResponse, log: FsLogger): DecisionApiResponseData | null => {
     if (!response.status || !response.data || !response.data.campaigns) {
       log.warn('Unknow Decision Api response received or error happened'); // TODO: can be improved according status value
       return null;
     }
-    return response;
+    return response.data;
   },
 };
 

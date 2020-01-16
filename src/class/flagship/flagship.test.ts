@@ -39,7 +39,7 @@ describe('FlagshipVisitor', () => {
         done();
       });
       mockAxios.mockResponse(responseObj);
-      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj);
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
     });
     it('should create a Visitor with modifications already loaded and activated if config "activateNow=true"', (done) => {
       const responseObj = {
@@ -69,7 +69,7 @@ describe('FlagshipVisitor', () => {
       });
       mockAxios.mockResponse(responseObj);
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
-      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj);
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
     });
   });
 });

@@ -18,11 +18,6 @@ export type ErrorApiResponse = {
     fail: boolean;
 };
 
-export type DecisionApiSimpleResponse = {
-    data: DecisionApiResponseDataSimpleComputed;
-    status: number;
-}
-
 export type DecisionApiResponseData = {
     visitorId: string;
     campaigns: DecisionApiCampaign[ ];
