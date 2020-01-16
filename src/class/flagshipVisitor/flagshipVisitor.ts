@@ -195,22 +195,39 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return { desiredModifications, detailsModifications };
   }
 
+  private getModificationsPostProcess(response: DecisionApiResponseData | DecisionApiResponse, modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean|null = null): GetModificationsOutput {
+    const completeResponse = response as DecisionApiResponse;
+    const responseData = completeResponse && completeResponse.data ? completeResponse.data : response as DecisionApiResponseData;
+    if (modificationsRequested && responseData && typeof responseData === 'object' && !Array.isArray(response)) {
+      const { desiredModifications, detailsModifications } = this.extractDesiredModifications(responseData, modificationsRequested, activateAllModifications);
+      this.triggerActivateIfNeeded(detailsModifications);
+      return (desiredModifications);
+    }
+
+    if (!modificationsRequested) {
+      const errorMsg = 'No modificationsRequested specified...';
+      this.log.error(errorMsg);
+      return {};
+    }
+
+    this.log.warn('getModifications: no campaigns found...');
+    return {};
+  }
+
   public getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean|null = null): Promise<GetModificationsOutput> {
     return new Promise((resolve, reject) => {
+      if (!modificationsRequested) {
+        const errorMsg = 'No modificationsRequested specified...';
+        this.log.error(errorMsg);
+        reject(errorMsg);
+      }
       const fetchedModif = this.fetchAllModifications({ activate: !!activateAllModifications }) as Promise<DecisionApiResponse >;
       fetchedModif.then(
         (response: DecisionApiResponse) => {
           const castResponse = response as DecisionApiResponse;
-          if (castResponse && typeof castResponse.data === 'object' && !Array.isArray(castResponse.data)) {
-            this.log.info(`Get modifications succeed with status code:${castResponse.status}`);
-            this.log.debug(`with json:\n${JSON.stringify(castResponse.data)}`);
-            const { desiredModifications, detailsModifications } = this.extractDesiredModifications(castResponse.data, modificationsRequested, activateAllModifications);
-            this.triggerActivateIfNeeded(detailsModifications);
-            resolve(desiredModifications);
-          } else {
-            this.log.warn('Get modifications succeed but returned no values...');
-            resolve({});
-          }
+          this.log.info(`Get modifications succeed with status code:${castResponse.status}`);
+          this.log.debug(`with json:\n${JSON.stringify(castResponse.data)}`);
+          resolve(this.getModificationsPostProcess(castResponse, modificationsRequested, activateAllModifications));
         },
       ).catch((error: any) => {
         this.log.fatal(`Get modifications failed with error:\n${(error && error.status) || JSON.stringify(error)}`);
@@ -223,7 +240,12 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     modificationsRequested: FsModifsRequestedList,
     activateAllModifications: boolean | null = null,
   ): GetModificationsOutput {
-    return this.fetchAllModifications({ activate: !!activateAllModifications, loadFromCache: true }) as DecisionApiResponseData;
+    if (!this.fetchedModifications) {
+      this.log.warn('No modifications found in cache...');
+      return {};
+    }
+    const response = this.fetchAllModifications({ activate: !!activateAllModifications, loadFromCache: true }) as DecisionApiResponseData;
+    return this.getModificationsPostProcess(response, modificationsRequested, activateAllModifications);
   }
 
   public setContext(context: FlagshipVisitorContext): void {

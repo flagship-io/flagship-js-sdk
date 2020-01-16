@@ -431,7 +431,7 @@ describe('FlagshipVisitor', () => {
       const catchGetModification = jest.fn();
       const thenGetModification = jest.fn();
       const responseObj = {
-        data: [],
+        data: demoData.decisionApi.normalResponse.noModif,
         status: 200,
         statusText: 'OK',
       };
@@ -444,7 +444,11 @@ describe('FlagshipVisitor', () => {
 
       visitorInstance.getModifications(getModifsDefaultParam).then((response) => {
         try {
-          expect(response).toEqual({});
+          expect(response).toMatchObject({
+            algorithmVersion: 'NOOOOO',
+            psp: 'YESESES',
+            pspezrze: 'YOLOOOO',
+          });
         } catch (error) {
           done.fail(error);
         }
@@ -852,37 +856,69 @@ describe('FlagshipVisitor', () => {
         data: { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns },
       };
       visitorInstance.fetchedModifications = responseObject.data; // Mock a previous fetch
-      const cacheResponse = visitorInstance.getModificationsCache();
+      const cacheResponse = visitorInstance.getModificationsCache(getModifsDefaultParam);
       try {
         expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
         expect(spyFetchModifs).toHaveBeenCalledTimes(1);
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+        expect(spyWarnLogs).toHaveBeenNthCalledWith(1, `Unable to activate modification "${getModifsDefaultParam[2].key}" because it does not exist on any existing campaign...`);
         expect(spyInfoLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled');
         expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
-        expect(cacheResponse).toMatchObject(demoData.decisionApi.normalResponse.manyModifInManyCampaigns);
+        expect(cacheResponse).toMatchObject({ pspezrze: 'YOLOOOO' });
         done();
       } catch (error) {
         done.fail(error);
       }
     });
     it('should return null if nothing in cache', (done) => {
-      const cacheResponse = visitorInstance.getModificationsCache();
+      const cacheResponse = visitorInstance.getModificationsCache(getModifsDefaultParam);
       try {
-        expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
-        expect(spyFetchModifs).toHaveBeenCalledTimes(1);
-        expect(spyFetchModifs).toHaveBeenCalledTimes(1);
-        expect(spyFatalLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled but no data in cache. Make sure you fetched at least once before.');
-        expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+        expect(spyFetchModifs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-        expect(cacheResponse).toBe(null);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+        expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'No modifications found in cache...');
+        expect(cacheResponse).toMatchObject({});
         done();
       } catch (error) {
         done.fail(error);
       }
     });
-    // TODO: activate
+    it('should return empty object if nothing in cache and no activate as well', (done) => {
+      const cacheResponse = visitorInstance.getModificationsCache(undefined, true);
+      try {
+        expect(spyFetchModifs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+        expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'No modifications found in cache...');
+        expect(cacheResponse).toMatchObject({});
+        expect(mockAxios.post).toHaveBeenCalledTimes(0);
+        done();
+      } catch (error) {
+        done.fail(error);
+      }
+    });
+    it('should return null if no modificationsRequested specified', (done) => {
+      visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign;
+      const cacheResponse = visitorInstance.getModificationsCache();
+      try {
+        expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
+        expect(spyFetchModifs).toHaveBeenCalledTimes(1);
+        expect(spyFetchModifs).toHaveBeenCalledTimes(1);
+        expect(spyErrorLogs).toHaveBeenCalledWith('No modificationsRequested specified...');
+        expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+        expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications: loadFromCache enabled');
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+        expect(cacheResponse).toMatchObject({});
+        expect(mockAxios.post).toHaveBeenCalledTimes(0);
+        done();
+      } catch (error) {
+        done.fail(error);
+      }
+    });
   });
 
   describe('CheckContext function', () => {
