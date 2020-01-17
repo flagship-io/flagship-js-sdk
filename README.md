@@ -27,6 +27,9 @@
 <li><a href='examples/api-server/README.md'>with Express</a></li>
 </ul>
 </ul>
+<ul style="line-height:1.4;">
+- <a href='RELEASENOTES.md'>Release notes</a> available to stay in touch 👍
+</ul>
 
 ## Getting Started
 
