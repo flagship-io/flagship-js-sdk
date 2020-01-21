@@ -95,7 +95,74 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       });
   }
 
-  // TODO: create a function to activate a modification base on either modif name or ids...
+  public activateModifications(modifications: Array<{ key: string; variationId?: string; variationGroupId?: string }>): Array<{ variationId: string; variationGroupId: string; keys: Array<{ key: string}> }> {
+    const checklistActivatedModifs: Array<{ key: string; ready: boolean}> = [];
+    const campaignsActivated = [];
+    const getKeysMatchingFromCampaign = (campaign: DecisionApiCampaign, keys: Array<{ key: string; ready: boolean}>) => {
+      const output: Array<string> = [];
+      keys.forEach(({ key }) => {
+        if (Object.keys(campaign.variation.modifications.value).includes(key)) {
+          output.push(key);
+        }
+      });
+      return output;
+    };
+
+    if (this.fetchedModifications) {
+      // Init "checklistActivatedModifs"
+      modifications.forEach(({ key }) => {
+        checklistActivatedModifs.push({ key, ready: false });
+      });
+
+      this.log.debug(`activateModifications: there is ${modifications.length} to activate...`);
+      while (checklistActivatedModifs.filter((item) => item.ready === false).length !== 0) {
+        const modifsLeft: Array<{ key: string; ready: boolean}> = checklistActivatedModifs.filter((item) => item.ready === false);
+        this.log.debug(`activateModifications: there is still ${modifsLeft.length} keys not matched...`);
+        let matchedKeys: Array<string> = [];
+
+        const currentBiggestModifs: DecisionApiCampaign = this.fetchedModifications.campaigns.reduce(
+          (best, campaign) => {
+            const newMatch = getKeysMatchingFromCampaign(campaign, modifsLeft);
+            if (!best) {
+              matchedKeys = newMatch;
+              return campaign;
+            }
+            const winnerMatch = getKeysMatchingFromCampaign(best, modifsLeft);
+            if (newMatch.length > winnerMatch.length) {
+              matchedKeys = newMatch;
+              return campaign;
+            }
+            return best;
+          },
+        );
+
+        this.log.debug(`activateModifications: currentBiggestModifs is variationGroupId=${currentBiggestModifs.variationGroupId} which is matching ${matchedKeys.length} keys: "${matchedKeys.toString()}"`);
+
+        // Do the activate
+        this.activateCampaign(currentBiggestModifs.variation.id, currentBiggestModifs.variationGroupId);
+
+        // Consider key from this campaign as activated
+        checklistActivatedModifs.forEach(({ key }, index) => {
+          if (matchedKeys.includes(key)) {
+            checklistActivatedModifs[index].ready = true;
+          }
+        });
+
+        campaignsActivated.push({ variationId: currentBiggestModifs.variation.id, variationGroupId: currentBiggestModifs.variationGroupId, keys: matchedKeys });
+      }
+
+
+      // modifications.forEach(({ key, variationId, variationGroupId }) => {
+      //   if (variationId && variationGroupId) {
+      //     this.log.debug(`activateModifications: Auto detect key="${key}" manually set with variationId="${variationId}" and variationGroupId="${variationGroupId}"`);
+      //   // this.activateCampaign();
+      //   }
+      // });
+    } else {
+      this.log.error('activateModifications: unable to activate given keys in args because no modifications found in cache.');
+    }
+    return campaignsActivated;
+  }
 
   private triggerActivateIfNeeded(detailsModifications: object): void {
     const campaignsActivated: Array<string> = [];
