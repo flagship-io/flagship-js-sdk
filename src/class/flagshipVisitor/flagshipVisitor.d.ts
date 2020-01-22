@@ -22,6 +22,11 @@ export type GetModificationsOutput = {
     [key: string]: any;
 }
 
+export type checkCampaignsActivatedMultipleTimesOutput = {
+    activateCampaign: { [key: string]: { directActivate: Array<string>; indirectActivate: Array<string> } };
+    activateKey: { [key: string]: number};
+}
+
 export type DecisionApiResponseDataSimpleComputed = {
   [key: string]: any;
 };

@@ -16,6 +16,7 @@ import {
   TransactionHit,
   ItemHit,
   EventHit,
+  checkCampaignsActivatedMultipleTimesOutput,
 } from './flagshipVisitor.d';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import { FsLogger } from '../../lib/index.d';
@@ -95,96 +96,105 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       });
   }
 
-  public activateModifications(modifications: Array<{ key: string; variationId?: string; variationGroupId?: string }>): Array<{ variationId: string; variationGroupId: string; keys: Array<{ key: string}> }> {
-    const checklistActivatedModifs: Array<{ key: string; ready: boolean}> = [];
-    const campaignsActivated = [];
-    const getKeysMatchingFromCampaign = (campaign: DecisionApiCampaign, keys: Array<{ key: string; ready: boolean}>) => {
-      const output: Array<string> = [];
-      keys.forEach(({ key }) => {
-        if (Object.keys(campaign.variation.modifications.value).includes(key)) {
-          output.push(key);
-        }
-      });
-      return output;
-    };
+  // TODO: consider args "variationId" & "variationGroupId" and unit test them
+  public activateModifications(modifications: Array<{ key: string; variationId?: string; variationGroupId?: string }>): void {
+    const modificationsRequested: FsModifsRequestedList = modifications.reduce(
+      (output, { key }) => [...output, { key, defaultValue: '', activate: true }], [] as FsModifsRequestedList,
+    );
 
     if (this.fetchedModifications) {
-      // Init "checklistActivatedModifs"
-      modifications.forEach(({ key }) => {
-        checklistActivatedModifs.push({ key, ready: false });
-      });
-
-      this.log.debug(`activateModifications: there is ${modifications.length} to activate...`);
-      while (checklistActivatedModifs.filter((item) => item.ready === false).length !== 0) {
-        const modifsLeft: Array<{ key: string; ready: boolean}> = checklistActivatedModifs.filter((item) => item.ready === false);
-        this.log.debug(`activateModifications: there is still ${modifsLeft.length} keys not matched...`);
-        let matchedKeys: Array<string> = [];
-
-        const currentBiggestModifs: DecisionApiCampaign = this.fetchedModifications.campaigns.reduce(
-          (best, campaign) => {
-            const newMatch = getKeysMatchingFromCampaign(campaign, modifsLeft);
-            if (!best) {
-              matchedKeys = newMatch;
-              return campaign;
-            }
-            const winnerMatch = getKeysMatchingFromCampaign(best, modifsLeft);
-            if (newMatch.length > winnerMatch.length) {
-              matchedKeys = newMatch;
-              return campaign;
-            }
-            return best;
-          },
-        );
-
-        this.log.debug(`activateModifications: currentBiggestModifs is variationGroupId=${currentBiggestModifs.variationGroupId} which is matching ${matchedKeys.length} keys: "${matchedKeys.toString()}"`);
-
-        // Do the activate
-        this.activateCampaign(currentBiggestModifs.variation.id, currentBiggestModifs.variationGroupId);
-
-        // Consider key from this campaign as activated
-        checklistActivatedModifs.forEach(({ key }, index) => {
-          if (matchedKeys.includes(key)) {
-            checklistActivatedModifs[index].ready = true;
-          }
-        });
-
-        campaignsActivated.push({ variationId: currentBiggestModifs.variation.id, variationGroupId: currentBiggestModifs.variationGroupId, keys: matchedKeys });
-      }
-
-
-      // modifications.forEach(({ key, variationId, variationGroupId }) => {
-      //   if (variationId && variationGroupId) {
-      //     this.log.debug(`activateModifications: Auto detect key="${key}" manually set with variationId="${variationId}" and variationGroupId="${variationGroupId}"`);
-      //   // this.activateCampaign();
-      //   }
-      // });
-    } else {
-      this.log.error('activateModifications: unable to activate given keys in args because no modifications found in cache.');
+      const { detailsModifications } = this.extractDesiredModifications(this.fetchedModifications, modificationsRequested);
+      this.triggerActivateIfNeeded(detailsModifications as DecisionApiResponseDataFullComputed);
     }
-    return campaignsActivated;
   }
 
-  private triggerActivateIfNeeded(detailsModifications: object): void {
+  private triggerActivateIfNeeded(detailsModifications: DecisionApiResponseDataFullComputed): void {
     const campaignsActivated: Array<string> = [];
-    Object.entries(detailsModifications).forEach(
+    const requestedActivateKeys = Object.entries(detailsModifications).filter(([key, keyInfo]) => keyInfo.isActivateNeeded === true);
+
+    requestedActivateKeys.forEach(
       ([key, value]) => {
-        if (value.isActivateNeeded) {
-          if (campaignsActivated.includes(value.campaignId[0])) {
-            this.log.debug(`Skip trigger activate of "${key}" because the corresponding campaign already been triggered with another modification`);
-          } else {
-            campaignsActivated.push(value.campaignId[0]);
-            this.activateCampaign(
-              value.variationId[0],
-              value.variationGroupId[0],
-              {
-                success: `Modification key "${key}" successfully activate.`,
-                fail: `Trigger activate of modification key "${key}" failed.`,
-              },
-            );
-          }
+        if (campaignsActivated.includes(value.campaignId[0])) {
+          this.log.debug(`Skip trigger activate of "${key}" because the corresponding campaign already been triggered with another modification`);
+        } else {
+          campaignsActivated.push(value.campaignId[0]);
+          this.activateCampaign(
+            value.variationId[0],
+            value.variationGroupId[0],
+            {
+              success: `Modification key "${key}" successfully activate.`,
+              fail: `Trigger activate of modification key "${key}" failed.`,
+            },
+          );
         }
       },
     );
+
+    if (requestedActivateKeys.length > 0) {
+      // Logs unexpected behavior:
+      const { activateKey, activateCampaign }: checkCampaignsActivatedMultipleTimesOutput = this.checkCampaignsActivatedMultipleTimes(detailsModifications as DecisionApiResponseDataFullComputed);
+      Object.entries(activateKey).forEach(([key, count]) => {
+        if (count > 1) {
+          this.log.warn(`Key "${key}" has been activated ${count} times because it was in conflict in further campaigns (debug logs for more details)`);
+          this.log.debug(`Here the details:${Object.entries(activateCampaign).map(
+            ([campaignId, { directActivate, indirectActivate }]) => {
+              if (indirectActivate.includes(key)) {
+                return `\n- because key "${key}" is also include inside campaign id="${campaignId}" where key(s) "${directActivate.map((item) => `${item} `)}" is/are also requested.`;
+              }
+              return null;
+            },
+          )}`);
+        } else if (count !== 1) {
+          this.log.warn(`Key "${key}" has unexpectedly been activated ${count} times`);
+        } else {
+        // everything good;
+        }
+      });
+    // END of logs
+    }
+  }
+
+  private checkCampaignsActivatedMultipleTimes(detailsModifications: DecisionApiResponseDataFullComputed): checkCampaignsActivatedMultipleTimesOutput {
+    const output: checkCampaignsActivatedMultipleTimesOutput = { activateCampaign: {}, activateKey: {} };
+    const extractModificationIndirectKeysFromCampaign = (campaignId: string, directKey: string): Array<string> => {
+      if (this.fetchedModifications) {
+        const campaignDataArray: Array<DecisionApiCampaign> = this.fetchedModifications.campaigns.filter((campaign) => campaign.id === campaignId);
+        if (campaignDataArray.length === 1) {
+          return Object.keys(campaignDataArray[0].variation.modifications.value).filter((key) => key !== directKey);
+        }
+        this.log.debug('extractModificationIndirectKeysFromCampaign: Error campaignDataArray.length has unexpectedly length bigger than 1');
+        return [];
+      }
+      this.log.debug('extractModificationIndirectKeysFromCampaign: Error this.fetchedModifications is empty');
+      return [];
+    };
+
+    if (this.fetchedModifications) {
+      Object.entries(detailsModifications).forEach(([key, keyInfos]) => {
+        if (output.activateCampaign[keyInfos.campaignId[0]]) {
+          output.activateCampaign[keyInfos.campaignId[0]].directActivate.push(key);
+        } else {
+          output.activateCampaign[keyInfos.campaignId[0]] = {
+            directActivate: [key],
+            indirectActivate: extractModificationIndirectKeysFromCampaign(keyInfos.campaignId[0], key),
+          };
+        }
+      });
+
+      // then, fill "keyActivate"
+      const requestedActivateKeys = Object.entries(detailsModifications).filter(([key, keyInfo]) => keyInfo.isActivateNeeded === true);
+      const extractNbTimesActivateCallForKey = (key: string): number => Object.values(output.activateCampaign).reduce(
+        (count, { directActivate, indirectActivate }) => count + indirectActivate.filter((item) => item === key).length + directActivate.filter((item) => item === key).length, 0,
+      );
+      requestedActivateKeys.forEach(([key, keyInfo]) => {
+        output.activateKey[key] = extractNbTimesActivateCallForKey(key);
+      });
+
+      // done
+      return output;
+    }
+    this.log.debug('checkCampaignsActivatedMultipleTimes: Error this.fetchedModifications is empty');
+    return output;
   }
 
   private analyseModifications({ campaigns }: DecisionApiResponseData, activate = false, modificationsRequested?: FsModifsRequestedList): { detailsModifications: DecisionApiResponseDataFullComputed; mergedModifications: DecisionApiResponseDataSimpleComputed} {
@@ -252,7 +262,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       } else {
         const { defaultValue } = modifRequested;
         desiredModifications[modifRequested.key] = defaultValue;
-        this.log.info(`No value found for modification "${modifRequested.key}".\nSetting default value "${defaultValue}"`);
+        this.log.debug(`No value found for modification "${modifRequested.key}".\nSetting default value "${defaultValue}"`);
         if (modifRequested.activate) {
           this.log.warn(`Unable to activate modification "${modifRequested.key}" because it does not exist on any existing campaign...`);
         }
@@ -266,7 +276,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     const responseData = completeResponse && completeResponse.data ? completeResponse.data : response as DecisionApiResponseData;
     if (modificationsRequested && responseData && typeof responseData === 'object' && !Array.isArray(response)) {
       const { desiredModifications, detailsModifications } = this.extractDesiredModifications(responseData, modificationsRequested, activateAllModifications);
-      this.triggerActivateIfNeeded(detailsModifications);
+      this.triggerActivateIfNeeded(detailsModifications as DecisionApiResponseDataFullComputed);
       return (desiredModifications);
     }
 
