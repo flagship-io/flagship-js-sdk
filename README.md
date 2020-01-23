@@ -150,6 +150,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 - [getAllModifications](####getAllModifications)
 - [getModificationsForCampaign](####getModificationsForCampaign)
 - [getModifications](####getModifications)
+- [activateModifications](####activateModifications)
 - [getModificationsCache](####getModificationsCache)
 - [sendHits](####sendHits)
 
@@ -536,6 +537,85 @@ will return:
   customLabel: 'Flagship is awesome' // default value set (ie: no campaigns have specified this modification)
 }
 ```
+
+#### `activateModifications`
+
+> return `nothing` (for the moment...)
+
+Kind of same behavior as [getModifications](####getModifications). It will activate the first campaign in cache that's matching the key set in argument. If conflict exist, you'll be notified via `warning` logs (+ `debug` logs if need details)
+
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th style="width: 100px;">argument</th>
+        <th style="width: 50px;">type</th>
+        <th style="width: 50px;">default</th>
+        <th>description</th>
+    </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>modificationToActivateRequested</td>
+          <td>Array(Object)</td>
+          <td>*required*</td>
+          <td>List of all modifications (=key) you're looking to activate. Each element of the array follow this object structure:
+            <table> 
+              <tbody><tr>
+                  <th style="width:25%">Argument</th>
+                  <th>Description</th>
+                </tr>  
+                <tr>
+                  <td><em>key</em></td>
+                  <td>Required. The name of the modification</td>
+                </tr>
+                <tr>
+                  <td><em>More coming soon...</em></td>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+    </tbody>
+</table>
+
+**Demo:**
+
+    visitorInstance.activateModifications([
+        {
+            key: "btnColor", // required
+        },
+        {
+            key: "customLabel", // required
+        }
+    ])
+
+will produce following behaviour:
+
+<i>scenario 1:</i>
+
+Assuming the api gives those informations in the following order:
+
+- modification <b>btnColor</b> is in campaign **campaignA**
+- modification <b>customLabel</b> is in campaign **campaignB**
+
+=> Both **campaignA** and **campaignB** will be activated
+
+<i>scenario 2:</i>
+
+Assuming the api gives those informations in the following order:
+
+- modification <b>btnColor</b> and <b>customLabel</b> is in campaign **campaignA**
+- modification <b>customLabel</b> is in campaign **campaignB**
+
+=> Only **campaignA** will be activated
+
+<i>scenario 3:</i>
+
+Assuming the api gives those informations in the following order:
+
+- modification <b>customLabel</b> is in campaign **campaignA**
+- modification <b>btnColor</b> and <b>customLabel</b> is in campaign **campaignB**
+
+=> Both **campaignA** and **campaignB** will be activated. But the SDK will logs a conflict for modification <b>customLabel</b> as it is considered as it is not supposed to happen.
 
 #### `getModificationsCache`
 

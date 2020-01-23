@@ -140,6 +140,12 @@ export default {
     args: {
       basic: [{ key: 'toto' }, { key: 'tata' }],
       all: [{ key: 'toto' }, { key: 'tata' }, { key: 'titi' }],
+      over9000: [
+        { key: 'toto' },
+        { key: 'tata' },
+        { key: 'titi' },
+        { key: 'tyty' },
+      ],
     },
     fetchedModifications: {
       basic: {
@@ -279,6 +285,21 @@ export default {
                   toto: 1,
                   tata: 2,
                   titi: 3,
+                },
+              },
+            },
+          },
+          {
+            id: '5e26ccd803533a89c3acbbbb',
+            variationGroupId: '5e26ccd8fcde4be7ff55476f',
+            variation: {
+              id: '5e26ccd89609296ae8430137',
+              modifications: {
+                type: 'FLAG',
+                value: {
+                  toto: 1,
+                  tata: 2,
+                  tyty: 4,
                 },
               },
             },

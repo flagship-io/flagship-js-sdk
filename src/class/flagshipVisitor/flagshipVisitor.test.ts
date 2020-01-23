@@ -376,6 +376,7 @@ describe('FlagshipVisitor', () => {
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
     });
+    // TODO: do test with some fresh demo data in "test/mock/flagshipVisitor/index.js >> activateModifications.fetchedModifications..."
     it('should return empty object if decision API had an error', (done) => {
       const thenGetModification = jest.fn();
       const spyFetchAllModifications = jest.spyOn(visitorInstance, 'fetchAllModifications');
@@ -761,6 +762,42 @@ describe('FlagshipVisitor', () => {
       } catch (error) {
         done.fail(error);
       }
+    });
+    it('should correctly handle conflicts due to further other requested keys', () => {
+      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict; // Mock a previous fetch
+      visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.over9000);
+      expect(mockAxios.post).toHaveBeenCalledTimes(4);
+      expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
+        caid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
+      });
+      expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
+        caid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
+      });
+      expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
+        caid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
+      });
+      expect(mockAxios.post).toHaveBeenNthCalledWith(4, 'https://decision-api.flagship.io/v1/activate', {
+        caid: '5e26ccd89609296ae8430137', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8fcde4be7ff55476f', vid: 'test-perf',
+      });
+      expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict, [
+        { activate: true, defaultValue: '', key: 'toto' },
+        { activate: true, defaultValue: '', key: 'tata' },
+        { activate: true, defaultValue: '', key: 'titi' },
+        { activate: true, defaultValue: '', key: 'tyty' },
+      ]);
+      // expect(spyTriggerActivateIfNeeded).toHaveBeenCalledWith(""); // DEBUG ONLY
+      expect(spyWarnLogs).toHaveBeenCalledTimes(3);
+      expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'Key "toto" has been activated 3 times because it was in conflict in further campaigns (debug logs for more details)');
+      expect(spyWarnLogs).toHaveBeenNthCalledWith(2, 'Key "titi" has been activated 2 times because it was in conflict in further campaigns (debug logs for more details)');
+      expect(spyWarnLogs).toHaveBeenNthCalledWith(3, 'Key "tata" has been activated 2 times because it was in conflict in further campaigns (debug logs for more details)');
+      expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+      expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+      expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+      expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+      expect(spyDebugLogs).toHaveBeenNthCalledWith(2, expect.stringContaining('because key "toto" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.'));
+      expect(spyDebugLogs).toHaveBeenNthCalledWith(2, expect.stringContaining('because key "toto" is also include inside campaign id="5e26ccd803533a89c3acbbbb" where key(s) "tyty " is/are also requested'));
+      expect(spyDebugLogs).toHaveBeenNthCalledWith(3, expect.stringContaining('because key "titi" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested'));
+      expect(spyDebugLogs).toHaveBeenNthCalledWith(4, expect.stringContaining('because key "tata" is also include inside campaign id="5e26ccd803533a89c3acbbbb" where key(s) "tyty " is/are also requested'));
     });
     it('should not activate all campaigns matching requesting key when there is a campaign conflict + notify with logs (part 3)', (done) => {
       visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict; // Mock a previous fetch
