@@ -17,23 +17,6 @@ let spyErrorLogs;
 let spyFatalLogs;
 let spyInfoLogs;
 let spyDebugLogs;
-const getModifsDefaultParam = [
-  {
-    key: 'algorithmVersion',
-    defaultValue: 'NOOOOO',
-    activate: true,
-  },
-  {
-    key: 'psp',
-    defaultValue: 'YESESES',
-    activate: true,
-  },
-  {
-    key: 'pspezrze',
-    defaultValue: 'YOLOOOO',
-    activate: true,
-  },
-];
 
 describe('FlagshipVisitor', () => {
   beforeAll(() => {
@@ -407,7 +390,7 @@ describe('FlagshipVisitor', () => {
       const spyModifsDetails = jest.spyOn(visitorInstance, 'extractDesiredModifications');
       const spyTriggerActivateIfNeeded = jest.spyOn(visitorInstance, 'triggerActivateIfNeeded');
 
-      visitorInstance.getModifications(getModifsDefaultParam).then(() => thenGetModification).catch((errorResponse) => {
+      visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default).then(() => thenGetModification).catch((errorResponse) => {
         try {
           expect(errorResponse).toMatchObject(responseObj);
           expect(visitorInstance.fetchedModifications).toBe(null);
@@ -428,7 +411,7 @@ describe('FlagshipVisitor', () => {
       expect(spyModifsDetails).toHaveReturnedTimes(0);
     });
 
-    it('should return empty object if decision API did not find any modifications', (done) => {
+    it('should return default values if decision API did not find any modifications', (done) => {
       const catchGetModification = jest.fn();
       const thenGetModification = jest.fn();
       const responseObj = {
@@ -443,12 +426,12 @@ describe('FlagshipVisitor', () => {
       const spyModifsDetails = jest.spyOn(visitorInstance, 'extractDesiredModifications');
       const spyTriggerActivateIfNeeded = jest.spyOn(visitorInstance, 'triggerActivateIfNeeded');
 
-      visitorInstance.getModifications(getModifsDefaultParam).then((response) => {
+      visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default).then((response) => {
         try {
           expect(response).toMatchObject({
             algorithmVersion: 'NOOOOO',
             psp: 'YESESES',
-            pspezrze: 'YOLOOOO',
+            testUnexistingKey: 'YOLOOOO',
           });
         } catch (error) {
           done.fail(error);
@@ -478,10 +461,10 @@ describe('FlagshipVisitor', () => {
       const spyModifsDetails = jest.spyOn(visitorInstance, 'extractDesiredModifications');
       const spyTriggerActivateIfNeeded = jest.spyOn(visitorInstance, 'triggerActivateIfNeeded');
 
-      visitorInstance.getModifications(getModifsDefaultParam).then(
+      visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default).then(
         (response) => {
           try {
-            expect(response).toEqual({ algorithmVersion: 'new', psp: 'dalenys', pspezrze: 'YOLOOOO' });
+            expect(response).toEqual({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
             expect(spyGetModifs).toHaveBeenCalled();
             expect(spyTriggerActivateIfNeeded).toHaveBeenCalledTimes(1);
             expect(spyModifsDetails).toHaveReturnedWith(
@@ -516,10 +499,10 @@ describe('FlagshipVisitor', () => {
       const spyModifsDetails = jest.spyOn(visitorInstance, 'extractDesiredModifications');
       const spyTriggerActivateIfNeeded = jest.spyOn(visitorInstance, 'triggerActivateIfNeeded');
 
-      visitorInstance.getModifications(getModifsDefaultParam).then(
+      visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default).then(
         (response) => {
           try {
-            expect(response).toEqual({ algorithmVersion: 'new', psp: 'dalenys', pspezrze: 'YOLOOOO' });
+            expect(response).toEqual({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
             expect(spyGetModifs).toHaveBeenCalled();
             expect(spyTriggerActivateIfNeeded).toHaveBeenCalledTimes(1);
             expect(spyModifsDetails).toHaveReturnedWith(
@@ -717,14 +700,13 @@ describe('FlagshipVisitor', () => {
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
         expect(spyDebugLogs).toHaveBeenCalledTimes(2);
-        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, '');
-        expect(spyDebugLogs).toHaveBeenNthCalledWith(2, '');
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'Here the details:,\n- because key "toto" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.');
         done();
       } catch (error) {
         done.fail(error);
       }
     });
-    it('should not activate all campaigns matching requesting key when there is a campaign conflict + notify with logs (with other args)', (done) => {
+    it('should not activate all campaigns matching requesting key when there is a campaign conflict', (done) => {
       visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict; // Mock a previous fetch
       visitorInstance.activateModifications([{ key: 'toto' }]);
       try {
@@ -736,14 +718,11 @@ describe('FlagshipVisitor', () => {
           { activate: true, defaultValue: '', key: 'toto' },
         ]);
         // expect(spyTriggerActivateIfNeeded).toHaveBeenCalledWith(""); // DEBUG ONLY
-        expect(spyWarnLogs).toHaveBeenCalledTimes(1);
-        expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'Key "toto" has been activated 2 times because it was in conflict in further campaigns (debug logs for more details)');
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
-        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, '');
-        expect(spyDebugLogs).toHaveBeenNthCalledWith(2, '');
+        expect(spyDebugLogs).toHaveBeenCalledTimes(1);
         done();
       } catch (error) {
         done.fail(error);
@@ -982,24 +961,23 @@ describe('FlagshipVisitor', () => {
       };
     });
     // TODO: 'should not use promise when fetching modifications'
-    it('should not use promise when fetching modifications (+ activate requested)', (done) => {
-      responseObject = {
-        ...responseObject,
-        data: { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns },
-      };
+    it('should not activate two different campaign if two requested keys are in same campaign', (done) => {
+      responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
       visitorInstance.fetchedModifications = responseObject.data; // Mock a previous fetch
-      const cacheResponse = visitorInstance.getModificationsCache(getModifsDefaultParam); // TODO: not good params
+      const cacheResponse = visitorInstance.getModificationsCache(demoData.flagshipVisitor.getModifications.args.default);
       try {
-        expect(mockAxios.post).toHaveBeenCalledTimes(1); // TODO: weird !
-        expect(mockAxios.post).toHaveBeenNthCalledWith(1, '');
+        expect(mockAxios.post).toHaveBeenCalledTimes(1);
+        expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
+          caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
+        });
         expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
         expect(spyFetchModifs).toHaveBeenCalledTimes(1);
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(1);
-        expect(spyWarnLogs).toHaveBeenNthCalledWith(1, `Unable to activate modification "${getModifsDefaultParam[2].key}" because it does not exist on any existing campaign...`);
+        expect(spyWarnLogs).toHaveBeenNthCalledWith(1, `Unable to activate modification "${demoData.flagshipVisitor.getModifications.args.default[2].key}" because it does not exist on any existing campaign...`);
         expect(spyInfoLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled');
         expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
-        expect(cacheResponse).toMatchObject({ pspezrze: 'YOLOOOO' });
+        expect(cacheResponse).toMatchObject({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
         done();
       } catch (error) {
         done.fail(error);
@@ -1007,7 +985,7 @@ describe('FlagshipVisitor', () => {
     });
     // TODO: 'should return empty object if nothing in cache'
     it('should return empty object if nothing in cache (+ activate requested)', (done) => {
-      const cacheResponse = visitorInstance.getModificationsCache(getModifsDefaultParam);
+      const cacheResponse = visitorInstance.getModificationsCache(demoData.flagshipVisitor.getModifications.args.default);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(0);
         expect(spyFetchModifs).toHaveBeenCalledTimes(0);

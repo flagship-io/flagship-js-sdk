@@ -1,5 +1,56 @@
 export default {
   getModifications: {
+    args: {
+      default: [
+        // = (1x unexisting key, 2x existing key + activate)
+        {
+          key: 'algorithmVersion',
+          defaultValue: 'NOOOOO',
+          activate: true,
+        },
+        {
+          key: 'psp',
+          defaultValue: 'YESESES',
+          activate: true,
+        },
+        {
+          key: 'testUnexistingKey',
+          defaultValue: 'YOLOOOO',
+          activate: true,
+        },
+      ],
+      noActivate: [
+        {
+          key: 'algorithmVersion',
+          defaultValue: 'NOOOOO',
+          activate: false,
+        },
+        {
+          key: 'psp',
+          defaultValue: 'YESESES',
+          activate: false,
+        },
+        {
+          key: 'pspezrze',
+          defaultValue: 'YOLOOOO',
+          activate: false,
+        },
+      ],
+      oneModifAndOneActivate: [
+        {
+          key: 'algorithmVersion',
+          defaultValue: 'NOOOOO',
+          activate: true,
+        },
+      ],
+      requestOneUnexistingKeyWithActivate: [
+        {
+          key: 'testUnexistingKey',
+          defaultValue: 'NOOOOO',
+          activate: true,
+        },
+      ],
+    },
     detailsModifications: {
       oneModifInMoreThanOneCampaign: {
         psp: {
@@ -32,7 +83,7 @@ export default {
       },
       manyModifInManyCampaigns: {
         psp: {
-          value: ['dalenys', 'dalenys', 'yolo'],
+          value: ['dalenys', 'artefact', 'yolo'],
           type: ['FLAG', 'JSON', 'JSON'],
           campaignId: [
             'blntcamqmdvg04g371f0',

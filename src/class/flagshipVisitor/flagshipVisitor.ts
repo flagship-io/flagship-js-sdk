@@ -110,52 +110,51 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
   private triggerActivateIfNeeded(detailsModifications: DecisionApiResponseDataFullComputed): void {
     const campaignsActivated: Array<string> = [];
-    const requestedActivateKeys = Object.entries(detailsModifications).filter(([key, keyInfo]) => keyInfo.isActivateNeeded === true);
-
-    requestedActivateKeys.forEach(
+    Object.entries(detailsModifications).forEach(
       ([key, value]) => {
-        if (campaignsActivated.includes(value.campaignId[0])) {
-          this.log.debug(`Skip trigger activate of "${key}" because the corresponding campaign already been triggered with another modification`);
-        } else {
-          campaignsActivated.push(value.campaignId[0]);
-          this.activateCampaign(
-            value.variationId[0],
-            value.variationGroupId[0],
-            {
-              success: `Modification key "${key}" successfully activate.`,
-              fail: `Trigger activate of modification key "${key}" failed.`,
-            },
-          );
+        if (value.isActivateNeeded) {
+          if (campaignsActivated.includes(value.campaignId[0])) {
+            this.log.debug(`Skip trigger activate of "${key}" because the corresponding campaign already been triggered with another modification`);
+          } else {
+            campaignsActivated.push(value.campaignId[0]);
+            this.activateCampaign(
+              value.variationId[0],
+              value.variationGroupId[0],
+              {
+                success: `Modification key "${key}" successfully activate.`,
+                fail: `Trigger activate of modification key "${key}" failed.`,
+              },
+            );
+          }
         }
       },
     );
 
-    if (requestedActivateKeys.length > 0) {
-      // Logs unexpected behavior:
-      const { activateKey, activateCampaign }: checkCampaignsActivatedMultipleTimesOutput = this.checkCampaignsActivatedMultipleTimes(detailsModifications as DecisionApiResponseDataFullComputed);
-      Object.entries(activateKey).forEach(([key, count]) => {
-        if (count > 1) {
-          this.log.warn(`Key "${key}" has been activated ${count} times because it was in conflict in further campaigns (debug logs for more details)`);
-          this.log.debug(`Here the details:${Object.entries(activateCampaign).map(
-            ([campaignId, { directActivate, indirectActivate }]) => {
-              if (indirectActivate.includes(key)) {
-                return `\n- because key "${key}" is also include inside campaign id="${campaignId}" where key(s) "${directActivate.map((item) => `${item} `)}" is/are also requested.`;
-              }
-              return null;
-            },
-          )}`);
-        } else if (count !== 1) {
-          this.log.warn(`Key "${key}" has unexpectedly been activated ${count} times`);
-        } else {
+    // Logs unexpected behavior:
+    const { activateKey, activateCampaign }: checkCampaignsActivatedMultipleTimesOutput = this.checkCampaignsActivatedMultipleTimes(detailsModifications as DecisionApiResponseDataFullComputed);
+    Object.entries(activateKey).forEach(([key, count]) => {
+      if (count > 1) {
+        this.log.warn(`Key "${key}" has been activated ${count} times because it was in conflict in further campaigns (debug logs for more details)`);
+        this.log.debug(`Here the details:${Object.entries(activateCampaign).map(
+          ([campaignId, { directActivate, indirectActivate }]) => {
+            if (indirectActivate.includes(key)) {
+              return `\n- because key "${key}" is also include inside campaign id="${campaignId}" where key(s) "${directActivate.map((item) => `${item} `)}" is/are also requested.`;
+            }
+            return null;
+          },
+        )}`);
+      } else if (count !== 1) {
+        this.log.warn(`Key "${key}" has unexpectedly been activated ${count} times`);
+      } else {
         // everything good;
-        }
-      });
+      }
+    });
     // END of logs
-    }
   }
 
   private checkCampaignsActivatedMultipleTimes(detailsModifications: DecisionApiResponseDataFullComputed): checkCampaignsActivatedMultipleTimesOutput {
     const output: checkCampaignsActivatedMultipleTimesOutput = { activateCampaign: {}, activateKey: {} };
+    const requestedActivateKeys = Object.entries(detailsModifications).filter(([key, keyInfo]) => keyInfo.isActivateNeeded === true);
     const extractModificationIndirectKeysFromCampaign = (campaignId: string, directKey: string): Array<string> => {
       if (this.fetchedModifications) {
         const campaignDataArray: Array<DecisionApiCampaign> = this.fetchedModifications.campaigns.filter((campaign) => campaign.id === campaignId);
@@ -170,7 +169,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     };
 
     if (this.fetchedModifications) {
-      Object.entries(detailsModifications).forEach(([key, keyInfos]) => {
+      requestedActivateKeys.forEach(([key, keyInfos]) => {
         if (output.activateCampaign[keyInfos.campaignId[0]]) {
           output.activateCampaign[keyInfos.campaignId[0]].directActivate.push(key);
         } else {
@@ -181,8 +180,16 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
       });
 
+      // then, clean indirect key which are also in direct
+      Object.keys(output.activateCampaign).forEach((campaignId) => {
+        Object.values(output.activateCampaign[campaignId].directActivate).forEach((directKey) => {
+          if (output.activateCampaign[campaignId].indirectActivate.includes(directKey)) {
+            output.activateCampaign[campaignId].indirectActivate.splice(output.activateCampaign[campaignId].indirectActivate.indexOf(directKey), 1);
+          }
+        });
+      });
+
       // then, fill "keyActivate"
-      const requestedActivateKeys = Object.entries(detailsModifications).filter(([key, keyInfo]) => keyInfo.isActivateNeeded === true);
       const extractNbTimesActivateCallForKey = (key: string): number => Object.values(output.activateCampaign).reduce(
         (count, { directActivate, indirectActivate }) => count + indirectActivate.filter((item) => item === key).length + directActivate.filter((item) => item === key).length, 0,
       );

@@ -23,7 +23,7 @@ export default {
         modifications: {
           type: 'JSON',
           value: {
-            psp: 'dalenys',
+            psp: 'artefact',
             algorithmVersion: 'new',
           },
         },
@@ -46,4 +46,3 @@ export default {
     },
   ],
 };
-
