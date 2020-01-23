@@ -78,6 +78,15 @@ visitorInstance.getModifications([{key: "btnColor", defaultValue: "#ff0000"}, {k
 })
 ```
 
+- Or even better, if you fetched campaigns already before (during initialization as example):
+
+```
+const {btnColor, btnText} = visitorInstance.getModificationsCache([{key: "btnColor", defaultValue: "#ff0000"}, {key: "btnText", defaultValue: "Wahoo !"}]);
+
+console.log(btnColor); // output: "#fff"
+console.log(btnText); // output: "Awesome !"
+```
+
 This is one of the basic workflow you can achieve with the SDK. 🙂
 
 ## SDK Settings

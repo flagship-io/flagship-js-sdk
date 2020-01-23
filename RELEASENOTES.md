@@ -47,3 +47,7 @@
 - New available function `getModificationsCache`.
 
   Basically, it allows you to get modifications without using promise after it has been saved in cache. More info [here 👈](README.md#getModificationsCache)
+
+- New available function `activateModifications`.
+
+  It allows you to activate automatically the campaigns which are matching the modifications that you specify in arguments. More info [here 👈](README.md#activateModifications)
