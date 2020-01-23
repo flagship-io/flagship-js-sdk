@@ -139,6 +139,7 @@ export default {
   activateModifications: {
     args: {
       basic: [{ key: 'toto' }, { key: 'tata' }],
+      all: [{ key: 'toto' }, { key: 'tata' }, { key: 'titi' }],
     },
     fetchedModifications: {
       basic: {
