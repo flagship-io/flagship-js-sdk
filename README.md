@@ -93,7 +93,7 @@ This is one of the basic workflow you can achieve with the SDK. 🙂
 
 This is all available settings which you can set on the SDK.
 
-Those settings can be setup using [initSdk function](####initSdk) (sample inside).
+Those settings can be setup using [initSdk function](#initSdk) (sample inside).
 
 Here are the attributes which you can set inside the SDK settings object:
 
@@ -146,29 +146,29 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 
 ### _flagshipSdk_ object
 
-- [initSdk](####initSdk)
+- [initSdk](#initSdk)
 
 ### <i>Flagship</i> class
 
-- [newVisitor](####newVisitor)
+- [newVisitor](#newVisitor)
 
 ### <i>FlagshipVisitor</i> class
 
-- [setContext](####setContext)
-- [synchronizeModifications](####synchronizeModifications)
-- [getAllModifications](####getAllModifications)
-- [getModificationsForCampaign](####getModificationsForCampaign)
-- [getModifications](####getModifications)
-- [activateModifications](####activateModifications)
-- [getModificationsCache](####getModificationsCache)
-- [sendHits](####sendHits)
+- [setContext](#setContext)
+- [synchronizeModifications](#synchronizeModifications)
+- [getAllModifications](#getAllModifications)
+- [getModificationsForCampaign](#getModificationsForCampaign)
+- [getModifications](#getModifications)
+- [activateModifications](#activateModifications)
+- [getModificationsCache](#getModificationsCache)
+- [sendHits](#sendHits)
 
 ### <i>Shape</i> of possible hits to send
 
-- [Transaction Hit](####transaction-hit)
-- [Screen Hit](####screen-hit)
-- [Item Hit](####item-hit)
-- [Event Hit](####event-hit)
+- [Transaction Hit](#transaction-hit)
+- [Screen Hit](#screen-hit)
+- [Item Hit](#item-hit)
+- [Event Hit](#event-hit)
 
 ---
 
@@ -215,7 +215,7 @@ const sdk = flagship.initSdk("YOUR_ENV_ID",
 
 ### <i>Flagship</i> class
 
-- [newVisitor](####newVisitor)
+- [newVisitor](#newVisitor)
 
 #### `newVisitor`
 
@@ -262,13 +262,13 @@ visitorInstance.on('ready', () => {
 
 ### <i>FlagshipVisitor</i> class
 
-- [setContext](####setContext)
-- [synchronizeModifications](####synchronizeModifications)
-- [getAllModifications](####getAllModifications)
-- [getModificationsForCampaign](####getModificationsForCampaign)
-- [getModifications](####getModifications)
-- [getModificationsCache](####getModificationsCache)
-- [sendHits](####sendHits)
+- [setContext](#setContext)
+- [synchronizeModifications](#synchronizeModifications)
+- [getAllModifications](#getAllModifications)
+- [getModificationsForCampaign](#getModificationsForCampaign)
+- [getModifications](#getModifications)
+- [getModificationsCache](#getModificationsCache)
+- [sendHits](#sendHits)
 
 #### `setContext`
 
@@ -551,7 +551,7 @@ will return:
 
 > return `nothing` (for the moment...)
 
-Kind of same behavior as [getModifications](####getModifications). It will activate the first campaign in cache that's matching the key set in argument. If conflict exist, you'll be notified via `warning` logs (+ `debug` logs if need details)
+Kind of same behavior as [getModifications](#getModifications). It will activate the first campaign in cache that's matching the key set in argument. If conflict exist, you'll be notified via `warning` logs (+ `debug` logs if need details)
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -794,10 +794,10 @@ visitorInstance.sendHits(
 
 ### <i>Shape</i> of possible hits to send
 
-- [Transaction Hit](####transaction-hit)
-- [Screen Hit](####screen-hit)
-- [Item Hit](####item-hit)
-- [Event Hit](####event-hit)
+- [Transaction Hit](#transaction-hit)
+- [Screen Hit](#screen-hit)
+- [Item Hit](#item-hit)
+- [Event Hit](#event-hit)
 
 #### `Transaction Hit`
 
