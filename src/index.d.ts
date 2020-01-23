@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 import { EventEmitter } from 'events';
 import {
-  FlagshipVisitorContext, FsModifsRequestedList, DecisionApiResponse, DecisionApiSimpleResponse, HitShape, GetModificationsOutput,
+  FlagshipVisitorContext, FsModifsRequestedList, DecisionApiResponse, DecisionApiResponseData, HitShape, GetModificationsOutput,
 } from './class/flagshipVisitor/flagshipVisitor.d';
 
 export type FlagshipSdkConfig = {
@@ -20,12 +20,12 @@ export interface IFlagshipVisitor extends EventEmitter {
   envId: string;
   context: FlagshipVisitorContext;
   isAllModificationsFetched: boolean;
-  fetchedModifications: DecisionApiResponse | null;
+  fetchedModifications: DecisionApiResponseData | null;
   getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean | null): Promise<GetModificationsOutput>;
   setContext(context: FlagshipVisitorContext): void;
   synchronizeModifications(activate?: boolean): Promise<number>;
-  getModificationsForCampaign(campaignId: string, activate?: boolean, fetchMode?: 'simple' | 'normal'): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
-  getAllModifications(activate?: boolean, fetchMode?: 'simple' | 'normal'): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+  getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
+  getAllModifications(activate?: boolean): Promise<DecisionApiResponse>;
   sendHits(hitsArray: Array<HitShape>): Promise<void>;
 }
 export interface IFlagship {

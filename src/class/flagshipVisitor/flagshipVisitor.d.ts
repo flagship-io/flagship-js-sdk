@@ -13,35 +13,37 @@ export type DecisionApiResponse = {
     status: number;
 }
 
-export type DecisionApiSimpleResponse = {
-    data: DecisionApiResponseDataSimpleComputed;
-    status: number;
-}
-
 export type DecisionApiResponseData = {
     visitorId: string;
     campaigns: DecisionApiCampaign[ ];
 }
 
 export type GetModificationsOutput = {
-    [key: string]: string | boolean | number;
+    [key: string]: any;
 }
 
-export type DecisionApiCampaign = {
-    id: string;
-    variationGroupId: string;
-    variation: {
-        id: string;
-        modifications: {
-            type: string;
-            value: object;
-        };
-    };
+export type checkCampaignsActivatedMultipleTimesOutput = {
+    activateCampaign: { [key: string]: { directActivate: Array<string>; indirectActivate: Array<string> } };
+    activateKey: { [key: string]: number};
 }
 
 export type DecisionApiResponseDataSimpleComputed = {
-    [key: string]: string | number | boolean;
-}
+  [key: string]: any;
+};
+
+export type DecisionApiCampaign = {
+  id: string;
+  variationGroupId: string;
+  variation: {
+    id: string;
+    modifications: {
+      type: string;
+      value: {
+        [key: string]: any;
+      };
+    };
+  };
+};
 
 export type DecisionApiResponseDataFullComputed = {
     [key: string]: {

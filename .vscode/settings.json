@@ -19,6 +19,7 @@
     "prettier.singleQuote": true,
     "files.autoSave":"onFocusChange",
     "eslint.autoFixOnSave": true,
+  "editor.formatOnPaste": false,
     "eslint.alwaysShowStatus": true,
     "eslint.workingDirectories": [
         {"directory":"examples/react-app", "changeProcessCWD": true},
@@ -26,5 +27,6 @@
     ],
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": true
-    }
+    },
+    "prettier.trailingComma": "es5"
 }
