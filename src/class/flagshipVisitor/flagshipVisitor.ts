@@ -323,9 +323,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     modificationsRequested: FsModifsRequestedList,
     activateAllModifications: boolean | null = null,
   ): GetModificationsOutput {
+    if (!modificationsRequested) {
+      this.log.error('getModificationsCache: No requested modifications defined...');
+      return {};
+    }
     if (!this.fetchedModifications) {
       this.log.warn('No modifications found in cache...');
-      return {};
+      const { desiredModifications } = this.extractDesiredModifications({ visitorId: this.id, campaigns: [] }, modificationsRequested, activateAllModifications);
+      return desiredModifications;
     }
     const response = this.fetchAllModifications({ activate: !!activateAllModifications, loadFromCache: true }) as DecisionApiResponseData;
     return this.getModificationsPostProcess(response, modificationsRequested, activateAllModifications);

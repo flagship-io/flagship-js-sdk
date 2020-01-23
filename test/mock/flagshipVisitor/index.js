@@ -31,7 +31,7 @@ export default {
           activate: false,
         },
         {
-          key: 'pspezrze',
+          key: 'testUnexistingKey',
           defaultValue: 'YOLOOOO',
           activate: false,
         },
