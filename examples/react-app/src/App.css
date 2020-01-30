@@ -29,8 +29,19 @@ html {
   background-color: #343434;
 }
 
+.modal-content {
+  background-color: #343434 !important;
+  color: white !important;
+}
+
+.modal-header,
+.modal-footer {
+  border: none !important;
+}
+
 .fsNavbar .nav-link,
-.fsNavbar .navbar-brand {
+.fsNavbar .navbar-brand,
+.modal-content a {
   color: #ffffff !important;
 }
 

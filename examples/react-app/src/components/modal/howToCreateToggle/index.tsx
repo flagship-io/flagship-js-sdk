@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Modal, Image } from 'react-bootstrap';
 
-// TODO: modal fit UX
 const HowToCreateToggleModal: React.FC = () => {
   const [show, setShow] = useState(false);
 
@@ -27,7 +26,7 @@ const HowToCreateToggleModal: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Click here to log in
+              👉 Click here to log in
             </a>
           </p>
           <h5 className="pt3">2 - Click on "+" button</h5>
