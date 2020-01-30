@@ -5,13 +5,16 @@ import Logo from '../../assets/Flagship-horizontal-product-white.png';
 const Header: React.FC = () => (
   <>
     <Navbar className="fsNavbar" fixed="top">
-      <Navbar.Brand href="https://github.com/abtasty/flagship-js-sdk" className="flex item-center">
+      <Navbar.Brand
+        href="https://github.com/abtasty/flagship-js-sdk"
+        className="flex item-center"
+      >
         <img
           alt="Logo Flagship"
           src={Logo}
           className="d-inline-block align-top logoAdjust"
         />
-        React SDK
+        JS SDK with React
       </Navbar.Brand>
       <Nav className="mr-auto">
         <Nav.Link href="#initialization">Initialization</Nav.Link>
@@ -22,8 +25,12 @@ const Header: React.FC = () => (
       </Nav>
 
       <Form inline>
-        <Nav.Link href="https://github.com/abtasty/flagship-js-sdk">Github</Nav.Link>
-        <Nav.Link href="https://www.abtasty.com/solutions-product-teams/">What is Flagship ?</Nav.Link>
+        <Nav.Link href="https://github.com/abtasty/flagship-js-sdk">
+          Github
+        </Nav.Link>
+        <Nav.Link href="https://www.abtasty.com/solutions-product-teams/">
+          What is Flagship ?
+        </Nav.Link>
       </Form>
     </Navbar>
   </>
