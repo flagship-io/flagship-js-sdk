@@ -10,6 +10,7 @@
   },
   "scripts": {
     "test": "jest && rm -rf flagshipNodeSdkLogs",
+    "test:coverage": "jest --coverage && rm -rf flagshipNodeSdkLogs",
     "test:react-sample": "cd ./examples/react-app && npm test",
     "release": "np",
     "version": "npm run build:prod",
