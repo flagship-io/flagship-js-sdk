@@ -1,5 +1,19 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 0.1.1
+
+### Bug fixes 🐛
+- Fix handling flags defined with a falsy value instead or returning default flag value.
+
+## ➡️ Version 0.1.0
+
+### New features 🎉
+- Documentation improved (developer friendly ++).
+
+### Bug fixes 🐛
+- Minor bug fixes
+
+
 ## ➡️ Version 0.0.8
 
 ### Breaking changes ⚠️

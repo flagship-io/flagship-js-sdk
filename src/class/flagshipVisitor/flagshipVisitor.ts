@@ -264,7 +264,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     // Check modifications requested (=modificationsRequested) match modifications fetched (=mergedModifications)
     modificationsRequested.forEach((modifRequested) => {
-      if (mergedModifications[modifRequested.key]) {
+      if (typeof mergedModifications[modifRequested.key] !== 'undefined'
+          && mergedModifications[modifRequested.key] !== null) {
         desiredModifications[modifRequested.key] = mergedModifications[modifRequested.key];
       } else {
         const { defaultValue } = modifRequested;
