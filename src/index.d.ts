@@ -27,6 +27,7 @@ export interface IFlagshipVisitor extends EventEmitter {
   getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
   getAllModifications(activate?: boolean): Promise<DecisionApiResponse>;
   sendHits(hitsArray: Array<HitShape>): Promise<void>;
+  on(event: 'ready', listener: (name: string) => void): this;
 }
 export interface IFlagship {
   config: FlagshipSdkConfig;
