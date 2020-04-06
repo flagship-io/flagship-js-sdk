@@ -193,7 +193,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       const extractNbTimesActivateCallForKey = (key: string): number => Object.values(output.activateCampaign).reduce(
         (count, { directActivate, indirectActivate }) => count + indirectActivate.filter((item) => item === key).length + directActivate.filter((item) => item === key).length, 0,
       );
-      requestedActivateKeys.forEach(([key, keyInfo]) => {
+      requestedActivateKeys.forEach(([key]) => {
         output.activateKey[key] = extractNbTimesActivateCallForKey(key);
       });
 

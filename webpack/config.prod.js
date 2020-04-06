@@ -43,7 +43,7 @@ function DtsClean() {
 ` +
     newValue +
     `
-export default flagship as FlagshipNodeSdk;
+export default flagship;
   `;
   fs.writeFileSync('dist/flagship.d.ts', newValue, 'utf-8');
 }
