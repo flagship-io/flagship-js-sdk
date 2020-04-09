@@ -21,12 +21,15 @@ export interface IFlagshipVisitor extends EventEmitter {
   context: FlagshipVisitorContext;
   isAllModificationsFetched: boolean;
   fetchedModifications: DecisionApiResponseData | null;
+  activateModifications(modifications: Array<{ key: string; variationId?: string; variationGroupId?: string }>): void;
   getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean | null): Promise<GetModificationsOutput>;
+  getModificationsCache(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null,): GetModificationsOutput;
   setContext(context: FlagshipVisitorContext): void;
   synchronizeModifications(activate?: boolean): Promise<number>;
   getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
   getAllModifications(activate?: boolean): Promise<DecisionApiResponse>;
   sendHits(hitsArray: Array<HitShape>): Promise<void>;
+  on(event: 'ready', listener: (name: string) => void): this;
 }
 export interface IFlagship {
   config: FlagshipSdkConfig;

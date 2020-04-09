@@ -5,16 +5,16 @@ const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   entry: {
-    app: './src/index.ts'
+    app: './src/index.ts',
   },
+  mode: 'production',
+  devtool: 'source-map',
   output: {
     filename: 'index.js',
     path: path.resolve(__dirname, '../dist'),
     library: 'flagship',
-    libraryTarget: 'umd',
-    libraryExport: 'default'
+    libraryExport: 'default',
   },
-  target: 'node',
   module: {
     exprContextCritical: false,
     rules: [
@@ -23,15 +23,15 @@ module.exports = {
         exclude: /(node_modules|bower_components)/,
         use: [
           {
-            loader: 'awesome-typescript-loader'
+            loader: 'awesome-typescript-loader',
           },
           {
             loader: 'eslint-loader',
             options: {
               // eslint options (if necessary)
-            }
-          }
-        ]
+            },
+          },
+        ],
       },
       {
         test: /\.m?js$/,
@@ -40,26 +40,26 @@ module.exports = {
           {
             loader: 'babel-loader',
             options: {
-              presets: ['@babel/preset-env']
-            }
+              presets: ['@babel/preset-env'],
+            },
           },
           {
             loader: 'eslint-loader',
             options: {
               // eslint options (if necessary)
-            }
-          }
-        ]
-      }
-    ]
+            },
+          },
+        ],
+      },
+    ],
   },
   externals: [
     nodeExternals({
-      whitelist: ['axios']
-    })
+      whitelist: ['axios'],
+    }),
   ],
   plugins: [new webpack.DefinePlugin({ 'global.GENTLY': false })],
   resolve: {
-    extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js']
-  }
+    extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
+  },
 };

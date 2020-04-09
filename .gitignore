@@ -9,3 +9,5 @@ src/assets/.DS_Store
 stats.json
 
 *.tgz
+
+coverage/

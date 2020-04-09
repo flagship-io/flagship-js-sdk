@@ -2,7 +2,15 @@
   "name": "@flagship.io/js-sdk",
   "version": "0.1.1",
   "description": "Flagship JS SDK",
-  "main": "dist/index.js",
+  "main": "dist/index.node.js",
+  "browser": "dist/index.browser.js",
+  "react-native": "dist/index.reactNative.js",
+  "files": [
+    "dist",
+    "CONTRIBUTING.md",
+    "README.md",
+    "package.json"
+  ],
   "types": "dist/flagship.d.ts",
   "engines": {
     "npm": ">=3",
@@ -10,17 +18,17 @@
   },
   "scripts": {
     "test": "jest && rm -rf flagshipNodeSdkLogs",
+    "test:coverage": "jest --coverage && rm -rf flagshipNodeSdkLogs",
     "test:react-sample": "cd ./examples/react-app && npm test",
     "release": "np",
     "version": "npm run build:prod",
-    "publish": "npm run update:react-app && npm run update:api-server && git add . && git commit -m\"Post publish update\" && git push",
+    "publish": "npm run update:react-app && npm run update:api-server && git add . && git commit -m\"Post publish update\" && git push && npm run publish:react",
+    "publish:react": "cd ./examples/react-app && npm run deploy:github",
     "update:react-app": "cd ./examples/react-app && npm install @flagship.io/js-sdk@latest --save && cd ../../",
     "update:api-server": "cd ./examples/api-server && npm install @flagship.io/js-sdk@latest --save && cd ../../",
-    "postdeploy": "cd ./examples/react-app && npm run deploy:github",
     "stats:dev": "rm -rf dist && webpack --env=stats",
     "stats:prod": "webpack --profile --json --env=prod > stats.json && webpack-bundle-analyzer ./stats.json",
-    "build:dev": "rm -rf dist && webpack --env=dev",
-    "build:prod": "rm -rf dist && webpack --env=prod"
+    "build": "rm -rf dist && webpack --env=prod"
   },
   "repository": {
     "type": "git",
@@ -47,12 +55,6 @@
     "abtasty",
     "node",
     "sdk"
-  ],
-  "files": [
-    "dist",
-    "CONTRIBUTING.md",
-    "README.md",
-    "package.json"
   ],
   "homepage": "https://github.com/abtasty/flagship-js-sdk",
   "devDependencies": {

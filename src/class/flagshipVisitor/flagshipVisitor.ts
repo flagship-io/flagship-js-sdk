@@ -87,7 +87,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
         this.log.debug(successLog);
       })
-      .catch((error: any) => {
+      .catch((error: Error) => {
         let failLog = `Trigger activate of variationId "${variationId}" failed with error:\n${error}`;
         if (customLogs && customLogs.fail) {
           failLog = `${customLogs.fail}\nFailed with error:\n${error}`;
@@ -193,7 +193,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       const extractNbTimesActivateCallForKey = (key: string): number => Object.values(output.activateCampaign).reduce(
         (count, { directActivate, indirectActivate }) => count + indirectActivate.filter((item) => item === key).length + directActivate.filter((item) => item === key).length, 0,
       );
-      requestedActivateKeys.forEach(([key, keyInfo]) => {
+      requestedActivateKeys.forEach(([key]) => {
         output.activateKey[key] = extractNbTimesActivateCallForKey(key);
       });
 
@@ -313,8 +313,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           this.log.debug(`with json:\n${JSON.stringify(castResponse.data)}`);
           resolve(this.getModificationsPostProcess(castResponse, modificationsRequested, activateAllModifications));
         },
-      ).catch((error: any) => {
-        this.log.fatal(`Get modifications failed with error:\n${(error && error.status) || JSON.stringify(error)}`);
+      ).catch((error: Error) => {
+        this.log.fatal(`Get modifications failed with error:\n${(error) || JSON.stringify(error)}`);
         reject(error);
       });
     });
@@ -352,7 +352,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             resolve(castResponse.status);
           },
         )
-          .catch((error: any) => {
+          .catch((error: Error) => {
             this.fetchedModifications = null;
             reject(error);
           });
@@ -377,11 +377,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       activate: boolean;
       campaignCustomID: string | null;
     },
-  ): { data: DecisionApiResponseData; [key: string]: any } {
+  ): { data: DecisionApiResponseData } {
     const completeResponse = response as DecisionApiResponse;
     const reshapeResponse = completeResponse.data ? completeResponse : { data: response };
     const responseData = completeResponse.data ? completeResponse.data : response as DecisionApiResponseData;
-    let output = { data: {} } as { data: DecisionApiResponseData; [key: string]: any };
+    let output = { data: {} } as { data: DecisionApiResponseData };
     let analysedModifications = {};
     let filteredCampaigns: Array<DecisionApiCampaign> = [];
 
@@ -476,7 +476,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
               this.fetchAllModificationsPostProcess(response, { ...defaultArgs, ...args }) as DecisionApiResponse,
             );
           })
-          .catch((response: any) => {
+          .catch((response: Error) => {
             this.fetchedModifications = null;
             this.log.fatal('fetchAllModifications: an error occurred while fetching...');
             if (activate) {

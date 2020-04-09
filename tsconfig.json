@@ -1,21 +1,17 @@
 {
-    "compilerOptions": {
-        "outDir": "dist",
-        "strict": true,
-        "noUnusedLocals": true,
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "declaration": false,
-        "target": "es5"
-    },
-    "include": [
-        "./src/**/*",
-    ],
-    "exclude": 
-    [
-        "node_modules", "**/*.test.ts"
-    ],
-    "awesomeTypescriptLoaderOptions": {
-        "silent": true,
-    }
+  "compilerOptions": {
+    "outDir": "dist",
+    "strict": true,
+    "noUnusedLocals": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "declaration": false,
+    "target": "es5"
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "**/*.test.ts"],
+  "awesomeTypescriptLoaderOptions": {
+    "silent": true
+  },
+  "lib": ["es6", "es2017.object"]
 }
