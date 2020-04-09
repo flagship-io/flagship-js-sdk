@@ -396,7 +396,7 @@ describe('FlagshipVisitor', () => {
           expect(errorResponse).toMatchObject(responseObj);
           expect(visitorInstance.fetchedModifications).toBe(null);
           expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications: an error occurred while fetching...');
-          expect(spyFatalLogs).toHaveBeenNthCalledWith(2, `Get modifications failed with error:\n${responseObj.status}`);
+          expect(spyFatalLogs).toHaveBeenNthCalledWith(2, `Get modifications failed with error:\n${responseObj}`);
           expect(spyFetchAllModifications).toHaveBeenCalledWith({ activate: false });
         } catch (error) {
           done.fail(error);
