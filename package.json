@@ -28,7 +28,7 @@
     "update:api-server": "cd ./examples/api-server && npm install @flagship.io/js-sdk@latest --save && cd ../../",
     "stats:dev": "rm -rf dist && webpack --env=stats",
     "stats:prod": "webpack --profile --json --env=prod > stats.json && webpack-bundle-analyzer ./stats.json",
-    "build": "rm -rf dist && webpack --env=prod"
+    "build": "rm -rf dist && webpack --env=prod && prettier --write ./dist/flagship.d.ts"
   },
   "repository": {
     "type": "git",
@@ -76,6 +76,7 @@
     "jest": "^24.9.0",
     "jest-mock-axios": "^3.1.2",
     "np": "^5.1.2",
+    "prettier": "2.0.4",
     "source-map-loader": "^0.2.4",
     "supertest": "^4.0.2",
     "typescript": "^3.7.2",

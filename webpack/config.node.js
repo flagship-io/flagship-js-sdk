@@ -42,12 +42,19 @@ function DtsClean() {
   );
   newValue = newValue.replace(`\n\n\n\n`, '\n');
   newValue = newValue.replace(`\n\n\n`, '\n');
-  //   newValue =
-  //     `import flagship from './index';
-  // ` +
-  //     newValue +
-  //     `
-  // export default flagship;
-  //   `;
+  newValue =
+    `import { EventEmitter } from 'events';
+    ` +
+    `
+  declare module flagship {
+      ` +
+    newValue.split("import { EventEmitter } from 'events';")[1];
+  newValue =
+    newValue +
+    `
+  }
+  declare const flagship: FlagshipNodeSdk
+  export = flagship;
+    `;
   fs.writeFileSync('dist/flagship.d.ts', newValue, 'utf-8');
 }

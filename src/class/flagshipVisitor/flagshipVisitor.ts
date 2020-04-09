@@ -154,7 +154,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
   private checkCampaignsActivatedMultipleTimes(detailsModifications: DecisionApiResponseDataFullComputed): checkCampaignsActivatedMultipleTimesOutput {
     const output: checkCampaignsActivatedMultipleTimesOutput = { activateCampaign: {}, activateKey: {} };
-    const requestedActivateKeys = Object.entries(detailsModifications).filter(([key, keyInfo]) => keyInfo.isActivateNeeded === true);
+    const requestedActivateKeys = Object.entries(detailsModifications).filter(([, keyInfo]) => keyInfo.isActivateNeeded === true);
     const extractModificationIndirectKeysFromCampaign = (campaignId: string, directKey: string): Array<string> => {
       if (this.fetchedModifications) {
         const campaignDataArray: Array<DecisionApiCampaign> = this.fetchedModifications.campaigns.filter((campaign) => campaign.id === campaignId);
@@ -255,7 +255,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     // Notify modifications which have campaign conflict
     Object.entries(detailsModifications).forEach(
       ([key]) => {
-        // log only if it's a requested key
+        // log only if it's a requested keyw
         if (detailsModifications[key].value.length > 1 && detailsModifications.isRequested) {
           this.log.warn(`Modification "${key}" has further values because the modification is involved in campgains with:\nid="${detailsModifications[key].campaignId.toString()}"\nModification value kept:\n${key}="${detailsModifications[key].value[0]}"`);
         }
