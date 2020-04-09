@@ -21,7 +21,7 @@
     "test:coverage": "jest --coverage && rm -rf flagshipNodeSdkLogs",
     "test:react-sample": "cd ./examples/react-app && npm test",
     "release": "np",
-    "version": "npm run build:prod",
+    "version": "npm run build",
     "publish": "npm run update:react-app && npm run update:api-server && git add . && git commit -m\"Post publish update\" && git push && npm run publish:react",
     "publish:react": "cd ./examples/react-app && npm run deploy:github",
     "update:react-app": "cd ./examples/react-app && npm install @flagship.io/js-sdk@latest --save && cd ../../",
