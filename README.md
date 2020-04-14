@@ -100,10 +100,10 @@ Here are the attributes which you can set inside the SDK settings object:
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">argument</th>
-        <th style="width: 50px;">type</th>
-        <th style="width: 50px;">default</th>
-        <th>description</th>
+        <th style="width: 100px;">Argument</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -111,38 +111,38 @@ Here are the attributes which you can set inside the SDK settings object:
           <td>fetchNow</td>
           <td>boolean</td>
           <td>false</td>
-          <td>Decide to fetch automatically modifications data when creating a new <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a></td>
+          <td>Decide to fetch automatically modifications data when creating a new <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a>.</td>
         </tr>
         <tr>
           <td>activateNow</td>
           <td>boolean</td>
           <td>false</td>
-          <td>Decide to trigger automatically the data when creating a new <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a><br>NOTE: when set to <i>true</i>, it will implicitly set <i>fetchNow=true</i> as well</td>
+          <td>Decide to trigger automatically the data when creating a new <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a>.<br>NOTE: when set to <i>true</i>, it will implicitly set <i>fetchNow=true</i> as well.</td>
         </tr>
         <tr>
           <td>enableConsoleLogs</td>
           <td>boolean</td>
           <td>false</td>
-          <td>Enable it to display logs on the console when SDK is running.<br>This will only display logs such as <i>Warnings</i>, <i>Errors</i>, <i>Fatal errors</i> and <i>Info</i></td>
+          <td>Enable it to display logs on the console when SDK is running.<br>This will only display logs such as <i>Warnings</i>, <i>Errors</i>, <i>Fatal errors</i> and <i>Info</i>.</td>
         </tr>
         <tr>
           <td>logPathName</td>
           <td>string</td>
           <td>'flagshipNodeSdkLogs'</td>
-          <td>This is the path where logs will be written when SDK is running.<br>By default it will create a folder named <i>flagshipNodeSdkLogs</i> at the root of your project</a></td>
+          <td>This is the path where logs will be written when SDK is running.<br>By default it will create a folder named <i>flagshipNodeSdkLogs</i> at the root of your project</a>.</td>
         </tr>
         <tr>
           <td>nodeEnv</td>
           <td>string</td>
           <td>'production'</td>
-          <td>If value is other than <i>production</i>, it will also display <i>Debug</i> logs</td>
+          <td>If value is other than <i>production</i>, it will also display <i>Debug</i> logs.</td>
         </tr>
     </tbody>
 </table>
 
 ## JS SDK Features
 
-Don't hesitate to have a look to the main [Flagship technical doc](http://developers.flagship.io/) as well 😊.
+Don't hesitate to have a look to the main [Flagship technical doc](http://developers.flagship.io/) as well. 😊
 
 ### _flagshipSdk_ object
 
@@ -181,10 +181,10 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">attribute</th>
-        <th style="width: 50px;">type</th>
-        <th style="width: 50px;">default</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -192,13 +192,13 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
           <td>envId</td>
           <td>string</td>
           <td>*required*</td>
-          <td>Your Flagship environment id</td>
+          <td>Your Flagship environment id.</td>
         </tr>
         <tr>
           <td>config</td>
           <td>object</td>
           <td>defaultConfig</td>
-          <td>Setup SDK settings. It will override attributes from default configuration so you just need to specify attributes which you need to change. You can check config attributes <a href='#sdk-settings'>here</a></td>
+          <td>Setup SDK settings. It will override attributes from default configuration so you just need to specify attributes which you need to change. You can check config attributes <a href='#sdk-settings'>here</a>.</td>
         </tr>
     </tbody>
 </table>
@@ -224,10 +224,10 @@ const sdk = flagship.initSdk("YOUR_ENV_ID",
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">argument</th>
-        <th style="width: 50px;">type</th>
-        <th style="width: 50px;">default</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -235,13 +235,13 @@ const sdk = flagship.initSdk("YOUR_ENV_ID",
           <td>id</td>
           <td>string</td>
           <td>*required*</td>
-          <td>Your Flagship visitor id</td>
+          <td>Your Flagship visitor id.</td>
         </tr>
         <tr>
           <td>context</td>
           <td>object</td>
-          <td>*required*</td>
-          <td>Your Flagship visitor context</td>
+          <td>{}</td>
+          <td>Your Flagship visitor context. You'll set inside attributes which should match those defined in your campaigns.</td>
         </tr>
     </tbody>
 </table>
@@ -279,10 +279,10 @@ edit the context of the visitor
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">argument</th>
-        <th style="width: 50px;">type</th>
-        <th style="width: 50px;">default</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -290,7 +290,7 @@ edit the context of the visitor
           <td>context</td>
           <td>object</td>
           <td>*required*</td>
-          <td>Your Flagship visitor context</td>
+          <td>Your Flagship visitor context.</td>
         </tr>
     </tbody>
 </table>
@@ -317,10 +317,10 @@ It returns a <i>number</i> (=response status code) when promise is resolved.
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">argument</th>
-        <th style="width: 50px;">type</th>
-        <th style="width: 50px;">default</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -350,10 +350,10 @@ The shape of the object look like same as [decision api response, normal mode](h
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">argument</th>
-        <th style="width: 50px;">type</th>
-        <th style="width: 50px;">default</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -361,7 +361,7 @@ The shape of the object look like same as [decision api response, normal mode](h
           <td>activate</td>
           <td>boolean</td>
           <td>false</td>
-          <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation</td>
+          <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation.</td>
         </tr>
     </tbody>
 </table>
@@ -409,10 +409,10 @@ The shape of the object look like same as [decision api response](http://develop
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">argument</th>
-        <th style="width: 50px;">type</th>
-        <th style="width: 50px;">default</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -420,13 +420,13 @@ The shape of the object look like same as [decision api response](http://develop
           <td>campaignId</td>
           <td>string</td>
           <td>*required*</td>
-          <td>The <i>id</i> of the campaign from which you want to get modifications</td>
+          <td>The <i>id</i> of the campaign from which you want to get modifications.</td>
         </tr>
         <tr>
           <td>activate</td>
           <td>boolean</td>
           <td>false</td>
-          <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation</td>
+          <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation.</td>
         </tr>
     </tbody>
 </table>
@@ -474,10 +474,10 @@ The data returned will be the data from all modifications that you specify in th
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">argument</th>
-        <th style="width: 50px;">type</th>
-        <th style="width: 50px;">default</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -493,7 +493,7 @@ The data returned will be the data from all modifications that you specify in th
                 </tr>  
                 <tr>
                   <td><em>key</em></td>
-                  <td>Required. The name of the modification</td>
+                  <td>Required. The name of the modification.</td>
                 </tr>
                 <tr>
                   <td><em>defaultValue</em></td>
@@ -556,10 +556,10 @@ Kind of same behavior as [getModifications](#getModifications). It will activate
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">argument</th>
-        <th style="width: 50px;">type</th>
-        <th style="width: 50px;">default</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -577,8 +577,6 @@ Kind of same behavior as [getModifications](#getModifications). It will activate
                   <td><em>key</em></td>
                   <td>Required. The name of the modification</td>
                 </tr>
-                <tr>
-                  <td><em>More coming soon...</em></td>
               </tbody>
             </table>
           </td>
@@ -637,10 +635,10 @@ NOTE: You need to fetch modifications to automatically save them in cache. You c
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">argument</th>
-        <th style="width: 50px;">type</th>
-        <th style="width: 50px;">default</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -656,7 +654,7 @@ NOTE: You need to fetch modifications to automatically save them in cache. You c
                 </tr>  
                 <tr>
                   <td><em>key</em></td>
-                  <td>Required. The name of the modification</td>
+                  <td>Required. The name of the modification.</td>
                 </tr>
                 <tr>
                   <td><em>defaultValue</em></td>
@@ -712,10 +710,10 @@ This function allow you to send any kind of hit. All details of each hit below �
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">argument</th>
-        <th style="width: 50px;">type</th>
-        <th style="width: 50px;">default</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -804,16 +802,16 @@ visitorInstance.sendHits(
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">attribute</th>
-        <th style="width: 50px;">type</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
         <tr>
           <td>transactionId</td>
           <td>string</td>
-          <td>Required. The id of your transaction</td>
+          <td>Required. The id of your transaction.</td>
         </tr>
         <tr>
           <td>affiliation</td>
@@ -878,9 +876,9 @@ visitorInstance.sendHits(
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">attribute</th>
-        <th style="width: 50px;">type</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
@@ -902,16 +900,16 @@ visitorInstance.sendHits(
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">attribute</th>
-        <th style="width: 50px;">type</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
         <tr>
           <td>transactionId</td>
           <td>string</td>
-          <td>Required. The id of your transaction</td>
+          <td>Required. The id of your transaction.</td>
         </tr>
         <tr>
           <td>name</td>
@@ -958,16 +956,16 @@ visitorInstance.sendHits(
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th style="width: 100px;">attribute</th>
-        <th style="width: 50px;">type</th>
-        <th>description</th>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th>Description</th>
     </tr>
     </thead>
     <tbody>
         <tr>
           <td>category</td>
           <td>string</td>
-          <td>Required. Specifies the category of your event.<br>NOTE: The value must be either <b>Action Tracking</b> or <b>User Engagement</b></td>
+          <td>Required. Specifies the category of your event.<br>NOTE: The value must be either <b>Action Tracking</b> or <b>User Engagement</b>.</td>
         </tr>
         <tr>
           <td>action</td>
