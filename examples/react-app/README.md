@@ -14,19 +14,6 @@
 
 - **Npm**: version 3.0.0 or later...
 
-- You need to link `@flagship.io/js-sdk` :
-
-  - 1 - At the root level (=`PATH/TO/flagship-js-sdk`), run:
-
-    ```
-    flagship-js-sdk$ npm link
-    ```
-
-  - 2 - Then, move to `examples/api-server`:
-    ```
-    examples/api-server$ npm link PATH/TO/flagship-js-sdk
-    ```
-
 ## Getting Started
 
 - **Install** the node module:
@@ -40,6 +27,21 @@ examples/react-app$ npm install
 ```
 examples/react-app$ npm start
 ```
+
+## Run with local Flagship JS SDK
+
+- You need to link `@flagship.io/js-sdk` :
+
+  - 1 - At the root level (=`PATH/TO/flagship-js-sdk`), run:
+
+    ```
+    flagship-js-sdk$ npm link
+    ```
+
+  - 2 - Then, move to `examples/api-server`:
+    ```
+    examples/api-server$ npm link PATH/TO/flagship-js-sdk
+    ```
 
 ## More about Flagship SDK ?
 

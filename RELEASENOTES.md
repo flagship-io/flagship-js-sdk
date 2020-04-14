@@ -1,5 +1,13 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 0.1.4
+
+- Jumped version.
+
+## ➡️ Version 0.1.3
+
+- Jumped version.
+
 ## ➡️ Version 0.1.2
 
 ### Bug fixes 🐛
