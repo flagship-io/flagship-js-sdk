@@ -1,6 +1,6 @@
 {
   "name": "@flagship.io/js-sdk",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "Flagship JS SDK",
   "main": "dist/index.node.js",
   "browser": "dist/index.browser.js",
@@ -21,14 +21,14 @@
     "test:coverage": "jest --coverage && rm -rf flagshipNodeSdkLogs",
     "test:react-sample": "cd ./examples/react-app && npm test",
     "release": "np",
-    "version": "npm run build:prod",
+    "version": "npm run build",
     "publish": "npm run update:react-app && npm run update:api-server && git add . && git commit -m\"Post publish update\" && git push && npm run publish:react",
     "publish:react": "cd ./examples/react-app && npm run deploy:github",
     "update:react-app": "cd ./examples/react-app && npm install @flagship.io/js-sdk@latest --save && cd ../../",
     "update:api-server": "cd ./examples/api-server && npm install @flagship.io/js-sdk@latest --save && cd ../../",
     "stats:dev": "rm -rf dist && webpack --env=stats",
     "stats:prod": "webpack --profile --json --env=prod > stats.json && webpack-bundle-analyzer ./stats.json",
-    "build": "rm -rf dist && webpack --env=prod"
+    "build": "rm -rf dist && webpack --env=prod && prettier --write ./dist/flagship.d.ts"
   },
   "repository": {
     "type": "git",
@@ -76,6 +76,7 @@
     "jest": "^24.9.0",
     "jest-mock-axios": "^3.1.2",
     "np": "^5.1.2",
+    "prettier": "2.0.4",
     "source-map-loader": "^0.2.4",
     "supertest": "^4.0.2",
     "typescript": "^3.7.2",
@@ -87,6 +88,9 @@
   },
   "dependencies": {
     "axios": "^0.19.0"
+  },
+  "peerDependencies": {
+    "events": "^3.1.0"
   },
   "jest": {
     "testEnvironment": "node",
