@@ -109,31 +109,31 @@ Here are the attributes which you can set inside the SDK settings object:
     <tbody>
         <tr>
           <td>fetchNow</td>
-          <td>Boolean</td>
+          <td>boolean</td>
           <td>false</td>
           <td>Decide to fetch automatically modifications data when creating a new <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a></td>
         </tr>
         <tr>
           <td>activateNow</td>
-          <td>Boolean</td>
+          <td>boolean</td>
           <td>false</td>
           <td>Decide to trigger automatically the data when creating a new <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a><br>NOTE: when set to <i>true</i>, it will implicitly set <i>fetchNow=true</i> as well</td>
         </tr>
         <tr>
           <td>enableConsoleLogs</td>
-          <td>Boolean</td>
+          <td>boolean</td>
           <td>false</td>
           <td>Enable it to display logs on the console when SDK is running.<br>This will only display logs such as <i>Warnings</i>, <i>Errors</i>, <i>Fatal errors</i> and <i>Info</i></td>
         </tr>
         <tr>
           <td>logPathName</td>
-          <td>String</td>
+          <td>string</td>
           <td>'flagshipNodeSdkLogs'</td>
           <td>This is the path where logs will be written when SDK is running.<br>By default it will create a folder named <i>flagshipNodeSdkLogs</i> at the root of your project</a></td>
         </tr>
         <tr>
           <td>nodeEnv</td>
-          <td>String</td>
+          <td>string</td>
           <td>'production'</td>
           <td>If value is other than <i>production</i>, it will also display <i>Debug</i> logs</td>
         </tr>
@@ -190,13 +190,13 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
     <tbody>
         <tr>
           <td>envId</td>
-          <td>String</td>
+          <td>string</td>
           <td>*required*</td>
           <td>Your Flagship environment id</td>
         </tr>
         <tr>
           <td>config</td>
-          <td>Object</td>
+          <td>object</td>
           <td>defaultConfig</td>
           <td>Setup SDK settings. It will override attributes from default configuration so you just need to specify attributes which you need to change. You can check config attributes <a href='#sdk-settings'>here</a></td>
         </tr>
@@ -233,13 +233,13 @@ const sdk = flagship.initSdk("YOUR_ENV_ID",
     <tbody>
         <tr>
           <td>id</td>
-          <td>String</td>
+          <td>string</td>
           <td>*required*</td>
           <td>Your Flagship visitor id</td>
         </tr>
         <tr>
           <td>context</td>
-          <td>Object</td>
+          <td>object</td>
           <td>*required*</td>
           <td>Your Flagship visitor context</td>
         </tr>
@@ -288,7 +288,7 @@ edit the context of the visitor
     <tbody>
         <tr>
           <td>context</td>
-          <td>Object</td>
+          <td>object</td>
           <td>*required*</td>
           <td>Your Flagship visitor context</td>
         </tr>
@@ -326,7 +326,7 @@ It returns a <i>number</i> (=response status code) when promise is resolved.
     <tbody>
         <tr>
           <td>activate</td>
-          <td>Boolean</td>
+          <td>boolean</td>
           <td>false</td>
           <td>Trigger activate hit when fetching fresh modifications.</td>
         </tr>
@@ -359,7 +359,7 @@ The shape of the object look like same as [decision api response, normal mode](h
     <tbody>
         <tr>
           <td>activate</td>
-          <td>Boolean</td>
+          <td>boolean</td>
           <td>false</td>
           <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation</td>
         </tr>
@@ -418,13 +418,13 @@ The shape of the object look like same as [decision api response](http://develop
     <tbody>
         <tr>
           <td>campaignId</td>
-          <td>String</td>
+          <td>string</td>
           <td>*required*</td>
           <td>The <i>id</i> of the campaign from which you want to get modifications</td>
         </tr>
         <tr>
           <td>activate</td>
-          <td>Boolean</td>
+          <td>boolean</td>
           <td>false</td>
           <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation</td>
         </tr>
@@ -483,7 +483,7 @@ The data returned will be the data from all modifications that you specify in th
     <tbody>
         <tr>
           <td>modificationsRequested</td>
-          <td>Array(Object)</td>
+          <td>Array(object)</td>
           <td>*required*</td>
           <td>List of all modifications you're looking for. Each element of the array follow this object structure:
             <table> 
@@ -509,7 +509,7 @@ The data returned will be the data from all modifications that you specify in th
         </tr>
         <tr>
           <td>activateAllModifications</td>
-          <td>Boolean</td>
+          <td>boolean</td>
           <td>null</td>
           <td>If set to true, all modifications will be activated. If set to false, none will be activated.
           <br>Be aware that if this argument is set, the attribute <i>activate</i> set in each element of array <b>modificationsRequested</b> will be ignored.</td>
@@ -565,7 +565,7 @@ Kind of same behavior as [getModifications](#getModifications). It will activate
     <tbody>
         <tr>
           <td>modificationToActivateRequested</td>
-          <td>Array(Object)</td>
+          <td>Array(object)</td>
           <td>*required*</td>
           <td>List of all modifications (=key) you're looking to activate. Each element of the array follow this object structure:
             <table> 
@@ -646,7 +646,7 @@ NOTE: You need to fetch modifications to automatically save them in cache. You c
     <tbody>
         <tr>
           <td>modificationsRequested</td>
-          <td>Array(Object)</td>
+          <td>Array(object)</td>
           <td>*required*</td>
           <td>List of all modifications you're looking for. Each element of the array follow this object structure:
             <table> 
@@ -672,7 +672,7 @@ NOTE: You need to fetch modifications to automatically save them in cache. You c
         </tr>
         <tr>
           <td>activateAllModifications</td>
-          <td>Boolean</td>
+          <td>boolean</td>
           <td>null</td>
           <td>If set to true, all modifications will be activated. If set to false, none will be activated.
           <br>Be aware that if this argument is set, the attribute <i>activate</i> set in each element of array <b>modificationsRequested</b> will be ignored.</td>
@@ -812,62 +812,62 @@ visitorInstance.sendHits(
     <tbody>
         <tr>
           <td>transactionId</td>
-          <td>String</td>
+          <td>string</td>
           <td>Required. The id of your transaction</td>
         </tr>
         <tr>
           <td>affiliation</td>
-          <td>String</td>
+          <td>string</td>
           <td>Required. The name of the KPI that you will have inside your reporting.</td>
         </tr>
         <tr>
           <td>totalRevenue</td>
-          <td>Number</td>
+          <td>number</td>
           <td>Optional. Specifies the total revenue associated with the transaction. This value should include any shipping or tax costs.</td>
         </tr>
         <tr>
           <td>shippingCost</td>
-          <td>Number</td>
+          <td>number</td>
           <td>Optional. The total shipping cost of your transaction.</td>
         </tr>
         <tr>
           <td>shippingMethod</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. The shipping method of your transaction.</td>
         </tr>
         <tr>
           <td>taxes</td>
-          <td>Number</td>
+          <td>number</td>
           <td>Optional. Specifies the total tax of your transaction.</td>
         </tr>
         <tr>
           <td>currency</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. Specifies the currency of your transaction.<br>NOTE: Value should be a valid ISO 4217 currency code.</td>
         </tr>
         <tr>
           <td>paymentMethod</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. Specifies the payment method used for your transaction.</td>
         </tr>
         <tr>
           <td>itemCount</td>
-          <td>Number</td>
+          <td>number</td>
           <td>Optional. Specifies the number of item of your transaction.</td>
         </tr>
         <tr>
           <td>couponCode</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. The coupon code associated with the transaction.</td>
         </tr>
         <tr>
           <td>documentLocation</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
@@ -886,12 +886,12 @@ visitorInstance.sendHits(
     <tbody>
         <tr>
           <td>documentLocation</td>
-          <td>String</td>
+          <td>string</td>
           <td>Required. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
-          <td>String</td>
+          <td>string</td>
           <td>Required. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
@@ -910,44 +910,44 @@ visitorInstance.sendHits(
     <tbody>
         <tr>
           <td>transactionId</td>
-          <td>String</td>
+          <td>string</td>
           <td>Required. The id of your transaction</td>
         </tr>
         <tr>
           <td>name</td>
-          <td>String</td>
+          <td>string</td>
           <td>Required. The name of your item.</td>
         </tr>
         <tr>
           <td>price</td>
-          <td>Number</td>
+          <td>number</td>
           <td>Optional. Specifies the price for a single item / unit.</td>
         </tr>
         <tr>
           <td>code</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. Specifies the SKU or item code.</td>
         </tr>
         <tr>
           <td>category</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. Specifies the category that the item belongs to.
           </td>
         </tr>
         <tr>
           <td>quantity</td>
-          <td>Number</td>
+          <td>number</td>
           <td>Optional. Specifies the number of items purchased.
           </td>
         </tr>
         <tr>
           <td>documentLocation</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
@@ -966,32 +966,32 @@ visitorInstance.sendHits(
     <tbody>
         <tr>
           <td>category</td>
-          <td>String</td>
+          <td>string</td>
           <td>Required. Specifies the category of your event.<br>NOTE: The value must be either <b>Action Tracking</b> or <b>User Engagement</b></td>
         </tr>
         <tr>
           <td>action</td>
-          <td>String</td>
+          <td>string</td>
           <td>Required. The name of the KPI you will have inside the reporting.</td>
         </tr>
         <tr>
           <td>label</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. Specifies additional description of your event.</td>
         </tr>
         <tr>
           <td>value</td>
-          <td>Number</td>
+          <td>number</td>
           <td>Optional. Specifies how much you won with that event.<br>For example, depending on the lead generated, you will earn 10 to 100 euros. Adding that value will enable us to do a sum inside the reporting and give you the average value too.<br>NOTE: Value must be non-negative.</td>
         </tr>
         <tr>
           <td>documentLocation</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
-          <td>String</td>
+          <td>string</td>
           <td>Optional. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
