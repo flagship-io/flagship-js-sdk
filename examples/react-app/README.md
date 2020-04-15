@@ -4,7 +4,7 @@
 
 ## Online demo
 
-<ul style="line-height:1.4;"><li><a href='https://abtasty.github.io/flagship-js-sdk/'>👉click here ! All details inside 😎</a></li></ul>
+<ul style="line-height:1.4;"><li><a href='https://abtasty.github.io/flagship-js-sdk/'>👉click here ! 😎</a></li></ul>
   
 ## Try it locally
 
@@ -38,9 +38,9 @@ examples/react-app$ npm start
     flagship-js-sdk$ npm link
     ```
 
-  - 2 - Then, move to `examples/api-server`:
+  - 2 - Then, move to `examples/react-app`:
     ```
-    examples/api-server$ npm link PATH/TO/flagship-js-sdk
+    examples/react-app$ npm link PATH/TO/flagship-js-sdk
     ```
 
 ## More about Flagship SDK ?

@@ -309,7 +309,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       fetchedModif.then(
         (response: DecisionApiResponse) => {
           const castResponse = response as DecisionApiResponse;
-          this.log.info(`Get modifications succeed with status code:${castResponse.status}`);
+          this.log.info('Get modifications succeed');
           this.log.debug(`with json:\n${JSON.stringify(castResponse.data)}`);
           resolve(this.getModificationsPostProcess(castResponse, modificationsRequested, activateAllModifications));
         },

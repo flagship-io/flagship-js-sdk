@@ -2,7 +2,7 @@ const merge = require('webpack-merge');
 const baseConfig = require('./config.base.js');
 
 module.exports = merge(baseConfig, {
-  target: 'node', // node.js
+  target: 'node',
   output: {
     filename: 'index.node.js',
     libraryTarget: 'commonjs2',
@@ -53,7 +53,7 @@ function DtsClean() {
     newValue +
     `
   }
-  declare const flagship: FlagshipNodeSdk
+  declare const flagship: flagship.FlagshipNodeSdk
   export = flagship;
     `;
   fs.writeFileSync('dist/flagship.d.ts', newValue, 'utf-8');
