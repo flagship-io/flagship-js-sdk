@@ -53,7 +53,7 @@ function DtsClean() {
     newValue +
     `
   }
-  declare const flagship: FlagshipNodeSdk
+  declare const flagship: flagship.FlagshipNodeSdk
   export = flagship;
     `;
   fs.writeFileSync('dist/flagship.d.ts', newValue, 'utf-8');

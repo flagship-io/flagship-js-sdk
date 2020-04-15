@@ -1,5 +1,14 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 0.1.5
+
+- Build not minified.
+- `index.d.ts` without errors.
+
+### Bug fixes 🐛
+
+- Minor fix
+
 ## ➡️ Version 0.1.4
 
 - Jumped version.
