@@ -1,5 +1,30 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 0.1.7
+
+### Breaking changes ⚠️
+
+- New behavior for:
+
+  - getModifications, it will return modifications from cache and won't return a promise anymore.
+
+- Some functions name have changed. Both are supported for now but deprecated names will be deleted soon:
+
+  - setContext --> [`updateContext`](README.md#updateContext)
+  - newVisitor --> [`createVisitor`](README.md#createVisitor)
+  - initSdk --> [`start`](README.md#start)
+  - getModificationsCache --> Will be deleted soon, you can replace it with [`getModifications`](README.md#getModifications).
+
+### New features 🎉
+
+- New function added:
+
+  - [`sendHit`](README.md#sendHit)
+
+### Bug fixes 🐛
+
+- Typescript supports `saveCache` listener
+
 ## ➡️ Version 0.1.6
 
 ### New features 🎉

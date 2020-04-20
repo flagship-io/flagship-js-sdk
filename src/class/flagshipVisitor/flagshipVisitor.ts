@@ -298,28 +298,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return {};
   }
 
-  public getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean|null = null): Promise<GetModificationsOutput> {
-    return new Promise((resolve, reject) => {
-      if (!modificationsRequested) {
-        const errorMsg = 'No modificationsRequested specified...';
-        this.log.error(errorMsg);
-        reject(errorMsg);
-      }
-      const fetchedModif = this.fetchAllModifications({ activate: !!activateAllModifications }) as Promise<DecisionApiResponse >;
-      fetchedModif.then(
-        (response: DecisionApiResponse) => {
-          const castResponse = response as DecisionApiResponse;
-          this.log.info('Get modifications succeed');
-          this.log.debug(`with json:\n${JSON.stringify(castResponse.data)}`);
-          resolve(this.getModificationsPostProcess(castResponse, modificationsRequested, activateAllModifications));
-        },
-      ).catch((error: Error) => {
-        this.log.fatal(`Get modifications failed with error:\n${(error) || JSON.stringify(error)}`);
-        reject(error);
-      });
-    });
+  public getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean|null = null): GetModificationsOutput {
+    return this.getModificationsCache(modificationsRequested, activateAllModifications);
   }
 
+  // deprecated
   public getModificationsCache(
     modificationsRequested: FsModifsRequestedList,
     activateAllModifications: boolean | null = null,
@@ -337,8 +320,13 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return this.getModificationsPostProcess(response, modificationsRequested, activateAllModifications);
   }
 
+  // deprecated
   public setContext(context: FlagshipVisitorContext): void {
     this.context = context;
+  }
+
+  public updateContext(context: FlagshipVisitorContext): void {
+    this.setContext(context);
   }
 
   public synchronizeModifications(activate = false): Promise<number> {
@@ -659,10 +647,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
   }
 
+  public sendHit(hitData: HitShape): Promise<void> {
+    return this.sendHits([hitData]);
+  }
+
   public sendHits(hitsArray: Array<HitShape>): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        Promise.all(
+        const promises = Promise.all(
           hitsArray.map(async (hit) => {
             const customParams = this.generateCustomTypeParamsOf(hit);
             const url = 'https://ariane.abtasty.com';
@@ -678,8 +670,16 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             return new Promise((resolveAuto) => resolveAuto()); // do nothing
           }),
         );
-        this.log.info('sendHits: success');
-        resolve();
+
+        promises.then(
+          () => {
+            this.log.info('sendHits: success');
+            resolve();
+          },
+        ).catch((error) => {
+          this.log.fatal('sendHits: fail');
+          reject(error);
+        });
       } catch (error) {
         this.log.fatal('sendHits: fail');
         reject(error);
