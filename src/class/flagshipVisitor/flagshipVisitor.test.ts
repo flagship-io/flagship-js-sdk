@@ -742,83 +742,95 @@ describe('FlagshipVisitor', () => {
       };
     });
     it('should send hit of type "transaction" + "item" + "event" + "page" + "screen" if there are in the array argument', (done) => {
-      visitorInstance.sendHits(
-        [
-          demoData.hit.event,
-          demoData.hit.item,
-          demoData.hit.screen,
-          demoData.hit.transaction,
-        ],
-      ).then((response) => {
-        try {
-          expect(response).not.toBeDefined();
-          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
-          expect(spyWarnLogs).toBeCalledTimes(0);
-          expect(spyErrorLogs).toBeCalledTimes(0);
-          expect(spyFatalLogs).toBeCalledTimes(0);
-        } catch (error) {
-          done.fail(error);
-        }
-        done();
-      });
-      mockAxios.mockResponse(responseObject);
-      expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://ariane.abtasty.com',
-        {
-          cid: 'bn1ab7m56qolupi5sa0g',
-          vid: 'test-perf',
-          ds: 'APP',
-          ea: 'signOff',
-          dl: 'http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F',
-          ec: 'User Engagement',
-          el: 'yolo label ;)',
-          ev: 123,
-          pt: 'YoloTitle',
-          t: 'EVENT',
-        });
-      expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://ariane.abtasty.com',
-        {
-          cid: 'bn1ab7m56qolupi5sa0g',
-          ds: 'APP',
-          ic: 'yoloCode',
-          dl: 'http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F',
-          in: 'yoloItem',
-          ip: 999,
-          iq: 1234444,
-          iv: 'yoloCategory',
-          pt: 'YoloScreen',
-          t: 'ITEM',
-          tid: '12451342423',
-          vid: 'test-perf',
-        });
-      expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://ariane.abtasty.com',
-        {
-          cid: 'bn1ab7m56qolupi5sa0g',
-          dl: 'http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F',
-          ds: 'APP',
-          t: 'SCREENVIEW',
-          vid: 'test-perf',
-          pt: 'YoloScreen',
-        });
-      expect(mockAxios.post).toHaveBeenNthCalledWith(4, 'https://ariane.abtasty.com',
-        {
-          cid: 'bn1ab7m56qolupi5sa0g',
-          ds: 'APP',
-          pt: 'YoloScreen',
-          tid: '12451342423',
-          vid: 'test-perf',
-          dl: 'http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F',
-          icn: 2,
-          pm: 'yoloPaymentMethod',
-          sm: 'yoloShippingMethod',
-          t: 'TRANSACTION',
-          ta: 'yoloAffiliation',
-          tc: 'yoloCurrency',
-          tcc: 'YOLOCOUPON',
-          tr: 999,
-          ts: 888,
-          tt: 1234444,
-        });
-      expect(mockAxios.post).toHaveBeenCalledTimes(4);
+      try {
+        visitorInstance.sendHits(
+          [
+            demoData.hit.event,
+            demoData.hit.item,
+            demoData.hit.screen,
+            demoData.hit.transaction,
+          ],
+        ).then((response) => {
+          try {
+            expect(response).not.toBeDefined();
+            expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+            expect(spyWarnLogs).toBeCalledTimes(0);
+            expect(spyErrorLogs).toBeCalledTimes(0);
+            expect(spyFatalLogs).toBeCalledTimes(0);
+            done();
+          } catch (error) {
+            done.fail(error);
+          }
+        }).catch(
+          (error) => {
+            done.fail(error);
+          },
+        );
+        mockAxios.mockResponse();
+        mockAxios.mockResponse();
+        mockAxios.mockResponse();
+        mockAxios.mockResponse();
+        // mockAxios.mockResponse()
+        expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://ariane.abtasty.com',
+          {
+            cid: 'bn1ab7m56qolupi5sa0g',
+            vid: 'test-perf',
+            ds: 'APP',
+            ea: 'signOff',
+            dl: 'http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F',
+            ec: 'User Engagement',
+            el: 'yolo label ;)',
+            ev: 123,
+            pt: 'YoloTitle',
+            t: 'EVENT',
+          });
+        expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://ariane.abtasty.com',
+          {
+            cid: 'bn1ab7m56qolupi5sa0g',
+            ds: 'APP',
+            ic: 'yoloCode',
+            dl: 'http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F',
+            in: 'yoloItem',
+            ip: 999,
+            iq: 1234444,
+            iv: 'yoloCategory',
+            pt: 'YoloScreen',
+            t: 'ITEM',
+            tid: '12451342423',
+            vid: 'test-perf',
+          });
+        expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://ariane.abtasty.com',
+          {
+            cid: 'bn1ab7m56qolupi5sa0g',
+            dl: 'http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F',
+            ds: 'APP',
+            t: 'SCREENVIEW',
+            vid: 'test-perf',
+            pt: 'YoloScreen',
+          });
+        expect(mockAxios.post).toHaveBeenNthCalledWith(4, 'https://ariane.abtasty.com',
+          {
+            cid: 'bn1ab7m56qolupi5sa0g',
+            ds: 'APP',
+            pt: 'YoloScreen',
+            tid: '12451342423',
+            vid: 'test-perf',
+            dl: 'http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F',
+            icn: 2,
+            pm: 'yoloPaymentMethod',
+            sm: 'yoloShippingMethod',
+            t: 'TRANSACTION',
+            ta: 'yoloAffiliation',
+            tc: 'yoloCurrency',
+            tcc: 'YOLOCOUPON',
+            tr: 999,
+            ts: 888,
+            tt: 1234444,
+          });
+        expect(mockAxios.post).toHaveBeenCalledTimes(4);
+      } catch (error) {
+        done.fail(error);
+      }
     });
     it('should logs error when hit "event" not set correctly', (done) => {
       const brokenEvent1 = { ...demoData.hit.event, data: { ...demoData.hit.event.data, action: null } };

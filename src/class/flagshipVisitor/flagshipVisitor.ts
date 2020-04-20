@@ -670,6 +670,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             return new Promise((resolveAuto) => resolveAuto()); // do nothing
           }),
         );
+
         promises.then(
           () => {
             this.log.info('sendHits: success');
