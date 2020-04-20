@@ -24,7 +24,6 @@ class Flagship implements IFlagship {
     flagshipSdkHelper.logIgnoredAttributesFromObject(ignoredConfig, this.log, 'custom flagship SDK config');
   }
 
-  // eslint-disable-next-line class-methods-use-this
   public createVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor {
     return this.newVisitor(id, context);
   }

@@ -752,6 +752,10 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
+          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyWarnLogs).toBeCalledTimes(0);
+          expect(spyErrorLogs).toBeCalledTimes(0);
+          expect(spyFatalLogs).toBeCalledTimes(0);
         } catch (error) {
           done.fail(error);
         }
@@ -815,10 +819,6 @@ describe('FlagshipVisitor', () => {
           tt: 1234444,
         });
       expect(mockAxios.post).toHaveBeenCalledTimes(4);
-      expect(spyInfoLogs).toBeCalledWith('sendHits: success');
-      expect(spyWarnLogs).toBeCalledTimes(0);
-      expect(spyErrorLogs).toBeCalledTimes(0);
-      expect(spyFatalLogs).toBeCalledTimes(0);
     });
     it('should logs error when hit "event" not set correctly', (done) => {
       const brokenEvent1 = { ...demoData.hit.event, data: { ...demoData.hit.event.data, action: null } };
@@ -831,18 +831,18 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
+          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyWarnLogs).toBeCalledTimes(0);
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Event): failed because attribute "category" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Event): failed because attribute "action" is missing...');
+          expect(spyErrorLogs).toBeCalledTimes(2);
+          expect(spyFatalLogs).toBeCalledTimes(0);
         } catch (error) {
           done.fail(error);
         }
         done();
       });
       expect(mockAxios.post).toBeCalledTimes(0);
-      expect(spyInfoLogs).toBeCalledWith('sendHits: success');
-      expect(spyWarnLogs).toBeCalledTimes(0);
-      expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Event): failed because attribute "category" is missing...');
-      expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Event): failed because attribute "action" is missing...');
-      expect(spyErrorLogs).toBeCalledTimes(2);
-      expect(spyFatalLogs).toBeCalledTimes(0);
     });
     it('should logs error when hit "screen" not set correctly', (done) => {
       const brokenHit1 = { ...demoData.hit.screen, data: { ...demoData.hit.screen.data, pageTitle: null } };
@@ -855,18 +855,18 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
+          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyWarnLogs).toBeCalledTimes(0);
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Screen): failed because attribute "pageTitle" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Screen): failed because attribute "documentLocation" is missing...');
+          expect(spyErrorLogs).toBeCalledTimes(2);
+          expect(spyFatalLogs).toBeCalledTimes(0);
         } catch (error) {
           done.fail(error);
         }
         done();
       });
       expect(mockAxios.post).toBeCalledTimes(0);
-      expect(spyInfoLogs).toBeCalledWith('sendHits: success');
-      expect(spyWarnLogs).toBeCalledTimes(0);
-      expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Screen): failed because attribute "pageTitle" is missing...');
-      expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Screen): failed because attribute "documentLocation" is missing...');
-      expect(spyErrorLogs).toBeCalledTimes(2);
-      expect(spyFatalLogs).toBeCalledTimes(0);
     });
     it('should logs error when hit "item" not set correctly', (done) => {
       visitorInstance.sendHits(
@@ -877,18 +877,18 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
+          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyWarnLogs).toBeCalledTimes(0);
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Item): failed because attribute "transactionId" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Item): failed because attribute "name" is missing...');
+          expect(spyErrorLogs).toBeCalledTimes(2);
+          expect(spyFatalLogs).toBeCalledTimes(0);
         } catch (error) {
           done.fail(error);
         }
         done();
       });
       expect(mockAxios.post).toBeCalledTimes(0);
-      expect(spyInfoLogs).toBeCalledWith('sendHits: success');
-      expect(spyWarnLogs).toBeCalledTimes(0);
-      expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Item): failed because attribute "transactionId" is missing...');
-      expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Item): failed because attribute "name" is missing...');
-      expect(spyErrorLogs).toBeCalledTimes(2);
-      expect(spyFatalLogs).toBeCalledTimes(0);
     });
     it('should logs error when hit "transaction" not set correctly', (done) => {
       visitorInstance.sendHits(
@@ -899,18 +899,18 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
+          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyWarnLogs).toBeCalledTimes(0);
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Transaction): failed because attribute "transactionId" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Transaction): failed because attribute "affiliation" is missing...');
+          expect(spyErrorLogs).toBeCalledTimes(2);
+          expect(spyFatalLogs).toBeCalledTimes(0);
         } catch (error) {
           done.fail(error);
         }
         done();
       });
       expect(mockAxios.post).toBeCalledTimes(0);
-      expect(spyInfoLogs).toBeCalledWith('sendHits: success');
-      expect(spyWarnLogs).toBeCalledTimes(0);
-      expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Transaction): failed because attribute "transactionId" is missing...');
-      expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Transaction): failed because attribute "affiliation" is missing...');
-      expect(spyErrorLogs).toBeCalledTimes(2);
-      expect(spyFatalLogs).toBeCalledTimes(0);
     });
   });
 

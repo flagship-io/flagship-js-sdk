@@ -647,10 +647,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
   }
 
+  public sendHit(hitData: HitShape): Promise<void> {
+    return this.sendHits([hitData]);
+  }
+
   public sendHits(hitsArray: Array<HitShape>): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        Promise.all(
+        const promises = Promise.all(
           hitsArray.map(async (hit) => {
             const customParams = this.generateCustomTypeParamsOf(hit);
             const url = 'https://ariane.abtasty.com';
@@ -666,8 +670,15 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             return new Promise((resolveAuto) => resolveAuto()); // do nothing
           }),
         );
-        this.log.info('sendHits: success');
-        resolve();
+        promises.then(
+          () => {
+            this.log.info('sendHits: success');
+            resolve();
+          },
+        ).catch((error) => {
+          this.log.fatal('sendHits: fail');
+          reject(error);
+        });
       } catch (error) {
         this.log.fatal('sendHits: fail');
         reject(error);
