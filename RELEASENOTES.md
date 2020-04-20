@@ -15,6 +15,12 @@
   - initSdk --> [`start`](README.md#start)
   - getModificationsCache --> Will be deleted soon, you can replace it with [`getModifications`](README.md#getModifications).
 
+### New features 🎉
+
+- New function added:
+
+  - [`sendHit`](README.md#sendHit)
+
 ### Bug fixes 🐛
 
 - Typescript supports `saveCache` listener

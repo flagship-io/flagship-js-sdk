@@ -727,6 +727,38 @@ describe('FlagshipVisitor', () => {
     });
   });
 
+  describe('SendHit function', () => {
+    beforeEach(() => {
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      spyGenerateCustomTypeParamsOf = jest.spyOn(visitorInstance, 'generateCustomTypeParamsOf');
+      spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
+      spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
+      spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
+      spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
+      responseObject = {
+        data: null,
+        status: 200,
+        statusText: 'OK',
+      };
+    });
+    it('should work - transaction hit', (done) => {
+      visitorInstance.sendHit(demoData.hit.transaction).then((response) => {
+        try {
+          expect(response).not.toBeDefined();
+          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyWarnLogs).toBeCalledTimes(0);
+          expect(spyErrorLogs).toBeCalledTimes(0);
+          expect(spyFatalLogs).toBeCalledTimes(0);
+        } catch (error) {
+          done.fail(error);
+        }
+        done();
+      });
+
+      mockAxios.mockResponse();
+      expect(mockAxios.post).toBeCalledTimes(1);
+    });
+  });
   describe('SendHits function', () => {
     beforeEach(() => {
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);

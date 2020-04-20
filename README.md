@@ -256,6 +256,7 @@ visitorInstance.on('ready', () => {
 - [getAllModifications](#getAllModifications)
 - [getModificationsForCampaign](#getModificationsForCampaign)
 - [getModifications](#getModifications)
+- [sendHit](#sendHit)
 - [sendHits](#sendHits)
 
 #### `events listener`
@@ -690,11 +691,55 @@ will return:
 }
 ```
 
-#### `sendHits`
+#### `sendHit`
 
 > return a `Promise<void>`
 
 This function allow you to send any kind of hit. All details of each hit below 👇.
+
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>hitShape</td>
+          <td>object (TS: HitShape)</td>
+          <td>*required*</td>
+          <td>The <i>HitShape</i> can contain either:
+            <br>- <a href='README.md#transaction-hit'>Transaction hit</a>
+            <br>- <a href='README.md#screen-hit'>Screen hit</a>
+            <br>- <a href='README.md#item-hit'>Item hit</a>
+            <br>- <a href='README.md#event-hit'>Event hit</a>
+            <br>NOTE: each hit have specific attributes required, click on them to check it.
+        </tr>
+    </tbody>
+</table>
+
+**Demo:**
+
+```
+
+visitorInstance.sendHit(
+  {
+    type: 'Screen',
+    data: {
+        documentLocation: "http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F",
+        pageTitle: "yoloScreen"
+  }
+).then(() => console.log('Hit send !')
+```
+
+#### `sendHits`
+
+> return a `Promise<void>`
+
+This function allow you to send multiple and any kind of hit. All details of each hit below 👇.
 
 <table class="table table-bordered table-striped">
     <thead>
