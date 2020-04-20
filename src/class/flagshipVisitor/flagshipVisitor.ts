@@ -428,6 +428,27 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return output;
   }
 
+  private saveModificationsInCache(data: DecisionApiResponseData | null): void {
+    let haveBeenCalled = false;
+    const callback = (arg = data): void => {
+      haveBeenCalled = true;
+      this.fetchedModifications = arg;
+    };
+    this.emit('saveCache', {
+      saveInCacheModifications: callback,
+      modifications: {
+        before: this.fetchedModifications,
+        after: data,
+      },
+    });
+
+    // if callback not used, do default behavior
+    if (!haveBeenCalled) {
+      this.fetchedModifications = data;
+    }
+    this.log.debug(`Saving in cache those modifications:\n${data ? JSON.stringify(data) : 'null'}`);
+  }
+
   private fetchAllModifications(
     args: {
       activate?: boolean;
@@ -467,17 +488,17 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       } else {
         axios.post(url, {
           visitor_id: this.id,
-          trigger_hit: false,
+          trigger_hit: activate, // TODO: to unit test
           context: this.context,
         })
           .then((response: DecisionApiResponse) => {
-            this.fetchedModifications = response.data;
+            this.saveModificationsInCache(response.data);
             resolve(
               this.fetchAllModificationsPostProcess(response, { ...defaultArgs, ...args }) as DecisionApiResponse,
             );
           })
           .catch((response: Error) => {
-            this.fetchedModifications = null;
+            this.saveModificationsInCache(null);
             this.log.fatal('fetchAllModifications: an error occurred while fetching...');
             if (activate) {
               this.log.fatal('fetchAllModifications: activate canceled due to errors...');

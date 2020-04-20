@@ -509,8 +509,8 @@ The data returned will be the data from all modifications that you specify in th
         </tr>
         <tr>
           <td>activateAllModifications</td>
-          <td>boolean</td>
-          <td>null</td>
+          <td>Boolean</td>
+          <td>false</td>
           <td>If set to true, all modifications will be activated. If set to false, none will be activated.
           <br>Be aware that if this argument is set, the attribute <i>activate</i> set in each element of array <b>modificationsRequested</b> will be ignored.</td>
         </tr>
