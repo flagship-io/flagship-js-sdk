@@ -262,6 +262,7 @@ visitorInstance.on('ready', () => {
 
 ### <i>FlagshipVisitor</i> class
 
+- [events listener](#events-listener)
 - [setContext](#setContext)
 - [synchronizeModifications](#synchronizeModifications)
 - [getAllModifications](#getAllModifications)
@@ -269,6 +270,87 @@ visitorInstance.on('ready', () => {
 - [getModifications](#getModifications)
 - [getModificationsCache](#getModificationsCache)
 - [sendHits](#sendHits)
+
+#### `events listener`
+
+`FlagshipVisitor` contains further event listener which help you to handle the SDK.
+
+If want to listen a listener, here an example:
+
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th style="width: 100px;">Event listener</th>
+        <th>Is called multiple times ?</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>ready</td>
+          <td>No</td>
+          <td>This is a mandatory listener to listen. Once it's called, you are ready to use all features from the SDK.</td>
+        </tr>
+        <tr>
+          <td>saveCache</td>
+          <td>Yes</td>
+          <td>Called when SDK is about to save in cache fresh modifications. For example, during first initialization or when using <a href='README.md#synchronizeModifications'>synchronizeModifications()</a>.<br>This listener has an argument in the callback which has following shape:<br>
+           <table> 
+              <tbody><tr>
+                  <th style="width:25%">Key/Property</th>
+                  <th>Description</th>
+                </tr>  
+                <tr>
+                  <td><em>modifications</em></td>
+                  <td>It is an object which contains modifications <i>past</i> and <i>future</i> computed modifications. 
+                  <br>
+                   <table> 
+              <tbody><tr>
+                  <th style="width:25%">Key/Property</th>
+                  <th>Description</th>
+                </tr>  
+                <tr>
+                  <td><em>before</em></td>
+                  <td>Modificaitons previously in cache.</td>
+                </tr>
+                  <td><em>after</em></td>
+                  <td>New modificaitons which are about to be saved in cache.</td>
+              </tbody>
+            </table>
+            </td>
+                </tr>
+                <tr>
+                  <td><em>saveInCacheModifications</em></td>
+                  <td>This is a function which you'll have to call if you want to override the modifications which will be saved in the SDK cache.<br>
+                  It has one argument which the modifications that you want to override.<br>If you leave it undefined, it will keep default behavior.</td>
+                </tr>
+                  <tr>
+                </tr>
+              </tbody>
+            </table>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+**Demo:**
+
+If you want to listen only once:
+
+```
+ visitorInstance.once('ready', () => {
+    console.log('Flagship SDK ready !');
+  });
+```
+
+If you want to listen anytime:
+
+```
+ visitorInstance.on('saveCache', (args) => {
+    const { modifications: { after } } = args;
+    console.log('Flagship will save in cache those modifications:\n' + JSON.stringify(after));
+  });
+```
 
 #### `setContext`
 
