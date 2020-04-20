@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 0.1.8
+
+### Bug fixes 🐛
+
+- Minor typescript fix
+
 ## ➡️ Version 0.1.7
 
 ### Breaking changes ⚠️
