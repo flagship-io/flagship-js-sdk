@@ -50,13 +50,13 @@ const flagship = require("@flagship.io/js-sdk"); // ES5
 - Then initialize:
 
 ```
-const sdk = flagship.initSdk("YOUR_ENV_ID", { /* sdk settings */ });
+const sdk = flagship.start("YOUR_ENV_ID", { /* sdk settings */ });
 ```
 
 - Then create a visitor:
 
 ```
-const visitorInstance = sdk.newVisitor("YOUR_VISITOR_ID",{
+const visitorInstance = sdk.createVisitor("YOUR_VISITOR_ID",{
     //...
     some: "VISITOR_CONTEXT",
     //...
@@ -93,7 +93,7 @@ This is one of the basic workflow you can achieve with the SDK. 🙂
 
 This is all available settings which you can set on the SDK.
 
-Those settings can be setup using [initSdk function](#initSdk) (sample inside).
+Those settings can be setup using [start function](#start) (sample inside).
 
 Here are the attributes which you can set inside the SDK settings object:
 
@@ -146,11 +146,11 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 
 ### _flagshipSdk_ object
 
-- [initSdk](#initSdk)
+- [start](#start)
 
 ### <i>Flagship</i> class
 
-- [newVisitor](#newVisitor)
+- [createVisitor](#createVisitor)
 
 ### <i>FlagshipVisitor</i> class
 
@@ -174,7 +174,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 
 ### _flagshipSdk_ object
 
-#### `initSdk`
+#### `start`
 
 > return a `Flagship` instance.
 
@@ -206,7 +206,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 **Demo:**
 
 ```
-const sdk = flagship.initSdk("YOUR_ENV_ID",
+const sdk = flagship.start("YOUR_ENV_ID",
 {
     enableConsoleLogs: true,
     fetchNow: false,
@@ -215,9 +215,9 @@ const sdk = flagship.initSdk("YOUR_ENV_ID",
 
 ### <i>Flagship</i> class
 
-- [newVisitor](#newVisitor)
+- [createVisitor](#createVisitor)
 
-#### `newVisitor`
+#### `createVisitor`
 
 > return a <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a> instance.
 
@@ -249,7 +249,7 @@ const sdk = flagship.initSdk("YOUR_ENV_ID",
 **Demo:**
 
 ```
-const visitorInstance = sdk.newVisitor("YOUR_VISITOR_ID",{
+const visitorInstance = sdk.createVisitor("YOUR_VISITOR_ID",{
     //...
     some: "VISITOR_CONTEXT",
     //...

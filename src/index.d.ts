@@ -44,7 +44,8 @@ export interface IFlagship {
   config: FlagshipSdkConfig;
     log: any;
     envId: string;
-    newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;
+    newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor; // deprecated
+    createVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;
 }
 
 export interface FlagshipNodeSdk {

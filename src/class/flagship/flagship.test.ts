@@ -16,11 +16,11 @@ describe('FlagshipVisitor', () => {
   afterEach(() => {
     mockAxios.reset();
   });
-  describe('NewVisitor function', () => {
+  describe('createVisitor function', () => {
     it('should have .once("ready") triggered also when fetchNow=false', (done) => {
       const mockFn = jest.fn();
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: false });
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       visitorInstance.on('ready', () => {
         try {
           mockFn();
@@ -35,7 +35,7 @@ describe('FlagshipVisitor', () => {
       const mockFn = jest.fn();
       let modificationsWhichWillBeSavedInCache;
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       visitorInstance.on('saveCache', (args) => {
         try {
           mockFn();
@@ -66,7 +66,7 @@ describe('FlagshipVisitor', () => {
       const mockFn = jest.fn();
       const modificationsWhichWillBeSavedInCache = demoData.flagshipVisitor.getModifications.detailsModifications.oneModifInMoreThanOneCampaign;
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       visitorInstance.on('saveCache', (args) => {
         try {
           mockFn();
@@ -98,7 +98,7 @@ describe('FlagshipVisitor', () => {
       const mockFn = jest.fn();
       let modificationsWhichWillBeSavedInCache;
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       visitorInstance.on('saveCache', (args) => {
         try {
           mockFn();
@@ -132,7 +132,7 @@ describe('FlagshipVisitor', () => {
         statusText: 'OK',
       };
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       expect(visitorInstance.config).toMatchObject({ ...testConfig, fetchNow: true });
       visitorInstance.once('ready', () => {
         done();
@@ -142,7 +142,7 @@ describe('FlagshipVisitor', () => {
     });
     it('should create a Visitor with modifications already loaded and activated if config "activateNow=true"', (done) => {
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true });
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true });
       visitorInstance.once('ready', () => {
         try {
