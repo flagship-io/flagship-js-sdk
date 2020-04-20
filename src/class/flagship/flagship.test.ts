@@ -8,6 +8,11 @@ let sdk: Flagship;
 let visitorInstance;
 
 describe('FlagshipVisitor', () => {
+  const responseObj = {
+    data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
+    status: 200,
+    statusText: 'OK',
+  };
   afterEach(() => {
     mockAxios.reset();
   });
@@ -19,12 +24,27 @@ describe('FlagshipVisitor', () => {
       visitorInstance.on('ready', () => {
         try {
           mockFn();
+          expect(mockFn).toHaveBeenCalledTimes(1);
+          done();
         } catch (error) {
           done.fail(error);
         }
       });
-      expect(mockFn).toHaveBeenCalledTimes(1);
-      done();
+    });
+    it('should have .on("saveCache") triggered when initializing with a fetchNow=true', (done) => {
+      const mockFn = jest.fn();
+      sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance.on('saveCache', () => {
+        try {
+          mockFn();
+          expect(mockFn).toHaveBeenCalledTimes(1);
+          done();
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      mockAxios.mockResponse(responseObj);
     });
     it('should create a Visitor with modifications already loaded if config "fetchNow=true"', (done) => {
       const responseObj = {
@@ -42,11 +62,6 @@ describe('FlagshipVisitor', () => {
       expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
     });
     it('should create a Visitor with modifications already loaded and activated if config "activateNow=true"', (done) => {
-      const responseObj = {
-        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
-        status: 200,
-        statusText: 'OK',
-      };
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true });
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true });
