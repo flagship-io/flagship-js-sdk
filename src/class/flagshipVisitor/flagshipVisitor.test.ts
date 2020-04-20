@@ -280,7 +280,7 @@ describe('FlagshipVisitor', () => {
         done();
       });
       mockAxios.mockResponse(responseObj);
-      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
+      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] });
     });
     it('should get all modifications and then activate individually each campaign if activate=true', (done) => {
       const responseObj = {
@@ -303,7 +303,7 @@ describe('FlagshipVisitor', () => {
         done();
       });
       mockAxios.mockResponse(responseObj);
-      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
+      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] });
     });
     it('should not call decision API if already fetched before', (done) => {
       const responseObj = {

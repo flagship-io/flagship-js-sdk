@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 0.1.6
+
+### New features 🎉
+
+- New listener for <i>FlagshipVisitor</i> class => `saveCache` ([click here](README.md#events-listener) to see the documentation)
+
 ## ➡️ Version 0.1.5
 
 - Build not minified.

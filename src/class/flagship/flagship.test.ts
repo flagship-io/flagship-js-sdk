@@ -8,6 +8,11 @@ let sdk: Flagship;
 let visitorInstance;
 
 describe('FlagshipVisitor', () => {
+  const responseObj = {
+    data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
+    status: 200,
+    statusText: 'OK',
+  };
   afterEach(() => {
     mockAxios.reset();
   });
@@ -19,12 +24,106 @@ describe('FlagshipVisitor', () => {
       visitorInstance.on('ready', () => {
         try {
           mockFn();
+          expect(mockFn).toHaveBeenCalledTimes(1);
+          done();
         } catch (error) {
           done.fail(error);
         }
       });
-      expect(mockFn).toHaveBeenCalledTimes(1);
-      done();
+    });
+    it('should have .on("saveCache") triggered when initializing with a fetchNow=true', (done) => {
+      const mockFn = jest.fn();
+      let modificationsWhichWillBeSavedInCache;
+      sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance.on('saveCache', (args) => {
+        try {
+          mockFn();
+          expect(mockFn).toHaveBeenCalledTimes(1);
+          expect(typeof args.saveInCacheModifications).toEqual('function');
+          expect(typeof args.modifications).toEqual('object');
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'before')).toEqual(true);
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'after')).toEqual(true);
+          expect(Object.keys(args.modifications).length).toEqual(2);
+          expect(Object.keys(args).length).toEqual(2);
+          modificationsWhichWillBeSavedInCache = args.modifications.after;
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      visitorInstance.once('ready', () => {
+        try {
+          expect(visitorInstance.fetchedModifications).toEqual(modificationsWhichWillBeSavedInCache);
+          done();
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      mockAxios.mockResponse(responseObj);
+    });
+
+    it('should have ability to return custom modifications with "saveCache" event', (done) => {
+      const mockFn = jest.fn();
+      const modificationsWhichWillBeSavedInCache = demoData.flagshipVisitor.getModifications.detailsModifications.oneModifInMoreThanOneCampaign;
+      sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance.on('saveCache', (args) => {
+        try {
+          mockFn();
+          expect(mockFn).toHaveBeenCalledTimes(1);
+          expect(typeof args.saveInCacheModifications).toEqual('function');
+          expect(typeof args.modifications).toEqual('object');
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'before')).toEqual(true);
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'after')).toEqual(true);
+          expect(Object.keys(args.modifications).length).toEqual(2);
+          expect(Object.keys(args).length).toEqual(2);
+          args.saveInCacheModifications(modificationsWhichWillBeSavedInCache);
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      visitorInstance.once('ready', () => {
+        try {
+          expect(visitorInstance.fetchedModifications).toEqual(modificationsWhichWillBeSavedInCache);
+          done();
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      mockAxios.mockResponse(responseObj);
+    });
+
+
+    it('should return default modificaitons if user badly use "saveCache" event', (done) => {
+      const mockFn = jest.fn();
+      let modificationsWhichWillBeSavedInCache;
+      sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance.on('saveCache', (args) => {
+        try {
+          mockFn();
+          expect(mockFn).toHaveBeenCalledTimes(1);
+          expect(typeof args.saveInCacheModifications).toEqual('function');
+          expect(typeof args.modifications).toEqual('object');
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'before')).toEqual(true);
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'after')).toEqual(true);
+          expect(Object.keys(args.modifications).length).toEqual(2);
+          expect(Object.keys(args).length).toEqual(2);
+          modificationsWhichWillBeSavedInCache = args.modifications.after;
+          args.saveInCacheModifications();
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      visitorInstance.once('ready', () => {
+        try {
+          expect(visitorInstance.fetchedModifications).toEqual(modificationsWhichWillBeSavedInCache);
+          done();
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      mockAxios.mockResponse(responseObj);
     });
     it('should create a Visitor with modifications already loaded if config "fetchNow=true"', (done) => {
       const responseObj = {
@@ -42,11 +141,6 @@ describe('FlagshipVisitor', () => {
       expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
     });
     it('should create a Visitor with modifications already loaded and activated if config "activateNow=true"', (done) => {
-      const responseObj = {
-        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
-        status: 200,
-        statusText: 'OK',
-      };
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true });
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true });
@@ -68,7 +162,7 @@ describe('FlagshipVisitor', () => {
         }
       });
       mockAxios.mockResponse(responseObj);
-      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
+      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] });
       expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
     });
   });
