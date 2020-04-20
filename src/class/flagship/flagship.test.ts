@@ -33,12 +33,91 @@ describe('FlagshipVisitor', () => {
     });
     it('should have .on("saveCache") triggered when initializing with a fetchNow=true', (done) => {
       const mockFn = jest.fn();
+      let modificationsWhichWillBeSavedInCache;
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-      visitorInstance.on('saveCache', () => {
+      visitorInstance.on('saveCache', (args) => {
         try {
           mockFn();
           expect(mockFn).toHaveBeenCalledTimes(1);
+          expect(typeof args.saveInCacheModifications).toEqual('function');
+          expect(typeof args.modifications).toEqual('object');
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'before')).toEqual(true);
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'after')).toEqual(true);
+          expect(Object.keys(args.modifications).length).toEqual(2);
+          expect(Object.keys(args).length).toEqual(2);
+          modificationsWhichWillBeSavedInCache = args.modifications.after;
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      visitorInstance.once('ready', () => {
+        try {
+          expect(visitorInstance.fetchedModifications).toEqual(modificationsWhichWillBeSavedInCache);
+          done();
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      mockAxios.mockResponse(responseObj);
+    });
+
+    it('should have ability to return custom modifications with "saveCache" event', (done) => {
+      const mockFn = jest.fn();
+      const modificationsWhichWillBeSavedInCache = demoData.flagshipVisitor.getModifications.detailsModifications.oneModifInMoreThanOneCampaign;
+      sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance.on('saveCache', (args) => {
+        try {
+          mockFn();
+          expect(mockFn).toHaveBeenCalledTimes(1);
+          expect(typeof args.saveInCacheModifications).toEqual('function');
+          expect(typeof args.modifications).toEqual('object');
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'before')).toEqual(true);
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'after')).toEqual(true);
+          expect(Object.keys(args.modifications).length).toEqual(2);
+          expect(Object.keys(args).length).toEqual(2);
+          args.saveInCacheModifications(modificationsWhichWillBeSavedInCache);
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      visitorInstance.once('ready', () => {
+        try {
+          expect(visitorInstance.fetchedModifications).toEqual(modificationsWhichWillBeSavedInCache);
+          done();
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      mockAxios.mockResponse(responseObj);
+    });
+
+
+    it('should return default modificaitons if user badly use "saveCache" event', (done) => {
+      const mockFn = jest.fn();
+      let modificationsWhichWillBeSavedInCache;
+      sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance.on('saveCache', (args) => {
+        try {
+          mockFn();
+          expect(mockFn).toHaveBeenCalledTimes(1);
+          expect(typeof args.saveInCacheModifications).toEqual('function');
+          expect(typeof args.modifications).toEqual('object');
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'before')).toEqual(true);
+          expect(Object.prototype.hasOwnProperty.call(args.modifications, 'after')).toEqual(true);
+          expect(Object.keys(args.modifications).length).toEqual(2);
+          expect(Object.keys(args).length).toEqual(2);
+          modificationsWhichWillBeSavedInCache = args.modifications.after;
+          args.saveInCacheModifications();
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      visitorInstance.once('ready', () => {
+        try {
+          expect(visitorInstance.fetchedModifications).toEqual(modificationsWhichWillBeSavedInCache);
           done();
         } catch (error) {
           done.fail(error);
