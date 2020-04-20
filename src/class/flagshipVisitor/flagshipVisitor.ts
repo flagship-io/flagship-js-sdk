@@ -337,8 +337,13 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return this.getModificationsPostProcess(response, modificationsRequested, activateAllModifications);
   }
 
+  // deprecated
   public setContext(context: FlagshipVisitorContext): void {
     this.context = context;
+  }
+
+  public updateContext(context: FlagshipVisitorContext): void {
+    this.setContext(context);
   }
 
   public synchronizeModifications(activate = false): Promise<number> {

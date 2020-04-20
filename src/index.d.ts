@@ -33,6 +33,7 @@ export interface IFlagshipVisitor extends EventEmitter {
   getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean | null): Promise<GetModificationsOutput>;
   getModificationsCache(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null,): GetModificationsOutput;
   setContext(context: FlagshipVisitorContext): void;
+  updateContext(context: FlagshipVisitorContext): void;
   synchronizeModifications(activate?: boolean): Promise<number>;
   getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
   getAllModifications(activate?: boolean): Promise<DecisionApiResponse>;

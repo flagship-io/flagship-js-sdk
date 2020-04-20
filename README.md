@@ -154,7 +154,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 
 ### <i>FlagshipVisitor</i> class
 
-- [setContext](#setContext)
+- [updateContext](#updateContext)
 - [synchronizeModifications](#synchronizeModifications)
 - [getAllModifications](#getAllModifications)
 - [getModificationsForCampaign](#getModificationsForCampaign)
@@ -263,7 +263,7 @@ visitorInstance.on('ready', () => {
 ### <i>FlagshipVisitor</i> class
 
 - [events listener](#events-listener)
-- [setContext](#setContext)
+- [updateContext](#updateContext)
 - [synchronizeModifications](#synchronizeModifications)
 - [getAllModifications](#getAllModifications)
 - [getModificationsForCampaign](#getModificationsForCampaign)
@@ -352,7 +352,7 @@ If you want to listen anytime:
   });
 ```
 
-#### `setContext`
+#### `updateContext`
 
 edit the context of the visitor
 
@@ -380,7 +380,7 @@ edit the context of the visitor
 **Demo:**
 
 ```
-const visitorInstance = sdk.setContext({
+const visitorInstance = sdk.updateContext({
     //...
     some: "NEW_VISITOR_CONTEXT",
     //...

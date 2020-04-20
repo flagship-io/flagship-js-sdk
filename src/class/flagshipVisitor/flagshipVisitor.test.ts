@@ -356,7 +356,7 @@ describe('FlagshipVisitor', () => {
     });
   });
 
-  describe('SetContext funcion', () => {
+  describe('updateContext funcion', () => {
     it('should update current visitor context', () => {
       const newContext = {
         pos: 'fl',
@@ -366,7 +366,7 @@ describe('FlagshipVisitor', () => {
 
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       expect(visitorInstance.context).toMatchObject(demoData.visitor.cleanContext);
-      visitorInstance.setContext(newContext);
+      visitorInstance.updateContext(newContext);
       expect(visitorInstance.context).toMatchObject(newContext);
     });
   });
