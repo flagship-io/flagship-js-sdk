@@ -434,7 +434,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     if (!haveBeenCalled) {
       this.fetchedModifications = data;
     }
-    this.log.debug(`Saving in cache those modifications:\n${data ? JSON.stringify(data) : 'null'}`);
+    this.log.debug(`Saving in cache those modifications:\n${this.fetchedModifications ? JSON.stringify(this.fetchedModifications) : 'null'}`);
   }
 
   private fetchAllModifications(

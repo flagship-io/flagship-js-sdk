@@ -21,7 +21,7 @@ const loggerHelper = {
       error: (str: string): void| null => (enableConsoleLogs ? console.error(`${timestamp}${name} - ${str}`) : null),
       info: (str: string): void| null => (enableConsoleLogs ? console.log(`${timestamp}${name} - ${str}`) : null),
       fatal: (str: string): void| null => (enableConsoleLogs ? console.error(`${timestamp}${name} - Fatal: ${str}`) : null),
-      debug: (str: string): void | null => (config.nodeEnv === 'development' && enableConsoleLogs ? console.log(`${timestamp}${name} - Debug: ${str}`) : null),
+      debug: (str: string): void | null => (config.nodeEnv !== 'production' && enableConsoleLogs ? console.log(`${timestamp}${name} - Debug: ${str}`) : null),
     };
   },
 };
