@@ -371,157 +371,6 @@ describe('FlagshipVisitor', () => {
     });
   });
 
-  describe('GetModifications function', () => {
-    beforeEach(() => {
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-      spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
-    });
-    // TODO: do test with some fresh demo data in "test/mock/flagshipVisitor/index.js >> activateModifications.fetchedModifications..."
-    it('should return empty object if decision API had an error', (done) => {
-      const thenGetModification = jest.fn();
-      const spyFetchAllModifications = jest.spyOn(visitorInstance, 'fetchAllModifications');
-      const responseObj = {
-        data: 'Oh no, error is coming !',
-        status: '422',
-        source: { pointer: '/data/attributes/envId' },
-        title: 'Invalid Attribute',
-        detail: 'Env id must contain at least three characters.',
-      };
-      const spyGetModifs = jest.spyOn(visitorInstance, 'getModifications');
-      const spyModifsDetails = jest.spyOn(visitorInstance, 'extractDesiredModifications');
-      const spyTriggerActivateIfNeeded = jest.spyOn(visitorInstance, 'triggerActivateIfNeeded');
-
-      visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default).then(() => thenGetModification).catch((errorResponse) => {
-        try {
-          expect(errorResponse).toMatchObject(responseObj);
-          expect(visitorInstance.fetchedModifications).toBe(null);
-          expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications: an error occurred while fetching...');
-          expect(spyFatalLogs).toHaveBeenNthCalledWith(2, `Get modifications failed with error:\n${responseObj}`);
-          expect(spyFetchAllModifications).toHaveBeenCalledWith({ activate: false });
-        } catch (error) {
-          done.fail(error);
-        }
-        done();
-      });
-      expect(mockAxios.post).toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
-      mockAxios.mockError(responseObj);
-
-      expect(thenGetModification).not.toHaveBeenCalled(); // NOTE: catch should not be triggered because getModifications does not throw an error
-      expect(spyGetModifs).toHaveBeenCalled();
-      expect(spyTriggerActivateIfNeeded).toHaveBeenCalledTimes(0);
-      expect(spyModifsDetails).toHaveReturnedTimes(0);
-    });
-
-    it('should return default values if decision API did not find any modifications', (done) => {
-      const catchGetModification = jest.fn();
-      const thenGetModification = jest.fn();
-      const responseObj = {
-        data: demoData.decisionApi.normalResponse.noModif,
-        status: 200,
-        statusText: 'OK',
-      };
-
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-
-      const spyGetModifs = jest.spyOn(visitorInstance, 'getModifications');
-      const spyModifsDetails = jest.spyOn(visitorInstance, 'extractDesiredModifications');
-      const spyTriggerActivateIfNeeded = jest.spyOn(visitorInstance, 'triggerActivateIfNeeded');
-
-      visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default).then((response) => {
-        try {
-          expect(response).toMatchObject({
-            algorithmVersion: 'NOOOOO',
-            psp: 'YESESES',
-            testUnexistingKey: 'YOLOOOO',
-          });
-        } catch (error) {
-          done.fail(error);
-        }
-        done();
-      }).catch(catchGetModification);
-      expect(mockAxios.post).toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
-      mockAxios.mockResponse(responseObj);
-
-      expect(catchGetModification).not.toHaveBeenCalled();
-      expect(spyGetModifs).toHaveBeenCalled();
-      expect(spyTriggerActivateIfNeeded).toHaveBeenCalledTimes(0);
-      expect(spyModifsDetails).toHaveReturnedTimes(0);
-    });
-
-    it('should return a bundle of modifications with correct params (oneModifInMoreThanOneCampaign)', (done) => {
-      const catchGetModification = jest.fn();
-      const responseObj = {
-        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
-        status: 200,
-        statusText: 'OK',
-      };
-
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-
-      const spyGetModifs = jest.spyOn(visitorInstance, 'getModifications');
-      const spyModifsDetails = jest.spyOn(visitorInstance, 'extractDesiredModifications');
-      const spyTriggerActivateIfNeeded = jest.spyOn(visitorInstance, 'triggerActivateIfNeeded');
-
-      visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default).then(
-        (response) => {
-          try {
-            expect(response).toEqual({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
-            expect(spyGetModifs).toHaveBeenCalled();
-            expect(spyTriggerActivateIfNeeded).toHaveBeenCalledTimes(1);
-            expect(spyModifsDetails).toHaveReturnedWith(
-              expect.objectContaining({ detailsModifications: demoData.flagshipVisitor.getModifications.detailsModifications.oneModifInMoreThanOneCampaign }),
-            );
-            expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
-          } catch (error) {
-            done.fail(error);
-          }
-          done();
-        },
-      ).catch(catchGetModification);
-      expect(mockAxios.post).toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
-      mockAxios.mockResponse(responseObj);
-
-      expect(catchGetModification).not.toHaveBeenCalled();
-    });
-
-    it('should return a bundle of modifications with correct params (manyModifInManyCampaigns)', (done) => {
-      const catchGetModification = jest.fn();
-      const thenGetModification = jest.fn();
-
-      const responseObj = {
-        data: { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns },
-        status: 200,
-        statusText: 'OK',
-      };
-
-      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-
-      const spyGetModifs = jest.spyOn(visitorInstance, 'getModifications');
-      const spyModifsDetails = jest.spyOn(visitorInstance, 'extractDesiredModifications');
-      const spyTriggerActivateIfNeeded = jest.spyOn(visitorInstance, 'triggerActivateIfNeeded');
-
-      visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default).then(
-        (response) => {
-          try {
-            expect(response).toEqual({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
-            expect(spyGetModifs).toHaveBeenCalled();
-            expect(spyTriggerActivateIfNeeded).toHaveBeenCalledTimes(1);
-            expect(spyModifsDetails).toHaveReturnedWith(
-              expect.objectContaining({ detailsModifications: demoData.flagshipVisitor.getModifications.detailsModifications.manyModifInManyCampaigns }),
-            );
-          } catch (error) {
-            done.fail(error);
-          }
-          done();
-        },
-      ).catch(catchGetModification);
-      expect(mockAxios.post).toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
-      mockAxios.mockResponse(responseObj);
-
-      expect(catchGetModification).not.toHaveBeenCalled();
-    });
-  });
-
   describe('TriggerActivateIfNeeded function', () => {
     it('should not trigger twice activate for a modification which is in more than one campaign (1st use case)', () => {
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
@@ -1065,7 +914,7 @@ describe('FlagshipVisitor', () => {
     });
   });
 
-  describe('GetModificationsCache function', () => {
+  describe('getModifications function', () => {
     let spyFetchModifs;
     beforeEach(() => {
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
@@ -1084,7 +933,7 @@ describe('FlagshipVisitor', () => {
     it('should not activate an unexisting key + return default value', (done) => {
       responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
       visitorInstance.fetchedModifications = responseObject.data; // Mock a previous fetch
-      const cacheResponse = visitorInstance.getModificationsCache(demoData.flagshipVisitor.getModifications.args.requestOneUnexistingKeyWithActivate);
+      const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.requestOneUnexistingKeyWithActivate);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(0);
         expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
@@ -1103,7 +952,7 @@ describe('FlagshipVisitor', () => {
     it('should not use promise when fetching modifications', (done) => {
       responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
       visitorInstance.fetchedModifications = responseObject.data; // Mock a previous fetch
-      const cacheResponse = visitorInstance.getModificationsCache(demoData.flagshipVisitor.getModifications.args.noActivate);
+      const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.noActivate);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(0);
         expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
@@ -1121,7 +970,7 @@ describe('FlagshipVisitor', () => {
     it('should not activate two different campaign if two requested keys are in same campaign', (done) => {
       responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
       visitorInstance.fetchedModifications = responseObject.data; // Mock a previous fetch
-      const cacheResponse = visitorInstance.getModificationsCache(demoData.flagshipVisitor.getModifications.args.default);
+      const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(1);
         expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
@@ -1141,7 +990,7 @@ describe('FlagshipVisitor', () => {
       }
     });
     it('should return empty object if nothing in cache', (done) => {
-      const cacheResponse = visitorInstance.getModificationsCache(demoData.flagshipVisitor.getModifications.args.noActivate);
+      const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.noActivate);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(0);
         expect(spyFetchModifs).toHaveBeenCalledTimes(0);
@@ -1156,7 +1005,7 @@ describe('FlagshipVisitor', () => {
       }
     });
     it('should return default values if nothing in cache (+ activate requested)', (done) => {
-      const cacheResponse = visitorInstance.getModificationsCache(demoData.flagshipVisitor.getModifications.args.default);
+      const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(0);
         expect(spyFetchModifs).toHaveBeenCalledTimes(0);
@@ -1174,14 +1023,13 @@ describe('FlagshipVisitor', () => {
       }
     });
     it('should return empty object if nothing in cache (+ full activate requested)', (done) => {
-      const cacheResponse = visitorInstance.getModificationsCache(undefined, true);
+      const cacheResponse = visitorInstance.getModifications(undefined, true);
       try {
         expect(spyFetchModifs).toHaveBeenCalledTimes(0);
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
         expect(spyErrorLogs).toHaveBeenCalledTimes(1);
-        expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'getModificationsCache: No requested modifications defined...');
         expect(cacheResponse).toMatchObject({});
         expect(mockAxios.post).toHaveBeenCalledTimes(0);
         done();
@@ -1191,10 +1039,9 @@ describe('FlagshipVisitor', () => {
     });
     it('should return empty object if no modificationsRequested specified', (done) => {
       visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign;
-      const cacheResponse = visitorInstance.getModificationsCache();
+      const cacheResponse = visitorInstance.getModifications();
       try {
         expect(spyFetchModifs).toHaveBeenCalledTimes(0);
-        expect(spyErrorLogs).toHaveBeenCalledWith('getModificationsCache: No requested modifications defined...');
         expect(spyErrorLogs).toHaveBeenCalledTimes(1);
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);

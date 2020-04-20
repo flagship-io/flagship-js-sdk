@@ -70,18 +70,7 @@ visitorInstance.on('ready', () => {
 - Then get modifications:
 
 ```
-visitorInstance.getModifications([{key: "btnColor", defaultValue: "#ff0000"}, {key: "btnText", defaultValue: "Wahoo !"}])
-.then(({btnColor, btnText}) => {
-  // do some stuff
-  myButton.setColor(btnColor);
-  myButton.setText(btnText);
-})
-```
-
-- Or even better, if you fetched campaigns already before (during initialization as example):
-
-```
-const {btnColor, btnText} = visitorInstance.getModificationsCache([{key: "btnColor", defaultValue: "#ff0000"}, {key: "btnText", defaultValue: "Wahoo !"}]);
+const {btnColor, btnText} = visitorInstance.getModifications([{key: "btnColor", defaultValue: "#ff0000"}, {key: "btnText", defaultValue: "Wahoo !"}]);
 
 console.log(btnColor); // output: "#fff"
 console.log(btnText); // output: "Awesome !"
@@ -160,7 +149,6 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 - [getModificationsForCampaign](#getModificationsForCampaign)
 - [getModifications](#getModifications)
 - [activateModifications](#activateModifications)
-- [getModificationsCache](#getModificationsCache)
 - [sendHits](#sendHits)
 
 ### <i>Shape</i> of possible hits to send
@@ -268,7 +256,6 @@ visitorInstance.on('ready', () => {
 - [getAllModifications](#getAllModifications)
 - [getModificationsForCampaign](#getModificationsForCampaign)
 - [getModifications](#getModifications)
-- [getModificationsCache](#getModificationsCache)
 - [sendHits](#sendHits)
 
 #### `events listener`
@@ -547,93 +534,11 @@ with the following data:
 }
 ```
 
-#### `getModifications`
-
-> return a `Promise<object>` where each key is a modification with corresponding value
-
-The data returned will be the data from all modifications that you specify in the `modificationsRequested` argument
-
-<table class="table table-bordered table-striped">
-    <thead>
-    <tr>
-        <th style="width: 100px;">Attribute</th>
-        <th style="width: 50px;">Type</th>
-        <th style="width: 50px;">Default</th>
-        <th>Description</th>
-    </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td>modificationsRequested</td>
-          <td>Array(object)</td>
-          <td>*required*</td>
-          <td>List of all modifications you're looking for. Each element of the array follow this object structure:
-            <table> 
-              <tbody><tr>
-                  <th style="width:25%">Argument</th>
-                  <th>Description</th>
-                </tr>  
-                <tr>
-                  <td><em>key</em></td>
-                  <td>Required. The name of the modification.</td>
-                </tr>
-                <tr>
-                  <td><em>defaultValue</em></td>
-                  <td>Required. The default value if no value for this modification is found.</td>
-                </tr>
-                  <tr>
-                  <td><em>activate</em></td>
-                  <td>Optional. </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-        <tr>
-          <td>activateAllModifications</td>
-          <td>Boolean</td>
-          <td>false</td>
-          <td>If set to true, all modifications will be activated. If set to false, none will be activated.
-          <br>Be aware that if this argument is set, the attribute <i>activate</i> set in each element of array <b>modificationsRequested</b> will be ignored.</td>
-        </tr>
-    </tbody>
-</table>
-
-**Demo:**
-
-    visitorInstance.getModifications([
-        {
-            key: "btnColor", // required
-            defaultValue: "#ff0000", // required
-            activate: true // optional
-        },
-        {
-            key: "customLabel", // required
-            defaultValue: "Flagship is awesome", // required
-        }
-    ], /* ActivateAllModifications */)
-    .then(({btnColor, customLabel}) => {
-      // do some stuff
-    })
-    .catch((error) => {
-      // error :(
-    })
-
-will return:
-
-```
-// modifications shape:
-{
-  btnColor: '#dcbc02',
-  customLabel: 'Flagship is awesome' // default value set (ie: no campaigns have specified this modification)
-}
-```
-
 #### `activateModifications`
 
 > return `nothing` (for the moment...)
 
-Kind of same behavior as [getModifications](#getModifications). It will activate the first campaign in cache that's matching the key set in argument. If conflict exist, you'll be notified via `warning` logs (+ `debug` logs if need details)
+It will activate the first campaign in cache that's matching the key set in argument. If conflict exist, you'll be notified via `warning` logs (+ `debug` logs if need details)
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -706,13 +611,15 @@ Assuming the api gives those informations in the following order:
 
 => Both **campaignA** and **campaignB** will be activated. But the SDK will logs a conflict for modification <b>customLabel</b> as it is considered as it is not supposed to happen.
 
-#### `getModificationsCache`
+#### `getModifications`
 
 > return an `object` where each key is a modification with corresponding value
 
-Same behavior as [getModifications](###getModifications) function but without returning a promise.
+The data returned will be the data from all modifications that you specify in the `modificationsRequested` argument.
 
-NOTE: You need to fetch modifications to automatically save them in cache. You can achieve it using [synchronizeModifications](###synchronizeModifications) or [fetchNow=true](##SDK-Settings).
+NOTE1: It loads modifications from cache.
+
+NOTE2: You need to fetch modifications to automatically save them in cache. You can achieve it using [synchronizeModifications](###synchronizeModifications) or [fetchNow=true](##SDK-Settings).
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -762,7 +669,7 @@ NOTE: You need to fetch modifications to automatically save them in cache. You c
 
 **Demo:**
 
-    visitorInstance.getModificationsCache([
+    visitorInstance.getModifications([
         {
             key: "btnColor", // required
             defaultValue: "#ff0000", // required

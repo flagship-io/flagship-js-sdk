@@ -30,7 +30,7 @@ export interface IFlagshipVisitor extends EventEmitter {
   isAllModificationsFetched: boolean;
   fetchedModifications: DecisionApiResponseData | null;
   activateModifications(modifications: Array<{ key: string; variationId?: string; variationGroupId?: string }>): void;
-  getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean | null): Promise<GetModificationsOutput>;
+  getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null,): GetModificationsOutput;
   getModificationsCache(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null,): GetModificationsOutput;
   setContext(context: FlagshipVisitorContext): void;
   updateContext(context: FlagshipVisitorContext): void;

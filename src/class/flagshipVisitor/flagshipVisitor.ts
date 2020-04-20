@@ -298,28 +298,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return {};
   }
 
-  public getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean|null = null): Promise<GetModificationsOutput> {
-    return new Promise((resolve, reject) => {
-      if (!modificationsRequested) {
-        const errorMsg = 'No modificationsRequested specified...';
-        this.log.error(errorMsg);
-        reject(errorMsg);
-      }
-      const fetchedModif = this.fetchAllModifications({ activate: !!activateAllModifications }) as Promise<DecisionApiResponse >;
-      fetchedModif.then(
-        (response: DecisionApiResponse) => {
-          const castResponse = response as DecisionApiResponse;
-          this.log.info('Get modifications succeed');
-          this.log.debug(`with json:\n${JSON.stringify(castResponse.data)}`);
-          resolve(this.getModificationsPostProcess(castResponse, modificationsRequested, activateAllModifications));
-        },
-      ).catch((error: Error) => {
-        this.log.fatal(`Get modifications failed with error:\n${(error) || JSON.stringify(error)}`);
-        reject(error);
-      });
-    });
+  public getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean|null = null): GetModificationsOutput {
+    return this.getModificationsCache(modificationsRequested, activateAllModifications);
   }
 
+  // deprecated
   public getModificationsCache(
     modificationsRequested: FsModifsRequestedList,
     activateAllModifications: boolean | null = null,
