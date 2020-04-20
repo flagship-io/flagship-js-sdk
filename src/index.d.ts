@@ -13,6 +13,14 @@ export type FlagshipSdkConfig = {
   flagshipApi?: string;
 };
 
+export type SaveCacheArgs = {
+  modifications: {
+    before: DecisionApiResponseData | null;
+    after: DecisionApiResponseData | null;
+  };
+  saveInCacheModifications(modificationsToSaveInCache: DecisionApiResponseData | null): void;
+}
+
 export interface IFlagshipVisitor extends EventEmitter {
   config: FlagshipSdkConfig;
   id: string;
@@ -30,6 +38,7 @@ export interface IFlagshipVisitor extends EventEmitter {
   getAllModifications(activate?: boolean): Promise<DecisionApiResponse>;
   sendHits(hitsArray: Array<HitShape>): Promise<void>;
   on(event: 'ready', listener: (name: string) => void): this;
+  on(event: 'saveCache', listener: (name: string, args: SaveCacheArgs) => void): this;
 }
 export interface IFlagship {
   config: FlagshipSdkConfig;
@@ -40,6 +49,10 @@ export interface IFlagship {
 
 export interface FlagshipNodeSdk {
   initSdk(
+    envId: string,
+    config?: FlagshipSdkConfig
+  ): IFlagship;
+  start(
     envId: string,
     config?: FlagshipSdkConfig
   ): IFlagship;
