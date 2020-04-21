@@ -14,7 +14,6 @@
     "array-callback-return": "off",
     "@typescript-eslint/camelcase": 0,
     "import/extensions": 0,
-    "@typescript-eslint/no-this-alias": 1,
     "import/no-extraneous-dependencies": 0
   },
   "parser": "@typescript-eslint/parser",
