@@ -647,10 +647,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
   }
 
-  public sendHit(hitData: HitShape): Promise<void> {
-    return this.sendHits([hitData]);
-  }
-
   public sendHits(hitsArray: Array<HitShape>): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
@@ -685,6 +681,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         reject(error);
       }
     });
+  }
+
+  public sendHit(hitData: HitShape): Promise<void> {
+    return this.sendHits([hitData]);
   }
 }
 
