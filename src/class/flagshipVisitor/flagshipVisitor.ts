@@ -74,6 +74,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   }
 
   private activateCampaign(variationId: string, variationGroupId: string, customLogs?: {success: string; fail: string}): Promise<void> {
+    const self = this;
     return axios.post(`${this.config.flagshipApi}activate`, {
       vid: this.id,
       cid: this.envId,
@@ -85,14 +86,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         if (customLogs && customLogs.success) {
           successLog = `${customLogs.success}\nStatus code:${response.status}`;
         }
-        this.log.debug(successLog);
+        self.log.debug(successLog);
       })
       .catch((error: Error) => {
         let failLog = `Trigger activate of variationId "${variationId}" failed with error:\n${error}`;
         if (customLogs && customLogs.fail) {
           failLog = `${customLogs.fail}\nFailed with error:\n${error}`;
         }
-        this.log.fatal(failLog);
+        self.log.fatal(failLog);
       });
   }
 
@@ -647,44 +648,45 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
   }
 
-  public sendHit(hitData: HitShape): Promise<void> {
-    return this.sendHits([hitData]);
-  }
-
   public sendHits(hitsArray: Array<HitShape>): Promise<void> {
+    const self = this;
     return new Promise((resolve, reject) => {
       try {
         const promises = Promise.all(
           hitsArray.map(async (hit) => {
-            const customParams = this.generateCustomTypeParamsOf(hit);
+            const customParams = self.generateCustomTypeParamsOf(hit);
             const url = 'https://ariane.abtasty.com';
             if (customParams) {
               return axios.post(url, {
-                vid: this.id,
-                cid: this.envId,
+                vid: self.id,
+                cid: self.envId,
                 ds: 'APP',
                 ...customParams,
               });
             }
-            this.log.debug(`sendHits: skip request to "${url}" because current hit not set correctly`);
+            self.log.debug(`sendHits: skip request to "${url}" because current hit not set correctly`);
             return new Promise((resolveAuto) => resolveAuto()); // do nothing
           }),
         );
 
         promises.then(
           () => {
-            this.log.info('sendHits: success');
+            self.log.info('sendHits: success');
             resolve();
           },
         ).catch((error) => {
-          this.log.fatal('sendHits: fail');
+          self.log.fatal('sendHits: fail');
           reject(error);
         });
       } catch (error) {
-        this.log.fatal('sendHits: fail');
+        self.log.fatal('sendHits: fail');
         reject(error);
       }
     });
+  }
+
+  public sendHit(hitData: HitShape): Promise<void> {
+    return this.sendHits([hitData]);
   }
 }
 
