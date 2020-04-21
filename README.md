@@ -126,7 +126,18 @@ Here are the attributes which you can set inside the SDK settings object:
           <td>'production'</td>
           <td>If value is other than <i>production</i>, it will also display <i>Debug</i> logs.</td>
         </tr>
-    </tbody>
+        <tr>
+          <td>flagshipApi</td>
+          <td>string</td>
+          <td>'https://decision-api.flagship.io/v1/'</td>
+          <td>
+          This setting can be useful in further scenario:<br>
+          - If you need to mock the API for tests such as end to end.<br>
+          - If you want to move to an earlier version the Flagship API (v2, v3,...).
+          </td>
+        </tr>
+</tbody>
+
 </table>
 
 ## JS SDK Features

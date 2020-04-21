@@ -39,8 +39,8 @@ export interface IFlagshipVisitor extends EventEmitter {
   getAllModifications(activate?: boolean): Promise<DecisionApiResponse>;
   sendHit(hitData: HitShape): Promise<void>;
   sendHits(hitsArray: Array<HitShape>): Promise<void>;
-  on(event: 'ready', listener: (name: string) => void): this;
-  on(event: 'saveCache', listener: (name: string, args: SaveCacheArgs) => void): this;
+  on(event: 'ready', listener: () => void): this;
+  on(event: 'saveCache', listener: (args: SaveCacheArgs) => void): this;
 }
 export interface IFlagship {
   config: FlagshipSdkConfig;
