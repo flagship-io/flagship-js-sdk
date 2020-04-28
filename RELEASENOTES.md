@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 0.1.10
+
+### Improvements
+
+- Improve debug logs when sending a hit.
+
 ## ➡️ Version 0.1.9
 
 - Jumped version.

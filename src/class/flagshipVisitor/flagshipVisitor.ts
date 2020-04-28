@@ -648,19 +648,22 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   }
 
   public sendHits(hitsArray: Array<HitShape>): Promise<void> {
+    const payloads: any[] = [];
+    const url = 'https://ariane.abtasty.com';
     return new Promise((resolve, reject) => {
       try {
         const promises = Promise.all(
           hitsArray.map(async (hit) => {
             const customParams = this.generateCustomTypeParamsOf(hit);
-            const url = 'https://ariane.abtasty.com';
             if (customParams) {
-              return axios.post(url, {
+              const payload = {
                 vid: this.id,
                 cid: this.envId,
                 ds: 'APP',
                 ...customParams,
-              });
+              };
+              payloads.push(payload);
+              return axios.post(url, payload);
             }
             this.log.debug(`sendHits: skip request to "${url}" because current hit not set correctly`);
             return new Promise((resolveAuto) => resolveAuto()); // do nothing
@@ -670,6 +673,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         promises.then(
           () => {
             this.log.info('sendHits: success');
+            this.log.debug(`sendHits: with url ${url}`);
+            this.log.debug(`sendHits: with payload:\n${payloads.map((p) => `${JSON.stringify(p)}\n`)}`);
+
             resolve();
           },
         ).catch((error) => {
