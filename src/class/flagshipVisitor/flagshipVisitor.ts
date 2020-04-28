@@ -74,7 +74,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   }
 
   private activateCampaign(variationId: string, variationGroupId: string, customLogs?: {success: string; fail: string}): Promise<void> {
-    const self = this;
     return axios.post(`${this.config.flagshipApi}activate`, {
       vid: this.id,
       cid: this.envId,
@@ -86,14 +85,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         if (customLogs && customLogs.success) {
           successLog = `${customLogs.success}\nStatus code:${response.status}`;
         }
-        self.log.debug(successLog);
+        this.log.debug(successLog);
       })
       .catch((error: Error) => {
         let failLog = `Trigger activate of variationId "${variationId}" failed with error:\n${error}`;
         if (customLogs && customLogs.fail) {
           failLog = `${customLogs.fail}\nFailed with error:\n${error}`;
         }
-        self.log.fatal(failLog);
+        this.log.fatal(failLog);
       });
   }
 
@@ -649,37 +648,42 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   }
 
   public sendHits(hitsArray: Array<HitShape>): Promise<void> {
-    const self = this;
+    const payloads: any[] = [];
+    const url = 'https://ariane.abtasty.com';
     return new Promise((resolve, reject) => {
       try {
         const promises = Promise.all(
           hitsArray.map(async (hit) => {
-            const customParams = self.generateCustomTypeParamsOf(hit);
-            const url = 'https://ariane.abtasty.com';
+            const customParams = this.generateCustomTypeParamsOf(hit);
             if (customParams) {
-              return axios.post(url, {
-                vid: self.id,
-                cid: self.envId,
+              const payload = {
+                vid: this.id,
+                cid: this.envId,
                 ds: 'APP',
                 ...customParams,
-              });
+              };
+              payloads.push(payload);
+              return axios.post(url, payload);
             }
-            self.log.debug(`sendHits: skip request to "${url}" because current hit not set correctly`);
+            this.log.debug(`sendHits: skip request to "${url}" because current hit not set correctly`);
             return new Promise((resolveAuto) => resolveAuto()); // do nothing
           }),
         );
 
         promises.then(
           () => {
-            self.log.info('sendHits: success');
+            this.log.info('sendHits: success');
+            this.log.debug(`sendHits: with url ${url}`);
+            this.log.debug(`sendHits: with payload:\n${payloads.map((p) => `${JSON.stringify(p)}\n`)}`);
+
             resolve();
           },
         ).catch((error) => {
-          self.log.fatal('sendHits: fail');
+          this.log.fatal('sendHits: fail');
           reject(error);
         });
       } catch (error) {
-        self.log.fatal('sendHits: fail');
+        this.log.fatal('sendHits: fail');
         reject(error);
       }
     });

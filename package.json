@@ -17,7 +17,7 @@
     "node": ">=6"
   },
   "scripts": {
-    "test": "jest && rm -rf flagshipNodeSdkLogs",
+    "test": "jest --verbose && rm -rf flagshipNodeSdkLogs",
     "test:coverage": "jest --coverage && rm -rf flagshipNodeSdkLogs",
     "test:react-sample": "cd ./examples/react-app && npm test",
     "release": "np",
