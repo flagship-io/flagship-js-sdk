@@ -13,10 +13,11 @@
 <ul style="line-height:1.4;">
 - Typescript supported ✅
 </ul>
-<ul style="line-height:1.4;">
-- Light weight SDK 🏋  <span style="color: gray;">(Gzipped size=38KB~)</span>
 
+<ul style="line-height:1.4;">
+- <a href='https://bundlephobia.com/result?p=@flagship.io/js-sdk'>Light weight SDK 🏋</a>  <span style="color: gray;">(Gzipped size=10.9kB~)</span>
 </ul>
+
 <ul style="line-height:1.4;">
 - How to use the SDK in practice ☕ : 
 <ul style="line-height:1.4;">
