@@ -967,6 +967,7 @@ describe('FlagshipVisitor', () => {
       spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
       spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
       spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
+      spyDebugLogs = jest.spyOn(visitorInstance.log, 'debug');
       spyFetchModifs = jest.spyOn(visitorInstance, 'fetchAllModifications');
       responseObject = {
         data: null,
@@ -985,7 +986,8 @@ describe('FlagshipVisitor', () => {
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(1);
         expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'Unable to activate modification "testUnexistingKey" because it does not exist on any existing campaign...');
-        expect(spyInfoLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled');
+        expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications: loadFromCache enabled');
         expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
         expect(cacheResponse).toMatchObject({ testUnexistingKey: 'NOOOOO' });
         done();
@@ -1003,7 +1005,7 @@ describe('FlagshipVisitor', () => {
         expect(spyFetchModifs).toHaveBeenCalledTimes(1);
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-        expect(spyInfoLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled');
+        expect(spyDebugLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled');
         expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
         expect(cacheResponse).toMatchObject({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
         done();
@@ -1025,7 +1027,7 @@ describe('FlagshipVisitor', () => {
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(1);
         expect(spyWarnLogs).toHaveBeenNthCalledWith(1, `Unable to activate modification "${demoData.flagshipVisitor.getModifications.args.default[2].key}" because it does not exist on any existing campaign...`);
-        expect(spyInfoLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled');
+        expect(spyDebugLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled');
         expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
         expect(cacheResponse).toMatchObject({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
         done();

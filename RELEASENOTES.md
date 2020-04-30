@@ -1,5 +1,15 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 0.1.11
+
+### Improvements
+
+- Move some `info` logs as `debug` logs.
+
+### Bug fixes 🐛
+
+- Add `events` as node module dependency.
+
 ## ➡️ Version 0.1.10
 
 ### Improvements

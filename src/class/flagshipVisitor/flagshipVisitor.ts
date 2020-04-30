@@ -459,7 +459,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     // check if need to return without promise
     if (loadFromCache) {
       if (this.fetchedModifications && !force) {
-        this.log.info('fetchAllModifications: loadFromCache enabled');
+        this.log.debug('fetchAllModifications: loadFromCache enabled');
         return this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args }).data;
       }
       this.log.fatal('fetchAllModifications: loadFromCache enabled but no data in cache. Make sure you fetched at least once before.');
