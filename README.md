@@ -205,7 +205,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 const sdk = flagship.start("YOUR_ENV_ID",
@@ -248,7 +248,7 @@ const sdk = flagship.start("YOUR_ENV_ID",
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 const visitorInstance = sdk.createVisitor("YOUR_VISITOR_ID",{
@@ -335,7 +335,7 @@ If want to listen a listener, here an example:
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 If you want to listen only once:
 
@@ -379,7 +379,7 @@ edit the context of the visitor
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 const visitorInstance = sdk.updateContext({
@@ -417,7 +417,7 @@ It returns a <i>number</i> (=response status code) when promise is resolved.
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 visitorInstance.synchronizeModifications().then(
@@ -450,7 +450,7 @@ The shape of the object look like same as [decision api response, normal mode](h
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 visitorInstance.getAllModifications()
@@ -515,7 +515,7 @@ The shape of the object look like same as [decision api response](http://develop
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 visitorInstance.getModificationsForCampaign()
@@ -586,16 +586,16 @@ It will activate the first campaign in cache that's matching the key set in argu
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
-    visitorInstance.activateModifications([
-        {
-            key: "btnColor", // required
-        },
-        {
-            key: "customLabel", // required
-        }
-    ])
+visitorInstance.activateModifications([
+{
+key: "btnColor", // required
+},
+{
+key: "customLabel", // required
+}
+])
 
 will produce following behaviour:
 
@@ -682,19 +682,19 @@ NOTE2: You need to fetch modifications to automatically save them in cache. You 
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
-    visitorInstance.getModifications([
-        {
-            key: "btnColor", // required
-            defaultValue: "#ff0000", // required
-            activate: true // optional
-        },
-        {
-            key: "customLabel", // required
-            defaultValue: "Flagship is awesome", // required
-        }
-    ], /* ActivateAllModifications */)
+visitorInstance.getModifications([
+{
+key: "btnColor", // required
+defaultValue: "#ff0000", // required
+activate: true // optional
+},
+{
+key: "customLabel", // required
+defaultValue: "Flagship is awesome", // required
+}
+], /_ ActivateAllModifications _/)
 
 will return:
 
@@ -735,7 +735,7 @@ This function allow you to send any kind of hit. All details of each hit below ð
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 
@@ -780,7 +780,7 @@ This function allow you to send multiple and any kind of hit. All details of eac
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 
