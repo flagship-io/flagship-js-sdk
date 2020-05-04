@@ -2,7 +2,7 @@
 
 # Flagship - JS SDK
 
-### Prerequisites
+## Prerequisites
 
 - **Node.js**: version 6.0.0 or later...
 
@@ -32,15 +32,15 @@
 - <a href='./RELEASENOTES.md'>Release notes</a> available to stay in touch 👍
 </ul>
 
-## Getting Started
+# Getting Started
 
-- **Install** the node module:
+## 1. **Install** the node module:
 
 ```
 npm install @flagship.io/js-sdk
 ```
 
-- Then **import** it in your code :
+## 2. **Import** it in your code:
 
 ```
 import flagship from "@flagship.io/js-sdk"; // ES6 ++
@@ -48,13 +48,13 @@ import flagship from "@flagship.io/js-sdk"; // ES6 ++
 const flagship = require("@flagship.io/js-sdk"); // ES5
 ```
 
-- Then initialize:
+## 3. **Initialize**:
 
 ```
 const sdk = flagship.start("YOUR_ENV_ID", { /* sdk settings */ });
 ```
 
-- Then create a visitor:
+## 4. **Create** a visitor:
 
 ```
 const visitorInstance = sdk.createVisitor("YOUR_VISITOR_ID",{
@@ -68,7 +68,7 @@ visitorInstance.on('ready', () => {
 });
 ```
 
-- Then get modifications:
+## 5. **Get** modifications:
 
 ```
 const {btnColor, btnText} = visitorInstance.getModifications([{key: "btnColor", defaultValue: "#ff0000"}, {key: "btnText", defaultValue: "Wahoo !"}]);
@@ -79,7 +79,7 @@ console.log(btnText); // output: "Awesome !"
 
 This is one of the basic workflow you can achieve with the SDK. 🙂
 
-## SDK Settings
+# SDK Settings
 
 This is all available settings which you can set on the SDK.
 
@@ -141,7 +141,9 @@ Here are the attributes which you can set inside the SDK settings object:
 
 </table>
 
-## JS SDK Features
+# JS SDK Features
+
+## Summary
 
 Don't hesitate to have a look to the main [Flagship technical doc](http://developers.flagship.io/) as well. 😊
 
@@ -161,6 +163,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 - [getModificationsForCampaign](#getModificationsForCampaign)
 - [getModifications](#getModifications)
 - [activateModifications](#activateModifications)
+- [sendHit](#sendHit)
 - [sendHits](#sendHits)
 
 ### <i>Shape</i> of possible hits to send
@@ -172,9 +175,9 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 
 ---
 
-### _flagshipSdk_ object
+# _flagshipSdk_ object
 
-#### `start`
+## `start`
 
 > return a `Flagship` instance.
 
@@ -203,7 +206,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 const sdk = flagship.start("YOUR_ENV_ID",
@@ -213,11 +216,13 @@ const sdk = flagship.start("YOUR_ENV_ID",
 });
 ```
 
-### <i>Flagship</i> class
+# <i>Flagship</i> class
+
+## Summary
 
 - [createVisitor](#createVisitor)
 
-#### `createVisitor`
+## `createVisitor`
 
 > return a <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a> instance.
 
@@ -246,7 +251,7 @@ const sdk = flagship.start("YOUR_ENV_ID",
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 const visitorInstance = sdk.createVisitor("YOUR_VISITOR_ID",{
@@ -260,7 +265,9 @@ visitorInstance.on('ready', () => {
 });
 ```
 
-### <i>FlagshipVisitor</i> class
+# <i>FlagshipVisitor</i> class
+
+## Summary
 
 - [events listener](#events-listener)
 - [updateContext](#updateContext)
@@ -271,7 +278,7 @@ visitorInstance.on('ready', () => {
 - [sendHit](#sendHit)
 - [sendHits](#sendHits)
 
-#### `events listener`
+## `events listener`
 
 `FlagshipVisitor` contains further event listener which help you to handle the SDK.
 
@@ -333,7 +340,7 @@ If want to listen a listener, here an example:
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 If you want to listen only once:
 
@@ -352,7 +359,7 @@ If you want to listen anytime:
   });
 ```
 
-#### `updateContext`
+## `updateContext`
 
 edit the context of the visitor
 
@@ -377,7 +384,7 @@ edit the context of the visitor
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 const visitorInstance = sdk.updateContext({
@@ -387,7 +394,7 @@ const visitorInstance = sdk.updateContext({
 });
 ```
 
-#### `synchronizeModifications`
+## `synchronizeModifications`
 
 > return a `Promise<number>`
 
@@ -415,7 +422,7 @@ It returns a <i>number</i> (=response status code) when promise is resolved.
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 visitorInstance.synchronizeModifications().then(
@@ -423,7 +430,7 @@ visitorInstance.synchronizeModifications().then(
 );
 ```
 
-#### `getAllModifications`
+## `getAllModifications`
 
 > return an `Promise<object>` which contains all data for all campaigns which the visitor can have
 
@@ -448,7 +455,7 @@ The shape of the object look like same as [decision api response, normal mode](h
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 visitorInstance.getAllModifications()
@@ -482,7 +489,7 @@ with the following data:
 }
 ```
 
-#### `getModificationsForCampaign`
+## `getModificationsForCampaign`
 
 > return a `promise<object>` which contains the data for a specific campaign
 
@@ -513,7 +520,7 @@ The shape of the object look like same as [decision api response](http://develop
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 visitorInstance.getModificationsForCampaign()
@@ -547,7 +554,7 @@ with the following data:
 }
 ```
 
-#### `activateModifications`
+## `activateModifications`
 
 > return `nothing` (for the moment...)
 
@@ -584,16 +591,18 @@ It will activate the first campaign in cache that's matching the key set in argu
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
-    visitorInstance.activateModifications([
-        {
-            key: "btnColor", // required
-        },
-        {
-            key: "customLabel", // required
-        }
-    ])
+```
+visitorInstance.activateModifications([
+    {
+        key: 'btnColor' // required
+    },
+    {
+        key: 'customLabel' // required
+    }
+]);
+```
 
 will produce following behaviour:
 
@@ -624,7 +633,7 @@ Assuming the api gives those informations in the following order:
 
 => Both **campaignA** and **campaignB** will be activated. But the SDK will logs a conflict for modification <b>customLabel</b> as it is considered as it is not supposed to happen.
 
-#### `getModifications`
+## `getModifications`
 
 > return an `object` where each key is a modification with corresponding value
 
@@ -680,19 +689,21 @@ NOTE2: You need to fetch modifications to automatically save them in cache. You 
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
-    visitorInstance.getModifications([
-        {
-            key: "btnColor", // required
-            defaultValue: "#ff0000", // required
-            activate: true // optional
-        },
-        {
-            key: "customLabel", // required
-            defaultValue: "Flagship is awesome", // required
-        }
-    ], /* ActivateAllModifications */)
+```
+visitorInstance.getModifications([
+    {
+        key: "btnColor", // required
+        defaultValue: "#ff0000", // required
+        activate: true // optional
+    },
+    {
+        key: "customLabel", // required
+        defaultValue: "Flagship is awesome", // required
+    }
+], /* ActivateAllModifications */)
+```
 
 will return:
 
@@ -703,7 +714,7 @@ will return:
 }
 ```
 
-#### `sendHit`
+## `sendHit`
 
 > return a `Promise<void>`
 
@@ -733,7 +744,7 @@ This function allow you to send any kind of hit. All details of each hit below �
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 
@@ -747,7 +758,7 @@ visitorInstance.sendHit(
 ).then(() => console.log('Hit send !')
 ```
 
-#### `sendHits`
+## `sendHits`
 
 > return a `Promise<void>`
 
@@ -778,7 +789,7 @@ This function allow you to send multiple and any kind of hit. All details of eac
     </tbody>
 </table>
 
-**Demo:**
+> **Demo:**
 
 ```
 
@@ -836,14 +847,18 @@ visitorInstance.sendHits(
 ).then(() => console.log('All hits send !')
 ```
 
-### <i>Shape</i> of possible hits to send
+# Hits
+
+## Summary
+
+<i>Shape</i> of possible hits to send:
 
 - [Transaction Hit](#transaction-hit)
 - [Screen Hit](#screen-hit)
 - [Item Hit](#item-hit)
 - [Event Hit](#event-hit)
 
-#### `Transaction Hit`
+## `Transaction Hit`
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -917,7 +932,7 @@ visitorInstance.sendHits(
     </tbody>
 </table>
 
-#### `Screen Hit`
+## `Screen Hit`
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -941,7 +956,7 @@ visitorInstance.sendHits(
     </tbody>
 </table>
 
-#### `Item Hit`
+## `Item Hit`
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -997,7 +1012,7 @@ visitorInstance.sendHits(
     </tbody>
 </table>
 
-#### `Event Hit`
+## `Event Hit`
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -1041,14 +1056,14 @@ visitorInstance.sendHits(
     </tbody>
 </table>
 
-## Contributing
+# Contributing
 
 Take a look to the [Contributors Guide](CONTRIBUTING.md).
 
-## What is Flagship ?
+# What is Flagship ?
 
 Have a look [here](https://www.abtasty.com/solutions-product-teams/).
 
-## License
+# License
 
 Flagship uses license under the [Apache version 2.0](http://www.apache.org/licenses/).
