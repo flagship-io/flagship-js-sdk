@@ -15,7 +15,7 @@ const App: React.FC = () => {
     {}
   );
   useEffect(() => {
-    const fsSdk = flagship.initSdk('bn1ab7m56qolupi5sa0g', {
+    const fsSdk = flagship.start('bn1ab7m56qolupi5sa0g', {
       fetchNow: true,
       enableConsoleLogs: true,
     });
@@ -99,7 +99,7 @@ const App: React.FC = () => {
               <CodeBlock
                 className="mv3"
                 codeString={`useEffect(() => {
-  const fsSdk = flagship.initSdk('bn1ab7m56qolupi5sa0g', { fetchNow: true, enableConsoleLogs: true });
+  const fsSdk = flagship.start('bn1ab7m56qolupi5sa0g', { fetchNow: true, enableConsoleLogs: true });
 
   const visitorInstance = fsSdk.newVisitor('test-perf', {
     screenMode: 'light',
@@ -303,7 +303,7 @@ const App: React.FC = () => {
 import flagship from '@flagship.io/js-sdk';
 import { EventEmitter } from 'events';
 
-flagship.initSdk = jest.fn().mockImplementation(() => ({
+flagship.start = jest.fn().mockImplementation(() => ({
   newVisitor: () => {
     const self = new EventEmitter();
     return self;
