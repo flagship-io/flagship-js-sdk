@@ -163,6 +163,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 - [getModificationsForCampaign](#getModificationsForCampaign)
 - [getModifications](#getModifications)
 - [activateModifications](#activateModifications)
+- [sendHit](#sendHit)
 - [sendHits](#sendHits)
 
 ### <i>Shape</i> of possible hits to send
@@ -217,6 +218,8 @@ const sdk = flagship.start("YOUR_ENV_ID",
 
 # <i>Flagship</i> class
 
+## Summary
+
 - [createVisitor](#createVisitor)
 
 ## `createVisitor`
@@ -263,6 +266,8 @@ visitorInstance.on('ready', () => {
 ```
 
 # <i>FlagshipVisitor</i> class
+
+## Summary
 
 - [events listener](#events-listener)
 - [updateContext](#updateContext)
@@ -588,14 +593,16 @@ It will activate the first campaign in cache that's matching the key set in argu
 
 > **Demo:**
 
+```
 visitorInstance.activateModifications([
-{
-key: "btnColor", // required
-},
-{
-key: "customLabel", // required
-}
-])
+    {
+        key: 'btnColor' // required
+    },
+    {
+        key: 'customLabel' // required
+    }
+]);
+```
 
 will produce following behaviour:
 
@@ -684,17 +691,19 @@ NOTE2: You need to fetch modifications to automatically save them in cache. You 
 
 > **Demo:**
 
+```
 visitorInstance.getModifications([
-{
-key: "btnColor", // required
-defaultValue: "#ff0000", // required
-activate: true // optional
-},
-{
-key: "customLabel", // required
-defaultValue: "Flagship is awesome", // required
-}
-], /_ ActivateAllModifications _/)
+    {
+        key: "btnColor", // required
+        defaultValue: "#ff0000", // required
+        activate: true // optional
+    },
+    {
+        key: "customLabel", // required
+        defaultValue: "Flagship is awesome", // required
+    }
+], /* ActivateAllModifications */)
+```
 
 will return:
 
