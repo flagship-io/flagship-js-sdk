@@ -15,7 +15,7 @@ const App: React.FC = () => {
     {}
   );
   useEffect(() => {
-    const fsSdk = flagship.initSdk('bn1ab7m56qolupi5sa0g', {
+    const fsSdk = flagship.start('bn1ab7m56qolupi5sa0g', {
       fetchNow: true,
       enableConsoleLogs: true,
     });
@@ -28,25 +28,24 @@ const App: React.FC = () => {
   }, []);
   useEffect(() => {
     if (fsVisitor) {
-      fsVisitor
-        .getModifications(
-          [
-            {
-              key: 'color',
-              defaultValue: '#fff',
-            },
-            {
-              key: 'borderColor',
-              defaultValue: '#007bff',
-            },
-            {
-              key: 'backgroundColor',
-              defaultValue: '#007bff',
-            },
-          ],
-          true
-        )
-        .then((data) => setCustomBtnData(data as { [key: string]: string }));
+      const data = fsVisitor.getModifications(
+        [
+          {
+            key: 'color',
+            defaultValue: '#fff',
+          },
+          {
+            key: 'borderColor',
+            defaultValue: '#007bff',
+          },
+          {
+            key: 'backgroundColor',
+            defaultValue: '#007bff',
+          },
+        ],
+        true
+      );
+      setCustomBtnData(data as { [key: string]: string });
     }
   }, [fsVisitor]);
   return (
@@ -54,6 +53,36 @@ const App: React.FC = () => {
       <Header />
       <Container className="mt3">
         <Row>
+          <Col md={12}>
+            <a className="fsAnchor" id="initialization" />
+            <Alert
+              variant="dark"
+              className="fs-alert"
+              style={{ minHeight: '30vh' }}
+            >
+              <Alert.Heading>⚠️ Important ! ⚠️</Alert.Heading>
+              <p>
+                The React SDK is now available.{' '}
+                <a href="https://github.com/abtasty/flagship-react-sdk">
+                  Have a look !
+                </a>
+              </p>
+              <p>
+                Below, you will see an example using SDK JS, not SDK REACT. Be
+                aware of that. :)
+              </p>
+              <img
+                alt="down"
+                style={{
+                  height: '30vh',
+                  margin: '0 auto',
+                  display: 'block',
+                }}
+                src="https://cdn.clipart.email/79d1b885dd08966ac10421c9251a0d43_upside-down-arrow-clip-art-at-clkercom-vector-clip-art-online-_800-933.svg"
+              />
+            </Alert>
+          </Col>
+
           <Col>
             <a className="fsAnchor" id="initialization" />
             <Alert variant="dark" className="fs-alert">
@@ -70,7 +99,7 @@ const App: React.FC = () => {
               <CodeBlock
                 className="mv3"
                 codeString={`useEffect(() => {
-  const fsSdk = flagship.initSdk('bn1ab7m56qolupi5sa0g', { fetchNow: true, enableConsoleLogs: true });
+  const fsSdk = flagship.start('bn1ab7m56qolupi5sa0g', { fetchNow: true, enableConsoleLogs: true });
 
   const visitorInstance = fsSdk.newVisitor('test-perf', {
     screenMode: 'light',
@@ -137,7 +166,7 @@ const App: React.FC = () => {
                 codeString={`useEffect(
   () => {
     if (fsVisitor) {
-      fsVisitor.getModifications([
+      const data = fsVisitor.getModifications([
         {
           key: 'color',
           defaultValue: '#fff',
@@ -150,7 +179,8 @@ const App: React.FC = () => {
           key: 'backgroundColor',
           defaultValue: '#007bff',
         },
-      ], true).then((data) => setCustomBtnData(data as {[key: string]: string}));
+      ], true)
+      setCustomBtnData(data as {[key: string]: string})
     }
   }, [fsVisitor],
 );`}
@@ -273,7 +303,7 @@ const App: React.FC = () => {
 import flagship from '@flagship.io/js-sdk';
 import { EventEmitter } from 'events';
 
-flagship.initSdk = jest.fn().mockImplementation(() => ({
+flagship.start = jest.fn().mockImplementation(() => ({
   newVisitor: () => {
     const self = new EventEmitter();
     return self;
