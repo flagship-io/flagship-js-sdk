@@ -1,7 +1,7 @@
+import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { DecisionApiResponseData, DecisionApiResponse } from '../class/flagshipVisitor/flagshipVisitor.d';
 
 import defaultConfig from '../config/default';
-import { FsLogger } from './index.d';
 
 const flagshipSdkHelper = {
   logIgnoredAttributesFromObject: (obj: object, log: FsLogger, objectName = ''): void => {

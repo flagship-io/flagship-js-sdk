@@ -474,7 +474,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args }) as DecisionApiResponse,
         );
       } else {
-        const additionalParam: {[key: string]: any} = {};
+        const additionalParam: {[key: string]: string} = {};
         if (this.config.apiKey) {
           additionalParam['x-api-key'] = this.config.apiKey;
         }
