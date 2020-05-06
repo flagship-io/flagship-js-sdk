@@ -11,6 +11,7 @@ export type FlagshipSdkConfig = {
   enableConsoleLogs?: boolean;
   nodeEnv?: string;
   flagshipApi?: string;
+  apiKey?: string | null;
 };
 
 export type SaveCacheArgs = {

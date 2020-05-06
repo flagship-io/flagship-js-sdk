@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { EventEmitter } from 'events';
+import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { FlagshipSdkConfig, IFlagshipVisitor } from '../../index.d';
 
 import loggerHelper from '../../lib/loggerHelper';
@@ -19,7 +20,6 @@ import {
   checkCampaignsActivatedMultipleTimesOutput,
 } from './flagshipVisitor.d';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
-import { FsLogger } from '../../lib/index.d';
 
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   config: FlagshipSdkConfig;
@@ -474,10 +474,15 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           this.fetchAllModificationsPostProcess(this.fetchedModifications, { ...defaultArgs, ...args }) as DecisionApiResponse,
         );
       } else {
+        const additionalParam: {[key: string]: any} = {};
+        if (this.config.apiKey) {
+          additionalParam['x-api-key'] = this.config.apiKey;
+        }
         axios.post(url, {
           visitor_id: this.id,
           trigger_hit: activate, // TODO: to unit test
           context: this.context,
+          ...additionalParam,
         })
           .then((response: DecisionApiResponse) => {
             this.saveModificationsInCache(response.data);

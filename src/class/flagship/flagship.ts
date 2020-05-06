@@ -1,10 +1,10 @@
+import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { FlagshipSdkConfig, IFlagship, IFlagshipVisitor } from '../../index.d';
 import loggerHelper from '../../lib/loggerHelper';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import { FlagshipVisitorContext } from '../flagshipVisitor/flagshipVisitor.d';
 import FlagshipVisitor from '../flagshipVisitor/flagshipVisitor';
 import defaultConfig from '../../config/default';
-import { FsLogger } from '../../lib/index.d';
 
 class Flagship implements IFlagship {
   config: FlagshipSdkConfig;
