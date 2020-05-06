@@ -8,7 +8,7 @@ let sdk: Flagship;
 let visitorInstance;
 
 describe('FlagshipVisitor', () => {
-  const responseObj = {
+  let responseObj = {
     data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
     status: 200,
     statusText: 'OK',
@@ -94,7 +94,7 @@ describe('FlagshipVisitor', () => {
     });
 
 
-    it('should return default modificaitons if user badly use "saveCache" event', (done) => {
+    it('should return default modifications if user badly use "saveCache" event', (done) => {
       const mockFn = jest.fn();
       let modificationsWhichWillBeSavedInCache;
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
@@ -126,7 +126,7 @@ describe('FlagshipVisitor', () => {
       mockAxios.mockResponse(responseObj);
     });
     it('should create a Visitor with modifications already loaded if config "fetchNow=true"', (done) => {
-      const responseObj = {
+      responseObj = {
         data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
         status: 200,
         statusText: 'OK',
@@ -163,6 +163,61 @@ describe('FlagshipVisitor', () => {
       });
       mockAxios.mockResponse(responseObj);
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] });
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+    });
+    it('should use correct endpoint when "flagshipApi" is set in config', (done) => {
+      const mockEndpoint = 'https://decision-api.flagship.io/v999/';
+      sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true, flagshipApi: mockEndpoint });
+      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true, flagshipApi: mockEndpoint });
+      visitorInstance.once('ready', () => {
+        try {
+          expect(visitorInstance.fetchedModifications).not.toBe(null);
+          expect(mockAxios.post).toHaveBeenNthCalledWith(2, `${mockEndpoint}activate`, {
+            caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
+          });
+          expect(mockAxios.post).toHaveBeenNthCalledWith(3, `${mockEndpoint}activate`, {
+            caid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
+          });
+          expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${mockEndpoint}activate`, {
+            caid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
+          });
+          done();
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      mockAxios.mockResponse(responseObj);
+      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${mockEndpoint}${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] });
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+    });
+    it('should add "x-api-key" in modifications queries when "apiKey" is set in config', (done) => {
+      const mockApiKey = 'toto';
+      const endPoint = 'https://decision-api.flagship.io/v1/';
+      sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true, apiKey: mockApiKey });
+      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true, apiKey: mockApiKey });
+      visitorInstance.once('ready', () => {
+        try {
+          expect(visitorInstance.fetchedModifications).not.toBe(null);
+          expect(mockAxios.post).toHaveBeenNthCalledWith(2, `${endPoint}activate`, {
+            caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
+          });
+          expect(mockAxios.post).toHaveBeenNthCalledWith(3, `${endPoint}activate`, {
+            caid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
+          });
+          expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${endPoint}activate`, {
+            caid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
+          });
+          done();
+        } catch (error) {
+          done.fail(error);
+        }
+      });
+      mockAxios.mockResponse(responseObj);
+      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${endPoint}${demoData.envId[0]}/campaigns?mode=normal`, {
+        context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0], 'x-api-key': 'toto',
+      });
       expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
     });
   });

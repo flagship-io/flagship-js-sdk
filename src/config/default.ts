@@ -5,6 +5,7 @@ const defaultConfig = {
   enableConsoleLogs: false,
   nodeEnv: 'production',
   flagshipApi: 'https://decision-api.flagship.io/v1/',
+  apiKey: null,
 };
 
 export default defaultConfig;

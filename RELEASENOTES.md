@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 0.1.12
+
+### Improvements
+
+- New setting `apiKey` available.
+
 ## ➡️ Version 0.1.11
 
 ### Improvements
