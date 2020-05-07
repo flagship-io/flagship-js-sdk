@@ -143,6 +143,12 @@ Here are the attributes which you can set inside the SDK settings object:
           <td>null</td>
           <td>If you want to use the <a href="http://developers.flagship.io/api/v2/">Decision API V2</a>, you must contact the support team so they'll provide you an API Key to authenticate the calls.</td>
         </tr>
+        <tr>
+          <td>initialModifications</td>
+          <td>object</td>
+          <td>null</td>
+          <td>This is an object which has the shape of Flagship modifications as it is return from the Flagship API.<br>Providing this prop avoid the SDK to have an empty cache during first initialization.
+        </tr>
 </tbody>
 
 </table>

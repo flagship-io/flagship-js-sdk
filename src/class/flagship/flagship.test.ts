@@ -221,4 +221,18 @@ describe('FlagshipVisitor', () => {
       expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
     });
   });
+  it('should have setting "initialModifications" working correctly', (done) => {
+    const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
+    sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: false, initialModifications: defaultCacheData });
+    visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+    visitorInstance.on('ready', () => {
+      try {
+        expect(mockAxios.post).toHaveBeenCalledTimes(0);
+        expect(visitorInstance.fetchedModifications).toEqual(defaultCacheData);
+        done();
+      } catch (error) {
+        done.fail(error);
+      }
+    });
+  });
 });
