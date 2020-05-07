@@ -44,7 +44,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     this.envId = envId;
     this.context = this.checkContext(context);
     this.isAllModificationsFetched = false;
-    this.fetchedModifications = config.initialModifications as DecisionApiResponseData | null;
+    this.fetchedModifications = config.initialModifications ? flagshipSdkHelper.validateDecisionApiData(config.initialModifications, this.log) : null;
   }
 
   private checkContext(unknownContext: object): FlagshipVisitorContext {

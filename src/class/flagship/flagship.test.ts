@@ -13,7 +13,18 @@ describe('FlagshipVisitor', () => {
     status: 200,
     statusText: 'OK',
   };
+  let spyWarnLogs;
+  let spyErrorLogs;
+  let spyInfoLogs;
+  beforeEach(() => {
+    spyWarnLogs = jest.spyOn(console, 'warn').mockImplementation();
+    spyErrorLogs = jest.spyOn(console, 'error').mockImplementation();
+    spyInfoLogs = jest.spyOn(console, 'log').mockImplementation();
+  });
   afterEach(() => {
+    spyWarnLogs.mockRestore();
+    spyErrorLogs.mockRestore();
+    spyInfoLogs.mockRestore();
     mockAxios.reset();
   });
   describe('createVisitor function', () => {
@@ -229,6 +240,33 @@ describe('FlagshipVisitor', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(0);
         expect(visitorInstance.fetchedModifications).toEqual(defaultCacheData);
+        done();
+      } catch (error) {
+        done.fail(error);
+      }
+    });
+  });
+  it('should not consider setting "initialModifications" if not set correctly', (done) => {
+    const defaultCacheData = {
+      toto: 123,
+      visitorId: 111,
+    };
+    sdk = flagshipSdk.initSdk(demoData.envId[0], {
+      ...testConfig, enableConsoleLogs: true, fetchNow: false, initialModifications: defaultCacheData,
+    });
+    visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+
+    visitorInstance.on('ready', () => {
+      try {
+        expect(mockAxios.post).toHaveBeenCalledTimes(0);
+        expect(visitorInstance.fetchedModifications).toEqual(null);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+
+        const spyResult = spyErrorLogs.mock.calls[0][0];
+        expect(spyResult.includes('Decision Api data does not have correct format')).toBe(true);
+        expect(spyResult.includes('Visitor id is not a string')).toBe(true);
+        expect(spyResult.includes('Campaigns is missing')).toBe(true);
+
         done();
       } catch (error) {
         done.fail(error);
