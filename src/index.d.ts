@@ -12,6 +12,7 @@ export type FlagshipSdkConfig = {
   nodeEnv?: string;
   flagshipApi?: string;
   apiKey?: string | null;
+  initialModifications?: DecisionApiResponseData | null;
 };
 
 export type SaveCacheArgs = {

@@ -1,4 +1,5 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
+import { validate } from 'validate.js';
 import { DecisionApiResponseData, DecisionApiResponse } from '../class/flagshipVisitor/flagshipVisitor.d';
 
 import defaultConfig from '../config/default';
@@ -40,6 +41,28 @@ const flagshipSdkHelper = {
       return null;
     }
     return response.data;
+  },
+  validateDecisionApiData: (data: DecisionApiResponseData, log: FsLogger): null | DecisionApiResponseData => {
+    const constraints = {
+      visitorId: {
+        presence: { message: 'is missing' },
+        type: { type: 'string', message: 'is not a string' },
+      },
+      campaigns: {
+        presence: { message: 'is missing' },
+        type: { type: 'array', message: 'is not an array' },
+      },
+    };
+    const output = validate(data, constraints);
+    if (!output) {
+      return data;
+    }
+    let errorMsg = 'Decision Api data does not have correct format:\n';
+    Object.keys(output).forEach((key) => {
+      errorMsg += `- "${key}" ${output[key].map((err: string, i: number) => (i === output[key].length - 1 ? `${err}` : `${err} and `))}.\n`;
+    });
+    log.error(errorMsg);
+    return null;
   },
 };
 

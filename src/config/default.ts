@@ -6,6 +6,7 @@ const defaultConfig = {
   nodeEnv: 'production',
   flagshipApi: 'https://decision-api.flagship.io/v1/',
   apiKey: null,
+  initialModifications: null,
 };
 
 export default defaultConfig;

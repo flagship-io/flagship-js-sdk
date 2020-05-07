@@ -107,7 +107,7 @@ Here are the attributes which you can set inside the SDK settings object:
           <td>activateNow</td>
           <td>boolean</td>
           <td>false</td>
-          <td>Decide to trigger automatically the data when creating a new <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a>.<br>NOTE: when set to <i>true</i>, it will implicitly set <i>fetchNow=true</i> as well.</td>
+          <td>Decide to trigger automatically the data when creating a new <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a>.<br><b>NOTE</b>: when set to <i>true</i>, it will implicitly set <i>fetchNow=true</i> as well.</td>
         </tr>
         <tr>
           <td>enableConsoleLogs</td>
@@ -142,6 +142,12 @@ Here are the attributes which you can set inside the SDK settings object:
           <td>string</td>
           <td>null</td>
           <td>If you want to use the <a href="http://developers.flagship.io/api/v2/">Decision API V2</a>, you must contact the support team so they'll provide you an API Key to authenticate the calls.</td>
+        </tr>
+        <tr>
+          <td>initialModifications</td>
+          <td>object</td>
+          <td>null</td>
+          <td>This is an object which has the shape of Flagship modifications as it is return from the Flagship API.<br>Providing this prop avoid the SDK to have an empty cache during first initialization.
         </tr>
 </tbody>
 
@@ -456,7 +462,7 @@ The shape of the object look like same as [decision api response, normal mode](h
           <td>activate</td>
           <td>boolean</td>
           <td>false</td>
-          <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation.</td>
+          <td>To enable your modification(s) while getting them.<br/><b>NOTE</b>: If modifications already been fetched before, it'll still need to make another request to send the activation.</td>
         </tr>
     </tbody>
 </table>
@@ -521,7 +527,7 @@ The shape of the object look like same as [decision api response](http://develop
           <td>activate</td>
           <td>boolean</td>
           <td>false</td>
-          <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation.</td>
+          <td>To enable your modification(s) while getting them.<br/><b>NOTE</b>: If modifications already been fetched before, it'll still need to make another request to send the activation.</td>
         </tr>
     </tbody>
 </table>
@@ -588,7 +594,7 @@ It will activate the first campaign in cache that's matching the key set in argu
                 </tr>  
                 <tr>
                   <td><em>key</em></td>
-                  <td>Required. The name of the modification</td>
+                  <td><b>Required</b>. The name of the modification</td>
                 </tr>
               </tbody>
             </table>
@@ -645,9 +651,9 @@ Assuming the api gives those informations in the following order:
 
 The data returned will be the data from all modifications that you specify in the `modificationsRequested` argument.
 
-NOTE1: It loads modifications from cache.
+<b>NOTE1</b>: It loads modifications from cache.
 
-NOTE2: You need to fetch modifications to automatically save them in cache. You can achieve it using [synchronizeModifications](###synchronizeModifications) or [fetchNow=true](##SDK-Settings).
+<b>NOTE2</b>: You need to fetch modifications to automatically save them in cache. You can achieve it using [synchronizeModifications](###synchronizeModifications) or [fetchNow=true](##SDK-Settings).
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -671,15 +677,15 @@ NOTE2: You need to fetch modifications to automatically save them in cache. You 
                 </tr>  
                 <tr>
                   <td><em>key</em></td>
-                  <td>Required. The name of the modification.</td>
+                  <td><b>Required</b>. The name of the modification.</td>
                 </tr>
                 <tr>
                   <td><em>defaultValue</em></td>
-                  <td>Required. The default value if no value for this modification is found.</td>
+                  <td><b>Required</b>. The default value if no value for this modification is found.</td>
                 </tr>
                   <tr>
                   <td><em>activate</em></td>
-                  <td>Optional. </td>
+                  <td><b>Optional</b>. </td>
                 </tr>
               </tbody>
             </table>
@@ -745,7 +751,7 @@ This function allow you to send any kind of hit. All details of each hit below ð
             <br>- <a href='README.md#screen-hit'>Screen hit</a>
             <br>- <a href='README.md#item-hit'>Item hit</a>
             <br>- <a href='README.md#event-hit'>Event hit</a>
-            <br>NOTE: each hit have specific attributes required, click on them to check it.
+            <br><b>NOTE</b>: each hit have specific attributes required, click on them to check it.
         </tr>
     </tbody>
 </table>
@@ -789,8 +795,8 @@ This function allow you to send multiple and any kind of hit. All details of eac
             <br>- <a href='README.md#screen-hit'>Screen hit</a>
             <br>- <a href='README.md#item-hit'>Item hit</a>
             <br>- <a href='README.md#event-hit'>Event hit</a>
-            <br>NOTE: you can mix all of them in the array.
-            <br>NOTE2: each hit have specific attributes required, click on them to check it.
+            <br><b>NOTE</b>: you can mix all of them in the array.
+            <br><b>NOTE2</b>: each hit have specific attributes required, click on them to check it.
         </tr>
     </tbody>
 </table>
@@ -878,62 +884,62 @@ visitorInstance.sendHits(
         <tr>
           <td>transactionId</td>
           <td>string</td>
-          <td>Required. The id of your transaction.</td>
+          <td><b>Required</b>. The id of your transaction.</td>
         </tr>
         <tr>
           <td>affiliation</td>
           <td>string</td>
-          <td>Required. The name of the KPI that you will have inside your reporting.</td>
+          <td><b>Required</b>. The name of the KPI that you will have inside your reporting.</td>
         </tr>
         <tr>
           <td>totalRevenue</td>
           <td>number</td>
-          <td>Optional. Specifies the total revenue associated with the transaction. This value should include any shipping or tax costs.</td>
+          <td><b>Optional</b>. Specifies the total revenue associated with the transaction. This value should include any shipping or tax costs.</td>
         </tr>
         <tr>
           <td>shippingCost</td>
           <td>number</td>
-          <td>Optional. The total shipping cost of your transaction.</td>
+          <td><b>Optional</b>. The total shipping cost of your transaction.</td>
         </tr>
         <tr>
           <td>shippingMethod</td>
           <td>string</td>
-          <td>Optional. The shipping method of your transaction.</td>
+          <td><b>Optional</b>. The shipping method of your transaction.</td>
         </tr>
         <tr>
           <td>taxes</td>
           <td>number</td>
-          <td>Optional. Specifies the total tax of your transaction.</td>
+          <td><b>Optional</b>. Specifies the total tax of your transaction.</td>
         </tr>
         <tr>
           <td>currency</td>
           <td>string</td>
-          <td>Optional. Specifies the currency of your transaction.<br>NOTE: Value should be a valid ISO 4217 currency code.</td>
+          <td><b>Optional</b>. Specifies the currency of your transaction.<br><b>NOTE</b>: Value should be a valid ISO 4217 currency code.</td>
         </tr>
         <tr>
           <td>paymentMethod</td>
           <td>string</td>
-          <td>Optional. Specifies the payment method used for your transaction.</td>
+          <td><b>Optional</b>. Specifies the payment method used for your transaction.</td>
         </tr>
         <tr>
           <td>itemCount</td>
           <td>number</td>
-          <td>Optional. Specifies the number of item of your transaction.</td>
+          <td><b>Optional</b>. Specifies the number of item of your transaction.</td>
         </tr>
         <tr>
           <td>couponCode</td>
           <td>string</td>
-          <td>Optional. The coupon code associated with the transaction.</td>
+          <td><b>Optional</b>. The coupon code associated with the transaction.</td>
         </tr>
         <tr>
           <td>documentLocation</td>
           <td>string</td>
-          <td>Optional. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
           <td>string</td>
-          <td>Optional. Specifies the name of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
 </table>
@@ -952,12 +958,12 @@ visitorInstance.sendHits(
         <tr>
           <td>documentLocation</td>
           <td>string</td>
-          <td>Required. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
+          <td><b>Required</b>. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
           <td>string</td>
-          <td>Required. Specifies the name of the page, at the moment where the hit has been sent.</td>
+          <td><b>Required</b>. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
 </table>
@@ -976,44 +982,44 @@ visitorInstance.sendHits(
         <tr>
           <td>transactionId</td>
           <td>string</td>
-          <td>Required. The id of your transaction.</td>
+          <td><b>Required</b>. The id of your transaction.</td>
         </tr>
         <tr>
           <td>name</td>
           <td>string</td>
-          <td>Required. The name of your item.</td>
+          <td><b>Required</b>. The name of your item.</td>
         </tr>
         <tr>
           <td>price</td>
           <td>number</td>
-          <td>Optional. Specifies the price for a single item / unit.</td>
+          <td><b>Optional</b>. Specifies the price for a single item / unit.</td>
         </tr>
         <tr>
           <td>code</td>
           <td>string</td>
-          <td>Optional. Specifies the SKU or item code.</td>
+          <td><b>Optional</b>. Specifies the SKU or item code.</td>
         </tr>
         <tr>
           <td>category</td>
           <td>string</td>
-          <td>Optional. Specifies the category that the item belongs to.
+          <td><b>Optional</b>. Specifies the category that the item belongs to.
           </td>
         </tr>
         <tr>
           <td>quantity</td>
           <td>number</td>
-          <td>Optional. Specifies the number of items purchased.
+          <td><b>Optional</b>. Specifies the number of items purchased.
           </td>
         </tr>
         <tr>
           <td>documentLocation</td>
           <td>string</td>
-          <td>Optional. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
           <td>string</td>
-          <td>Optional. Specifies the name of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
 </table>
@@ -1032,32 +1038,32 @@ visitorInstance.sendHits(
         <tr>
           <td>category</td>
           <td>string</td>
-          <td>Required. Specifies the category of your event.<br>NOTE: The value must be either <b>Action Tracking</b> or <b>User Engagement</b>.</td>
+          <td><b>Required</b>. Specifies the category of your event.<br><b>NOTE</b>: The value must be either <b>Action Tracking</b> or <b>User Engagement</b>.</td>
         </tr>
         <tr>
           <td>action</td>
           <td>string</td>
-          <td>Required. The name of the KPI you will have inside the reporting.</td>
+          <td><b>Required</b>. The name of the KPI you will have inside the reporting.</td>
         </tr>
         <tr>
           <td>label</td>
           <td>string</td>
-          <td>Optional. Specifies additional description of your event.</td>
+          <td><b>Optional</b>. Specifies additional description of your event.</td>
         </tr>
         <tr>
           <td>value</td>
           <td>number</td>
-          <td>Optional. Specifies how much you won with that event.<br>For example, depending on the lead generated, you will earn 10 to 100 euros. Adding that value will enable us to do a sum inside the reporting and give you the average value too.<br>NOTE: Value must be non-negative.</td>
+          <td><b>Optional</b>. Specifies how much you won with that event.<br>For example, depending on the lead generated, you will earn 10 to 100 euros. Adding that value will enable us to do a sum inside the reporting and give you the average value too.<br><b>NOTE</b>: Value must be non-negative.</td>
         </tr>
         <tr>
           <td>documentLocation</td>
           <td>string</td>
-          <td>Optional. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
           <td>string</td>
-          <td>Optional. Specifies the name of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
 </table>
