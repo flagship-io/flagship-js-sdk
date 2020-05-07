@@ -588,7 +588,7 @@ It will activate the first campaign in cache that's matching the key set in argu
                 </tr>  
                 <tr>
                   <td><em>key</em></td>
-                  <td>Required. The name of the modification</td>
+                  <td><b>Required</b>. The name of the modification</td>
                 </tr>
               </tbody>
             </table>
@@ -671,15 +671,15 @@ NOTE2: You need to fetch modifications to automatically save them in cache. You 
                 </tr>  
                 <tr>
                   <td><em>key</em></td>
-                  <td>Required. The name of the modification.</td>
+                  <td><b>Required</b>. The name of the modification.</td>
                 </tr>
                 <tr>
                   <td><em>defaultValue</em></td>
-                  <td>Required. The default value if no value for this modification is found.</td>
+                  <td><b>Required</b>. The default value if no value for this modification is found.</td>
                 </tr>
                   <tr>
                   <td><em>activate</em></td>
-                  <td>Optional. </td>
+                  <td><b>Optional</b>. </td>
                 </tr>
               </tbody>
             </table>
@@ -878,62 +878,62 @@ visitorInstance.sendHits(
         <tr>
           <td>transactionId</td>
           <td>string</td>
-          <td>Required. The id of your transaction.</td>
+          <td><b>Required</b>. The id of your transaction.</td>
         </tr>
         <tr>
           <td>affiliation</td>
           <td>string</td>
-          <td>Required. The name of the KPI that you will have inside your reporting.</td>
+          <td><b>Required</b>. The name of the KPI that you will have inside your reporting.</td>
         </tr>
         <tr>
           <td>totalRevenue</td>
           <td>number</td>
-          <td>Optional. Specifies the total revenue associated with the transaction. This value should include any shipping or tax costs.</td>
+          <td><b>Optional</b>. Specifies the total revenue associated with the transaction. This value should include any shipping or tax costs.</td>
         </tr>
         <tr>
           <td>shippingCost</td>
           <td>number</td>
-          <td>Optional. The total shipping cost of your transaction.</td>
+          <td><b>Optional</b>. The total shipping cost of your transaction.</td>
         </tr>
         <tr>
           <td>shippingMethod</td>
           <td>string</td>
-          <td>Optional. The shipping method of your transaction.</td>
+          <td><b>Optional</b>. The shipping method of your transaction.</td>
         </tr>
         <tr>
           <td>taxes</td>
           <td>number</td>
-          <td>Optional. Specifies the total tax of your transaction.</td>
+          <td><b>Optional</b>. Specifies the total tax of your transaction.</td>
         </tr>
         <tr>
           <td>currency</td>
           <td>string</td>
-          <td>Optional. Specifies the currency of your transaction.<br>NOTE: Value should be a valid ISO 4217 currency code.</td>
+          <td><b>Optional</b>. Specifies the currency of your transaction.<br>NOTE: Value should be a valid ISO 4217 currency code.</td>
         </tr>
         <tr>
           <td>paymentMethod</td>
           <td>string</td>
-          <td>Optional. Specifies the payment method used for your transaction.</td>
+          <td><b>Optional</b>. Specifies the payment method used for your transaction.</td>
         </tr>
         <tr>
           <td>itemCount</td>
           <td>number</td>
-          <td>Optional. Specifies the number of item of your transaction.</td>
+          <td><b>Optional</b>. Specifies the number of item of your transaction.</td>
         </tr>
         <tr>
           <td>couponCode</td>
           <td>string</td>
-          <td>Optional. The coupon code associated with the transaction.</td>
+          <td><b>Optional</b>. The coupon code associated with the transaction.</td>
         </tr>
         <tr>
           <td>documentLocation</td>
           <td>string</td>
-          <td>Optional. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
           <td>string</td>
-          <td>Optional. Specifies the name of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
 </table>
@@ -952,12 +952,12 @@ visitorInstance.sendHits(
         <tr>
           <td>documentLocation</td>
           <td>string</td>
-          <td>Required. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
+          <td><b>Required</b>. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
           <td>string</td>
-          <td>Required. Specifies the name of the page, at the moment where the hit has been sent.</td>
+          <td><b>Required</b>. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
 </table>
@@ -976,44 +976,44 @@ visitorInstance.sendHits(
         <tr>
           <td>transactionId</td>
           <td>string</td>
-          <td>Required. The id of your transaction.</td>
+          <td><b>Required</b>. The id of your transaction.</td>
         </tr>
         <tr>
           <td>name</td>
           <td>string</td>
-          <td>Required. The name of your item.</td>
+          <td><b>Required</b>. The name of your item.</td>
         </tr>
         <tr>
           <td>price</td>
           <td>number</td>
-          <td>Optional. Specifies the price for a single item / unit.</td>
+          <td><b>Optional</b>. Specifies the price for a single item / unit.</td>
         </tr>
         <tr>
           <td>code</td>
           <td>string</td>
-          <td>Optional. Specifies the SKU or item code.</td>
+          <td><b>Optional</b>. Specifies the SKU or item code.</td>
         </tr>
         <tr>
           <td>category</td>
           <td>string</td>
-          <td>Optional. Specifies the category that the item belongs to.
+          <td><b>Optional</b>. Specifies the category that the item belongs to.
           </td>
         </tr>
         <tr>
           <td>quantity</td>
           <td>number</td>
-          <td>Optional. Specifies the number of items purchased.
+          <td><b>Optional</b>. Specifies the number of items purchased.
           </td>
         </tr>
         <tr>
           <td>documentLocation</td>
           <td>string</td>
-          <td>Optional. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
           <td>string</td>
-          <td>Optional. Specifies the name of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
 </table>
@@ -1032,32 +1032,32 @@ visitorInstance.sendHits(
         <tr>
           <td>category</td>
           <td>string</td>
-          <td>Required. Specifies the category of your event.<br>NOTE: The value must be either <b>Action Tracking</b> or <b>User Engagement</b>.</td>
+          <td><b>Required</b>. Specifies the category of your event.<br>NOTE: The value must be either <b>Action Tracking</b> or <b>User Engagement</b>.</td>
         </tr>
         <tr>
           <td>action</td>
           <td>string</td>
-          <td>Required. The name of the KPI you will have inside the reporting.</td>
+          <td><b>Required</b>. The name of the KPI you will have inside the reporting.</td>
         </tr>
         <tr>
           <td>label</td>
           <td>string</td>
-          <td>Optional. Specifies additional description of your event.</td>
+          <td><b>Optional</b>. Specifies additional description of your event.</td>
         </tr>
         <tr>
           <td>value</td>
           <td>number</td>
-          <td>Optional. Specifies how much you won with that event.<br>For example, depending on the lead generated, you will earn 10 to 100 euros. Adding that value will enable us to do a sum inside the reporting and give you the average value too.<br>NOTE: Value must be non-negative.</td>
+          <td><b>Optional</b>. Specifies how much you won with that event.<br>For example, depending on the lead generated, you will earn 10 to 100 euros. Adding that value will enable us to do a sum inside the reporting and give you the average value too.<br>NOTE: Value must be non-negative.</td>
         </tr>
         <tr>
           <td>documentLocation</td>
           <td>string</td>
-          <td>Optional. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the current URL of the page, at the moment where the hit has been sent.</td>
         </tr>
         <tr>
           <td>pageTitle</td>
           <td>string</td>
-          <td>Optional. Specifies the name of the page, at the moment where the hit has been sent.</td>
+          <td><b>Optional</b>. Specifies the name of the page, at the moment where the hit has been sent.</td>
         </tr>
     </tbody>
 </table>
