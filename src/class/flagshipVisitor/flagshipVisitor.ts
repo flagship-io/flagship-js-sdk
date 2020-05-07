@@ -417,23 +417,23 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return output;
   }
 
-  private saveModificationsInCache(data: DecisionApiResponseData | null): void {
+  private saveModificationsInCache(data: DecisionApiCampaign[] | null): void {
     let haveBeenCalled = false;
-    const callback = (arg = data): void => {
+    const callback = (campaigns: DecisionApiCampaign[] | null = data): void => {
       haveBeenCalled = true;
-      this.fetchedModifications = (arg && arg.campaigns) || null;
+      this.fetchedModifications = campaigns || null;
     };
     this.emit('saveCache', {
       saveInCacheModifications: callback,
       modifications: {
         before: this.fetchedModifications,
-        after: data,
+        after: data || null,
       },
     });
 
     // if callback not used, do default behavior
     if (!haveBeenCalled) {
-      this.fetchedModifications = (data && data.campaigns) || null;
+      this.fetchedModifications = data || null;
     }
     this.log.debug(`Saving in cache those modifications:\n${this.fetchedModifications ? JSON.stringify(this.fetchedModifications) : 'null'}`);
   }
@@ -486,7 +486,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           ...additionalParam,
         })
           .then((response: DecisionApiResponse) => {
-            this.saveModificationsInCache(response.data);
+            this.saveModificationsInCache(response.data.campaigns);
             resolve(
               this.fetchAllModificationsPostProcess(response, { ...defaultArgs, ...args }) as DecisionApiResponse,
             );

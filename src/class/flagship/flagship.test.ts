@@ -75,7 +75,7 @@ describe('FlagshipVisitor', () => {
 
     it('should have ability to return custom modifications with "saveCache" event', (done) => {
       const mockFn = jest.fn();
-      const modificationsWhichWillBeSavedInCache = demoData.flagshipVisitor.getModifications.detailsModifications.oneModifInMoreThanOneCampaign;
+      const modificationsWhichWillBeSavedInCache = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns;
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
       visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       visitorInstance.on('saveCache', (args) => {

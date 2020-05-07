@@ -17,10 +17,10 @@ export type FlagshipSdkConfig = {
 
 export type SaveCacheArgs = {
   modifications: {
-    before: DecisionApiResponseData | null;
-    after: DecisionApiResponseData | null;
+    before: DecisionApiCampaign[] | null;
+    after: DecisionApiCampaign[] | null;
   };
-  saveInCacheModifications(modificationsToSaveInCache: DecisionApiResponseData | null): void;
+  saveInCacheModifications(modificationsToSaveInCache: DecisionApiCampaign[] | null): void;
 }
 
 export interface IFlagshipVisitor extends EventEmitter {
