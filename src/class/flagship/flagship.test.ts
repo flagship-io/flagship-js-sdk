@@ -149,7 +149,7 @@ describe('FlagshipVisitor', () => {
         done();
       });
       mockAxios.mockResponse(responseObj);
-      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
     });
     it('should create a Visitor with modifications already loaded and activated if config "activateNow=true"', (done) => {
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true });
@@ -174,7 +174,7 @@ describe('FlagshipVisitor', () => {
       });
       mockAxios.mockResponse(responseObj);
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] });
-      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
     });
     it('should use correct endpoint when "flagshipApi" is set in config', (done) => {
       const mockEndpoint = 'https://decision-api.flagship.io/v999/';
@@ -200,7 +200,7 @@ describe('FlagshipVisitor', () => {
       });
       mockAxios.mockResponse(responseObj);
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${mockEndpoint}${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] });
-      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
     });
     it('should add "x-api-key" in modifications queries when "apiKey" is set in config', (done) => {
       const mockApiKey = 'toto';
@@ -229,7 +229,7 @@ describe('FlagshipVisitor', () => {
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${endPoint}${demoData.envId[0]}/campaigns?mode=normal`, {
         context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0], 'x-api-key': 'toto',
       });
-      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
     });
   });
   it('should have setting "initialModifications" working correctly', (done) => {
@@ -304,7 +304,7 @@ describe('FlagshipVisitor', () => {
     visitorInstance.on('ready', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(1);
-        expect(visitorInstance.fetchedModifications).toEqual(demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign);
+        expect(visitorInstance.fetchedModifications).toEqual(demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns);
         done();
       } catch (error) {
         done.fail(error);

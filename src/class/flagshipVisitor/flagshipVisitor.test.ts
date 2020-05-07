@@ -65,7 +65,7 @@ describe('FlagshipVisitor', () => {
       expect(visitorInstance.fetchedModifications).toBe(null);
       visitorInstance.synchronizeModifications().then((response) => {
         try {
-          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
           expect(response).toBe(responseObj.status);
         } catch (error) {
           done.fail(error);
@@ -82,10 +82,10 @@ describe('FlagshipVisitor', () => {
         statusText: 'OK',
       };
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-      visitorInstance.fetchedModifications = { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns }; // Mock a previous fetch
+      visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns; // Mock a previous fetch
       visitorInstance.synchronizeModifications().then((response) => {
         try {
-          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
           expect(response).toBe(responseObj.status);
         } catch (error) {
           done.fail(error);
@@ -127,7 +127,7 @@ describe('FlagshipVisitor', () => {
       expect(visitorInstance.fetchedModifications).toBe(null);
       visitorInstance.synchronizeModifications().then((response) => {
         try {
-          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
           expect(response).toBe(responseObj.status);
         } catch (error) {
           done.fail(error);
@@ -190,7 +190,7 @@ describe('FlagshipVisitor', () => {
         title: 'Invalid Attribute',
         detail: 'Env id must contain at least three characters.',
       };
-      visitorInstance.fetchedModifications = responseObj.data;
+      visitorInstance.fetchedModifications = responseObj.data.campaigns;
       spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
       const spyThen = jest.fn();
       visitorInstance.fetchAllModifications({
@@ -242,7 +242,7 @@ describe('FlagshipVisitor', () => {
           });
           expect(status).toBe(200);
           expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
-          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+          expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         } catch (error) {
           done.fail(error);
         }
@@ -312,10 +312,10 @@ describe('FlagshipVisitor', () => {
         statusText: 'OK',
       };
       spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
-      visitorInstance.fetchedModifications = responseObj.data; // Mock a already fetch
+      visitorInstance.fetchedModifications = responseObj.data.campaigns; // Mock a already fetch
       visitorInstance.fetchAllModifications().then(({ data }) => {
         try {
-          expect(data).toMatchObject(visitorInstance.fetchedModifications);
+          expect(data.campaigns).toMatchObject(visitorInstance.fetchedModifications);
           expect(spyInfoLogs).toBeCalledWith('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
           expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
         } catch (error) {
@@ -332,10 +332,10 @@ describe('FlagshipVisitor', () => {
         statusText: 'OK',
       };
       spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
-      visitorInstance.fetchedModifications = responseObj.data; // Mock a already fetch
+      visitorInstance.fetchedModifications = responseObj.data.campaigns; // Mock a already fetch
       visitorInstance.fetchAllModifications({ activate: true }).then(({ data }) => {
         try {
-          expect(data).toMatchObject(visitorInstance.fetchedModifications);
+          expect(data.campaigns).toMatchObject(visitorInstance.fetchedModifications);
           expect(spyInfoLogs).toHaveBeenCalledWith('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
           expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
             caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
@@ -500,7 +500,7 @@ describe('FlagshipVisitor', () => {
       };
     });
     it('should warn if requested key does not match any campaign', (done) => {
-      visitorInstance.fetchedModifications = responseObject.data; // Mock a previous fetch
+      visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
       visitorInstance.activateModifications([...demoData.flagshipVisitor.activateModifications.args.basic, { key: 'xoxo' }]);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(2);
@@ -510,7 +510,7 @@ describe('FlagshipVisitor', () => {
         expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
           caid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
         });
-        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(responseObject.data, [
+        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(responseObject.data.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
           { activate: true, defaultValue: '', key: 'tata' },
           { activate: true, defaultValue: '', key: 'xoxo' },
@@ -529,7 +529,7 @@ describe('FlagshipVisitor', () => {
       }
     });
     it('should not activate all campaigns matching requesting key when there is a campaign conflict + notify with logs', (done) => {
-      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict; // Mock a previous fetch
+      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns; // Mock a previous fetch
       visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.basic);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(2);
@@ -539,7 +539,7 @@ describe('FlagshipVisitor', () => {
         expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
           caid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
         });
-        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict, [
+        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
           { activate: true, defaultValue: '', key: 'tata' },
         ]);
@@ -557,14 +557,14 @@ describe('FlagshipVisitor', () => {
       }
     });
     it('should not activate all campaigns matching requesting key when there is a campaign conflict', (done) => {
-      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict; // Mock a previous fetch
+      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns; // Mock a previous fetch
       visitorInstance.activateModifications([{ key: 'toto' }]);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(1);
         expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
           caid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
         });
-        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict, [
+        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
         ]);
         // expect(spyTriggerActivateIfNeeded).toHaveBeenCalledWith(""); // DEBUG ONLY
@@ -579,7 +579,7 @@ describe('FlagshipVisitor', () => {
       }
     });
     it('should not activate all campaigns matching requesting key when there is a campaign conflict + notify with logs (part 2)', (done) => {
-      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict; // Mock a previous fetch
+      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns; // Mock a previous fetch
       visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.all);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(3);
@@ -592,7 +592,7 @@ describe('FlagshipVisitor', () => {
         expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
           caid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
         });
-        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict, [
+        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
           { activate: true, defaultValue: '', key: 'tata' },
           { activate: true, defaultValue: '', key: 'titi' },
@@ -613,7 +613,7 @@ describe('FlagshipVisitor', () => {
       }
     });
     it('should correctly handle conflicts due to further other requested keys', () => {
-      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict; // Mock a previous fetch
+      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns; // Mock a previous fetch
       visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.over9000);
       expect(mockAxios.post).toHaveBeenCalledTimes(4);
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
@@ -628,7 +628,7 @@ describe('FlagshipVisitor', () => {
       expect(mockAxios.post).toHaveBeenNthCalledWith(4, 'https://decision-api.flagship.io/v1/activate', {
         caid: '5e26ccd89609296ae8430137', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8fcde4be7ff55476f', vid: 'test-perf',
       });
-      expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict, [
+      expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns, [
         { activate: true, defaultValue: '', key: 'toto' },
         { activate: true, defaultValue: '', key: 'tata' },
         { activate: true, defaultValue: '', key: 'titi' },
@@ -649,7 +649,7 @@ describe('FlagshipVisitor', () => {
       expect(spyDebugLogs).toHaveBeenNthCalledWith(4, expect.stringContaining('because key "tata" is also include inside campaign id="5e26ccd803533a89c3acbbbb" where key(s) "tyty " is/are also requested'));
     });
     it('should not activate all campaigns matching requesting key when there is a campaign conflict + notify with logs (part 3)', (done) => {
-      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict; // Mock a previous fetch
+      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns; // Mock a previous fetch
       visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.basic);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(2);
@@ -659,7 +659,7 @@ describe('FlagshipVisitor', () => {
         expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
           caid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
         });
-        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict, [
+        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
           { activate: true, defaultValue: '', key: 'tata' },
         ]);
@@ -677,14 +677,14 @@ describe('FlagshipVisitor', () => {
       }
     });
     it('should not activate all campaigns matching requesting key when there is a campaign conflict (part 2)', (done) => {
-      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict; // Mock a previous fetch
+      visitorInstance.fetchedModifications = demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns; // Mock a previous fetch
       visitorInstance.activateModifications([{ key: 'toto' }]);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(1);
         expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
           caid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
         });
-        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict, [
+        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
         ]);
         // expect(spyTriggerActivateIfNeeded).toHaveBeenCalledWith(""); // DEBUG ONLY
@@ -699,7 +699,7 @@ describe('FlagshipVisitor', () => {
       }
     });
     it('should get corresponding campaigns exactly same as getModifications function And then should activate them', (done) => {
-      visitorInstance.fetchedModifications = responseObject.data; // Mock a previous fetch
+      visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
       visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.basic);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(2);
@@ -709,7 +709,7 @@ describe('FlagshipVisitor', () => {
         expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
           caid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
         });
-        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(responseObject.data, [
+        expect(spyExtractDesiredModifications).toHaveBeenCalledWith(responseObject.data.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
           { activate: true, defaultValue: '', key: 'tata' },
         ]);
@@ -977,7 +977,7 @@ describe('FlagshipVisitor', () => {
     });
     it('should not activate an unexisting key + return default value', (done) => {
       responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
-      visitorInstance.fetchedModifications = responseObject.data; // Mock a previous fetch
+      visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
       const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.requestOneUnexistingKeyWithActivate);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(0);
@@ -988,7 +988,7 @@ describe('FlagshipVisitor', () => {
         expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'Unable to activate modification "testUnexistingKey" because it does not exist on any existing campaign...');
         expect(spyDebugLogs).toHaveBeenCalledTimes(4);
         expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications: loadFromCache enabled');
-        expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
+        expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
         expect(cacheResponse).toMatchObject({ testUnexistingKey: 'NOOOOO' });
         done();
       } catch (error) {
@@ -997,7 +997,7 @@ describe('FlagshipVisitor', () => {
     });
     it('should not use promise when fetching modifications', (done) => {
       responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
-      visitorInstance.fetchedModifications = responseObject.data; // Mock a previous fetch
+      visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
       const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.noActivate);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(0);
@@ -1006,7 +1006,7 @@ describe('FlagshipVisitor', () => {
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
         expect(spyDebugLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled');
-        expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
+        expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
         expect(cacheResponse).toMatchObject({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
         done();
       } catch (error) {
@@ -1015,7 +1015,7 @@ describe('FlagshipVisitor', () => {
     });
     it('should not activate two different campaign if two requested keys are in same campaign', (done) => {
       responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
-      visitorInstance.fetchedModifications = responseObject.data; // Mock a previous fetch
+      visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
       const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default);
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(1);
@@ -1028,7 +1028,7 @@ describe('FlagshipVisitor', () => {
         expect(spyWarnLogs).toHaveBeenCalledTimes(1);
         expect(spyWarnLogs).toHaveBeenNthCalledWith(1, `Unable to activate modification "${demoData.flagshipVisitor.getModifications.args.default[2].key}" because it does not exist on any existing campaign...`);
         expect(spyDebugLogs).toHaveBeenCalledWith('fetchAllModifications: loadFromCache enabled');
-        expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data);
+        expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
         expect(cacheResponse).toMatchObject({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
         done();
       } catch (error) {
@@ -1084,7 +1084,7 @@ describe('FlagshipVisitor', () => {
       }
     });
     it('should return empty object if no modificationsRequested specified', (done) => {
-      visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign;
+      visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns;
       const cacheResponse = visitorInstance.getModifications();
       try {
         expect(spyFetchModifs).toHaveBeenCalledTimes(0);
