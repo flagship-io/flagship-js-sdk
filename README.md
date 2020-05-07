@@ -107,7 +107,7 @@ Here are the attributes which you can set inside the SDK settings object:
           <td>activateNow</td>
           <td>boolean</td>
           <td>false</td>
-          <td>Decide to trigger automatically the data when creating a new <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a>.<br>NOTE: when set to <i>true</i>, it will implicitly set <i>fetchNow=true</i> as well.</td>
+          <td>Decide to trigger automatically the data when creating a new <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a>.<br><b>NOTE</b>: when set to <i>true</i>, it will implicitly set <i>fetchNow=true</i> as well.</td>
         </tr>
         <tr>
           <td>enableConsoleLogs</td>
@@ -456,7 +456,7 @@ The shape of the object look like same as [decision api response, normal mode](h
           <td>activate</td>
           <td>boolean</td>
           <td>false</td>
-          <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation.</td>
+          <td>To enable your modification(s) while getting them.<br/><b>NOTE</b>: If modifications already been fetched before, it'll still need to make another request to send the activation.</td>
         </tr>
     </tbody>
 </table>
@@ -521,7 +521,7 @@ The shape of the object look like same as [decision api response](http://develop
           <td>activate</td>
           <td>boolean</td>
           <td>false</td>
-          <td>To enable your modification(s) while getting them.<br/>NOTE: If modifications already been fetched before, it'll still need to make another request to send the activation.</td>
+          <td>To enable your modification(s) while getting them.<br/><b>NOTE</b>: If modifications already been fetched before, it'll still need to make another request to send the activation.</td>
         </tr>
     </tbody>
 </table>
@@ -645,9 +645,9 @@ Assuming the api gives those informations in the following order:
 
 The data returned will be the data from all modifications that you specify in the `modificationsRequested` argument.
 
-NOTE1: It loads modifications from cache.
+<b>NOTE1</b>: It loads modifications from cache.
 
-NOTE2: You need to fetch modifications to automatically save them in cache. You can achieve it using [synchronizeModifications](###synchronizeModifications) or [fetchNow=true](##SDK-Settings).
+<b>NOTE2</b>: You need to fetch modifications to automatically save them in cache. You can achieve it using [synchronizeModifications](###synchronizeModifications) or [fetchNow=true](##SDK-Settings).
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -745,7 +745,7 @@ This function allow you to send any kind of hit. All details of each hit below ð
             <br>- <a href='README.md#screen-hit'>Screen hit</a>
             <br>- <a href='README.md#item-hit'>Item hit</a>
             <br>- <a href='README.md#event-hit'>Event hit</a>
-            <br>NOTE: each hit have specific attributes required, click on them to check it.
+            <br><b>NOTE</b>: each hit have specific attributes required, click on them to check it.
         </tr>
     </tbody>
 </table>
@@ -789,8 +789,8 @@ This function allow you to send multiple and any kind of hit. All details of eac
             <br>- <a href='README.md#screen-hit'>Screen hit</a>
             <br>- <a href='README.md#item-hit'>Item hit</a>
             <br>- <a href='README.md#event-hit'>Event hit</a>
-            <br>NOTE: you can mix all of them in the array.
-            <br>NOTE2: each hit have specific attributes required, click on them to check it.
+            <br><b>NOTE</b>: you can mix all of them in the array.
+            <br><b>NOTE2</b>: each hit have specific attributes required, click on them to check it.
         </tr>
     </tbody>
 </table>
@@ -908,7 +908,7 @@ visitorInstance.sendHits(
         <tr>
           <td>currency</td>
           <td>string</td>
-          <td><b>Optional</b>. Specifies the currency of your transaction.<br>NOTE: Value should be a valid ISO 4217 currency code.</td>
+          <td><b>Optional</b>. Specifies the currency of your transaction.<br><b>NOTE</b>: Value should be a valid ISO 4217 currency code.</td>
         </tr>
         <tr>
           <td>paymentMethod</td>
@@ -1032,7 +1032,7 @@ visitorInstance.sendHits(
         <tr>
           <td>category</td>
           <td>string</td>
-          <td><b>Required</b>. Specifies the category of your event.<br>NOTE: The value must be either <b>Action Tracking</b> or <b>User Engagement</b>.</td>
+          <td><b>Required</b>. Specifies the category of your event.<br><b>NOTE</b>: The value must be either <b>Action Tracking</b> or <b>User Engagement</b>.</td>
         </tr>
         <tr>
           <td>action</td>
@@ -1047,7 +1047,7 @@ visitorInstance.sendHits(
         <tr>
           <td>value</td>
           <td>number</td>
-          <td><b>Optional</b>. Specifies how much you won with that event.<br>For example, depending on the lead generated, you will earn 10 to 100 euros. Adding that value will enable us to do a sum inside the reporting and give you the average value too.<br>NOTE: Value must be non-negative.</td>
+          <td><b>Optional</b>. Specifies how much you won with that event.<br>For example, depending on the lead generated, you will earn 10 to 100 euros. Adding that value will enable us to do a sum inside the reporting and give you the average value too.<br><b>NOTE</b>: Value must be non-negative.</td>
         </tr>
         <tr>
           <td>documentLocation</td>
