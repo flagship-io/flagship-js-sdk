@@ -75,7 +75,7 @@ describe('FlagshipVisitor', () => {
 
     it('should have ability to return custom modifications with "saveCache" event', (done) => {
       const mockFn = jest.fn();
-      const modificationsWhichWillBeSavedInCache = demoData.flagshipVisitor.getModifications.detailsModifications.oneModifInMoreThanOneCampaign;
+      const modificationsWhichWillBeSavedInCache = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns;
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
       visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       visitorInstance.on('saveCache', (args) => {
@@ -149,7 +149,7 @@ describe('FlagshipVisitor', () => {
         done();
       });
       mockAxios.mockResponse(responseObj);
-      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
     });
     it('should create a Visitor with modifications already loaded and activated if config "activateNow=true"', (done) => {
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true });
@@ -174,7 +174,7 @@ describe('FlagshipVisitor', () => {
       });
       mockAxios.mockResponse(responseObj);
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] });
-      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
     });
     it('should use correct endpoint when "flagshipApi" is set in config', (done) => {
       const mockEndpoint = 'https://decision-api.flagship.io/v999/';
@@ -200,7 +200,7 @@ describe('FlagshipVisitor', () => {
       });
       mockAxios.mockResponse(responseObj);
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${mockEndpoint}${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] });
-      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
     });
     it('should add "x-api-key" in modifications queries when "apiKey" is set in config', (done) => {
       const mockApiKey = 'toto';
@@ -229,11 +229,11 @@ describe('FlagshipVisitor', () => {
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${endPoint}${demoData.envId[0]}/campaigns?mode=normal`, {
         context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0], 'x-api-key': 'toto',
       });
-      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data);
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
     });
   });
   it('should have setting "initialModifications" working correctly', (done) => {
-    const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
+    const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
     sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: false, initialModifications: defaultCacheData });
     visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
     visitorInstance.on('ready', () => {
@@ -247,10 +247,23 @@ describe('FlagshipVisitor', () => {
     });
   });
   it('should not consider setting "initialModifications" if not set correctly', (done) => {
-    const defaultCacheData = {
+    const defaultCacheData = [{
       toto: 123,
-      visitorId: 111,
-    };
+    },
+    {
+      id: 'blntcamqmdvg04g371f0',
+      variation: {
+        id: 'blntcamqmdvg04g371hg',
+        modifications: {
+          type: 'FLAG',
+          value: {
+            psp: 'dalenys',
+            algorithmVersion: 'new',
+          },
+        },
+      },
+    },
+    ];
     sdk = flagshipSdk.initSdk(demoData.envId[0], {
       ...testConfig, enableConsoleLogs: true, fetchNow: false, initialModifications: defaultCacheData,
     });
@@ -264,13 +277,40 @@ describe('FlagshipVisitor', () => {
 
         const spyResult = spyErrorLogs.mock.calls[0][0];
         expect(spyResult.includes('Decision Api data does not have correct format')).toBe(true);
-        expect(spyResult.includes('Visitor id is not a string')).toBe(true);
-        expect(spyResult.includes('Campaigns is missing')).toBe(true);
+        // expect(spyResult).toBe(true);
+        expect(spyResult.includes('Element at index=0:')).toBe(true);
+        expect(spyResult.includes('- "id" Id is missing.')).toBe(true);
+        expect(spyResult.includes('- "variationGroupId" Variation group id is missing.')).toBe(true);
+        expect(spyResult.includes('- "variation.id" Variation id is missing.')).toBe(true);
+        expect(spyResult.includes('- "variation.modifications.type" Variation modifications type is missing.')).toBe(true);
+        expect(spyResult.includes('- "variation.modifications.value" Variation modifications value is missing.')).toBe(true);
+        expect(spyResult.includes('Element at index=1:')).toBe(true);
+        expect(spyResult.includes('- "variationGroupId" Variation group id is missing.')).toBe(true);
+        expect(spyResult.includes('Element at index=0:')).toBe(true);
+        expect(spyResult.includes('Element at index=0:')).toBe(true);
+        expect(spyResult.includes('Element at index=0:')).toBe(true);
+        expect(spyResult.includes('Element at index=0:')).toBe(true);
 
         done();
       } catch (error) {
         done.fail(error);
       }
     });
+  });
+  it('should fetch decision api if "initialModifications" and "fetchNow" are set', (done) => {
+    const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
+    sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true, initialModifications: defaultCacheData });
+    visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+    visitorInstance.on('ready', () => {
+      try {
+        expect(mockAxios.post).toHaveBeenCalledTimes(1);
+        expect(visitorInstance.fetchedModifications).toEqual(demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns);
+        done();
+      } catch (error) {
+        done.fail(error);
+      }
+    });
+
+    mockAxios.mockResponse(responseObj);
   });
 });

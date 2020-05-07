@@ -1,6 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { validate } from 'validate.js';
-import { DecisionApiResponseData, DecisionApiResponse } from '../class/flagshipVisitor/flagshipVisitor.d';
+import { DecisionApiResponseData, DecisionApiResponse, DecisionApiCampaign } from '../class/flagshipVisitor/flagshipVisitor.d';
 
 import defaultConfig from '../config/default';
 
@@ -42,25 +42,44 @@ const flagshipSdkHelper = {
     }
     return response.data;
   },
-  validateDecisionApiData: (data: DecisionApiResponseData, log: FsLogger): null | DecisionApiResponseData => {
+  validateDecisionApiData: (data: DecisionApiCampaign[], log: FsLogger): null | DecisionApiCampaign[] => {
     const constraints = {
-      visitorId: {
+      id: {
         presence: { message: 'is missing' },
         type: { type: 'string', message: 'is not a string' },
       },
-      campaigns: {
+      variationGroupId: {
         presence: { message: 'is missing' },
-        type: { type: 'array', message: 'is not an array' },
+        type: { type: 'string', message: 'is not a string' },
+      },
+      'variation.id': {
+        presence: { message: 'is missing' },
+        type: { type: 'string', message: 'is not a string' },
+      },
+      'variation.modifications.type': {
+        presence: { message: 'is missing' },
+        type: { type: 'string', message: 'is not a string' },
+      },
+      'variation.modifications.value': {
+        presence: { message: 'is missing' },
       },
     };
-    const output = validate(data, constraints);
-    if (!output) {
+    const result: {[key: string]: any} = {};
+    let errorMsg = 'Decision Api data does not have correct format:\n';
+    data.forEach((potentialCampaign, i) => {
+      const output = validate(potentialCampaign, constraints);
+      if (output) {
+        result[i] = output;
+        errorMsg += `Element at index=${i}:\n`;
+        Object.keys(output).forEach((key) => {
+          errorMsg += `- "${key}" ${output[key].map((err: string, j: number) => (j === output[key].length - 1 ? `${err}` : `${err} and `))}.\n`;
+        });
+        errorMsg += '\n';
+      }
+    });
+    if (Object.keys(result).length === 0) {
       return data;
     }
-    let errorMsg = 'Decision Api data does not have correct format:\n';
-    Object.keys(output).forEach((key) => {
-      errorMsg += `- "${key}" ${output[key].map((err: string, i: number) => (i === output[key].length - 1 ? `${err}` : `${err} and `))}.\n`;
-    });
     log.error(errorMsg);
     return null;
   },

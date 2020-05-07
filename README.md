@@ -147,7 +147,7 @@ Here are the attributes which you can set inside the SDK settings object:
           <td>initialModifications</td>
           <td>object</td>
           <td>null</td>
-          <td>This is an object which has the shape of Flagship modifications as it is return from the Flagship API.<br>Providing this prop avoid the SDK to have an empty cache during first initialization.
+          <td>This is an array of modifications where each element must be same shape as <a href="http://developers.flagship.io/api/v1/#mode">element inside "campaigns" attribute</a>.<br>Providing this prop avoid the SDK to have an empty cache during first initialization.<br>If the shape of an element is not correct, an error log will give the reason why.
         </tr>
 </tbody>
 

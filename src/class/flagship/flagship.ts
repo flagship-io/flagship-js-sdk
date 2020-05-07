@@ -35,7 +35,7 @@ class Flagship implements IFlagship {
 
     if (this.config.fetchNow || this.config.activateNow) {
       this.log.info(`new visitor (id="${id}") calling decision API for initialization (waiting to be ready...)`);
-      flagshipVisitorInstance.getAllModifications(this.config.activateNow)
+      flagshipVisitorInstance.getAllModifications(this.config.activateNow, { force: true })
         .then(() => {
           this.log.info(`new visitor (id="${id}") decision API finished (ready !)`);
           flagshipVisitorInstance.emit('ready');
