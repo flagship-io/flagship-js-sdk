@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 0.1.13
+
+### Improvements
+
+- New setting `initialModifications` available.
+
 ## ➡️ Version 0.1.12
 
 ### Improvements
