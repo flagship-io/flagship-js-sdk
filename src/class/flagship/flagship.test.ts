@@ -273,4 +273,20 @@ describe('FlagshipVisitor', () => {
       }
     });
   });
+  it('should fetch decision api if "initialModifications" and "fetchNow" are set', (done) => {
+    const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
+    sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true, initialModifications: defaultCacheData });
+    visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+    visitorInstance.on('ready', () => {
+      try {
+        expect(mockAxios.post).toHaveBeenCalledTimes(1);
+        expect(visitorInstance.fetchedModifications).toEqual(demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign);
+        done();
+      } catch (error) {
+        done.fail(error);
+      }
+    });
+
+    mockAxios.mockResponse(responseObj);
+  });
 });

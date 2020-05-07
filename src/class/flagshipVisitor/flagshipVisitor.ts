@@ -352,8 +352,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return this.fetchAllModifications({ activate, campaignCustomID: campaignId }) as Promise<DecisionApiResponse >;
   }
 
-  public getAllModifications(activate = false): Promise<DecisionApiResponse> {
-    return this.fetchAllModifications({ activate }) as Promise<DecisionApiResponse >;
+  public getAllModifications(activate = false, options = { force: false }): Promise<DecisionApiResponse> {
+    return this.fetchAllModifications({ activate, force: options.force }) as Promise<DecisionApiResponse >;
   }
 
   private fetchAllModificationsPostProcess(
