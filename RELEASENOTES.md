@@ -1,5 +1,54 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 0.1.14
+
+### Improvements
+
+- The SDK is now saving modifications in cache differently:
+
+#### Shape after:
+
+```javascript
+arrayOf(
+  {
+    id: string;
+    variationGroupId: string;
+    variation: {
+      id: string;
+      modifications: {
+        type: string;
+        value: {
+          [key: string]: any;
+        };
+      };
+    };
+  }
+)
+```
+
+#### Shape before:
+
+```javascript
+{
+    visitorId: string;
+    campaigns: arrayOf(
+      {
+        id: string;
+        variationGroupId: string;
+        variation: {
+          id: string;
+          modifications: {
+            type: string;
+            value: {
+              [key: string]: any;
+            };
+          };
+        };
+      }
+    )
+}
+```
+
 ## ➡️ Version 0.1.13
 
 ### Improvements
