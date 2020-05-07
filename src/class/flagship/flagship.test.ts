@@ -233,7 +233,7 @@ describe('FlagshipVisitor', () => {
     });
   });
   it('should have setting "initialModifications" working correctly', (done) => {
-    const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
+    const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
     sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: false, initialModifications: defaultCacheData });
     visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
     visitorInstance.on('ready', () => {
@@ -247,10 +247,23 @@ describe('FlagshipVisitor', () => {
     });
   });
   it('should not consider setting "initialModifications" if not set correctly', (done) => {
-    const defaultCacheData = {
+    const defaultCacheData = [{
       toto: 123,
-      visitorId: 111,
-    };
+    },
+    {
+      id: 'blntcamqmdvg04g371f0',
+      variation: {
+        id: 'blntcamqmdvg04g371hg',
+        modifications: {
+          type: 'FLAG',
+          value: {
+            psp: 'dalenys',
+            algorithmVersion: 'new',
+          },
+        },
+      },
+    },
+    ];
     sdk = flagshipSdk.initSdk(demoData.envId[0], {
       ...testConfig, enableConsoleLogs: true, fetchNow: false, initialModifications: defaultCacheData,
     });
@@ -264,8 +277,19 @@ describe('FlagshipVisitor', () => {
 
         const spyResult = spyErrorLogs.mock.calls[0][0];
         expect(spyResult.includes('Decision Api data does not have correct format')).toBe(true);
-        expect(spyResult.includes('Visitor id is not a string')).toBe(true);
-        expect(spyResult.includes('Campaigns is missing')).toBe(true);
+        // expect(spyResult).toBe(true);
+        expect(spyResult.includes('Element at index=0:')).toBe(true);
+        expect(spyResult.includes('- "id" Id is missing.')).toBe(true);
+        expect(spyResult.includes('- "variationGroupId" Variation group id is missing.')).toBe(true);
+        expect(spyResult.includes('- "variation.id" Variation id is missing.')).toBe(true);
+        expect(spyResult.includes('- "variation.modifications.type" Variation modifications type is missing.')).toBe(true);
+        expect(spyResult.includes('- "variation.modifications.value" Variation modifications value is missing.')).toBe(true);
+        expect(spyResult.includes('Element at index=1:')).toBe(true);
+        expect(spyResult.includes('- "variationGroupId" Variation group id is missing.')).toBe(true);
+        expect(spyResult.includes('Element at index=0:')).toBe(true);
+        expect(spyResult.includes('Element at index=0:')).toBe(true);
+        expect(spyResult.includes('Element at index=0:')).toBe(true);
+        expect(spyResult.includes('Element at index=0:')).toBe(true);
 
         done();
       } catch (error) {
@@ -274,7 +298,7 @@ describe('FlagshipVisitor', () => {
     });
   });
   it('should fetch decision api if "initialModifications" and "fetchNow" are set', (done) => {
-    const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
+    const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
     sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true, initialModifications: defaultCacheData });
     visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
     visitorInstance.on('ready', () => {

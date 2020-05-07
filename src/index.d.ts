@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
 import { EventEmitter } from 'events';
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 import {
-  FlagshipVisitorContext, FsModifsRequestedList, DecisionApiResponse, DecisionApiResponseData, HitShape, GetModificationsOutput,
+  FlagshipVisitorContext, FsModifsRequestedList, DecisionApiResponse, DecisionApiResponseData, HitShape, GetModificationsOutput, DecisionApiCampaign,
 } from './class/flagshipVisitor/flagshipVisitor.d';
 
 export type FlagshipSdkConfig = {
@@ -12,7 +12,7 @@ export type FlagshipSdkConfig = {
   nodeEnv?: string;
   flagshipApi?: string;
   apiKey?: string | null;
-  initialModifications?: DecisionApiResponseData | null;
+  initialModifications?: DecisionApiCampaign[] | null;
 };
 
 export type SaveCacheArgs = {
@@ -30,7 +30,7 @@ export interface IFlagshipVisitor extends EventEmitter {
   envId: string;
   context: FlagshipVisitorContext;
   isAllModificationsFetched: boolean;
-  fetchedModifications: DecisionApiResponseData | null;
+  fetchedModifications: DecisionApiCampaign[] | null;
   activateModifications(modifications: Array<{ key: string; variationId?: string; variationGroupId?: string }>): void;
   getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null,): GetModificationsOutput;
   getModificationsCache(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null,): GetModificationsOutput;
