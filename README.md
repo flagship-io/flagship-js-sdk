@@ -116,12 +116,6 @@ Here are the attributes which you can set inside the SDK settings object:
           <td>Enable it to display logs on the console when SDK is running.<br>This will only display logs such as <i>Warnings</i>, <i>Errors</i>, <i>Fatal errors</i> and <i>Info</i>.</td>
         </tr>
         <tr>
-          <td>logPathName</td>
-          <td>string</td>
-          <td>'flagshipNodeSdkLogs'</td>
-          <td>This is the path where logs will be written when SDK is running.<br>By default it will create a folder named <i>flagshipNodeSdkLogs</i> at the root of your project</a>.</td>
-        </tr>
-        <tr>
           <td>nodeEnv</td>
           <td>string</td>
           <td>'production'</td>
