@@ -159,13 +159,13 @@ describe('FlagshipVisitor', () => {
         try {
           expect(visitorInstance.fetchedModifications).not.toBe(null);
           expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-            caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
+            vaid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
           });
           expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
-            caid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
+            vaid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
           });
           expect(mockAxios.post).toHaveBeenNthCalledWith(4, 'https://decision-api.flagship.io/v1/activate', {
-            caid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
+            vaid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
           });
           done();
         } catch (error) {
@@ -185,13 +185,13 @@ describe('FlagshipVisitor', () => {
         try {
           expect(visitorInstance.fetchedModifications).not.toBe(null);
           expect(mockAxios.post).toHaveBeenNthCalledWith(2, `${mockEndpoint}activate`, {
-            caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
+            vaid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
           });
           expect(mockAxios.post).toHaveBeenNthCalledWith(3, `${mockEndpoint}activate`, {
-            caid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
+            vaid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
           });
           expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${mockEndpoint}activate`, {
-            caid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
+            vaid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
           });
           done();
         } catch (error) {
@@ -212,13 +212,13 @@ describe('FlagshipVisitor', () => {
         try {
           expect(visitorInstance.fetchedModifications).not.toBe(null);
           expect(mockAxios.post).toHaveBeenNthCalledWith(2, `${endPoint}activate`, {
-            caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
+            vaid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
           });
           expect(mockAxios.post).toHaveBeenNthCalledWith(3, `${endPoint}activate`, {
-            caid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
+            vaid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
           });
           expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${endPoint}activate`, {
-            caid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
+            vaid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
           });
           done();
         } catch (error) {
