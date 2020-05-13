@@ -37,20 +37,21 @@ describe('Flagship initialization', () => {
 
   it('initSdk should log when a setting is not recognized except for React special settings', () => {
     const customConfig = {
-      ...testConfig, nodeEnv: 'debug', enableErrorLayout: true, unknownSettings: 'hello world',
+      ...testConfig, nodeEnv: 'debug', enableConsoleLogs: true, enableErrorLayout: true, unknownSettings: 'hello world',
     };
     const sdk = flagship.start(randomUUID, customConfig);
-    const splitElement = spyWarnLogs.mock.calls;
+    const splitElement = spyWarnLogs.mock.calls[0][0].split(' - ');
     expect(sdk.config).toMatchObject({
       activateNow: false,
       apiKey: null,
-      enableConsoleLogs: false,
+      enableConsoleLogs: true,
       enableErrorLayout: true,
       fetchNow: false,
       flagshipApi: 'https://decision-api.flagship.io/v1/',
       initialModifications: null,
       nodeEnv: 'debug',
     });
-    // expect(splitElement).toEqual('');
+    expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+    expect(splitElement[2]).toEqual('Unknown key "unknownSettings" detected (with value="hello world"). This key has been ignored...');
   });
 });
