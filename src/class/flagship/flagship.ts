@@ -19,7 +19,7 @@ class Flagship implements IFlagship {
     this.log = loggerHelper.getLogger(this.config);
     this.envId = envId;
     if (cleanCustomConfig) {
-      this.log.info('Custom flagship SDK config attribute(s) detected');
+      this.log.debug('Custom flagship SDK config attribute(s) detected');
     }
     flagshipSdkHelper.logIgnoredAttributesFromObject(ignoredConfig, this.log, 'custom flagship SDK config');
   }
