@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 1.0.1
+
+### Bug fixes 🐛
+
+- Fix `activate` http requests which had bad payload.
+
 ## ➡️ Version 1.0.0
 
 - Release version.
