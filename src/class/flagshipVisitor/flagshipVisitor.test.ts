@@ -48,8 +48,8 @@ describe('FlagshipVisitor', () => {
         {
           vid: visitorInstance.id,
           cid: visitorInstance.envId,
-          caid: '123456789',
-          vaid: '987654321',
+          vaid: '123456789',
+          caid: '987654321',
         });
     });
   });
@@ -292,13 +292,13 @@ describe('FlagshipVisitor', () => {
         expect(status).toBe(200);
         expect(spyActivateCampaign).toHaveBeenCalledTimes(3);
         expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-          caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
+          vaid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
         });
         expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
-          caid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
+          vaid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
         });
         expect(mockAxios.post).toHaveBeenNthCalledWith(4, 'https://decision-api.flagship.io/v1/activate', {
-          caid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
+          vaid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
         });
         done();
       });
@@ -338,13 +338,13 @@ describe('FlagshipVisitor', () => {
           expect(data.campaigns).toMatchObject(visitorInstance.fetchedModifications);
           expect(spyInfoLogs).toHaveBeenCalledWith('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
           expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-            caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
+            vaid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
           });
           expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-            caid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
+            vaid: 'bmjdprsjan0g01uq2ctg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'bmjdprsjan0g01uq2csg', vid: 'test-perf',
           });
           expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
-            caid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
+            vaid: 'bmjdprsjan0g01uq1ctg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'bmjdprsjan0g01uq2ceg', vid: 'test-perf',
           });
         } catch (error) {
           done.fail(error);
@@ -378,15 +378,15 @@ describe('FlagshipVisitor', () => {
       expect(mockAxios.post).toHaveBeenCalledTimes(2);
 
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-        caid: 'blntcamqmdvg04g371hg',
+        vaid: 'blntcamqmdvg04g371hg',
         cid: demoData.envId[0],
-        vaid: 'blntcamqmdvg04g371h0',
+        caid: 'blntcamqmdvg04g371h0',
         vid: demoData.visitor.id[0],
       });
       expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-        caid: 'bmjdprsjan0g01uq2ctg',
+        vaid: 'bmjdprsjan0g01uq2ctg',
         cid: demoData.envId[0],
-        vaid: 'bmjdprsjan0g01uq2csg',
+        caid: 'bmjdprsjan0g01uq2csg',
         vid: demoData.visitor.id[0],
       });
     });
@@ -397,9 +397,9 @@ describe('FlagshipVisitor', () => {
       expect(mockAxios.post).toHaveBeenCalledTimes(1);
 
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-        caid: 'blntcamqmdvg04g371hg',
+        vaid: 'blntcamqmdvg04g371hg',
         cid: demoData.envId[0],
-        vaid: 'blntcamqmdvg04g371h0',
+        caid: 'blntcamqmdvg04g371h0',
         vid: demoData.visitor.id[0],
       });
     });
@@ -505,10 +505,10 @@ describe('FlagshipVisitor', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(2);
         expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
+          vaid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
         });
         expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
+          vaid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
         });
         expect(spyExtractDesiredModifications).toHaveBeenCalledWith(responseObject.data.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
@@ -534,10 +534,10 @@ describe('FlagshipVisitor', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(2);
         expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
+          vaid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
         });
         expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
+          vaid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
         });
         expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
@@ -562,7 +562,7 @@ describe('FlagshipVisitor', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(1);
         expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
+          vaid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
         });
         expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
@@ -584,13 +584,13 @@ describe('FlagshipVisitor', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(3);
         expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
+          vaid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
         });
         expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
+          vaid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
         });
         expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
+          vaid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
         });
         expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
@@ -617,16 +617,16 @@ describe('FlagshipVisitor', () => {
       visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.over9000);
       expect(mockAxios.post).toHaveBeenCalledTimes(4);
       expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-        caid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
+        vaid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
       });
       expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-        caid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
+        vaid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
       });
       expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
-        caid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
+        vaid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
       });
       expect(mockAxios.post).toHaveBeenNthCalledWith(4, 'https://decision-api.flagship.io/v1/activate', {
-        caid: '5e26ccd89609296ae8430137', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8fcde4be7ff55476f', vid: 'test-perf',
+        vaid: '5e26ccd89609296ae8430137', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8fcde4be7ff55476f', vid: 'test-perf',
       });
       expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns, [
         { activate: true, defaultValue: '', key: 'toto' },
@@ -654,10 +654,10 @@ describe('FlagshipVisitor', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(2);
         expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
+          vaid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
         });
         expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
+          vaid: '5e26ccd89609296ae8430037', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8fcde4be7ffe5476f', vid: 'test-perf',
         });
         expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
@@ -682,7 +682,7 @@ describe('FlagshipVisitor', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(1);
         expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
+          vaid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
         });
         expect(spyExtractDesiredModifications).toHaveBeenCalledWith(demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
@@ -704,10 +704,10 @@ describe('FlagshipVisitor', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(2);
         expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
+          vaid: '5e26ccd8445a622037b1bc3b', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8cc00f72d5f3cb177', vid: 'test-perf',
         });
         expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-          caid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', vaid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
+          vaid: '5e26ccd828feadeb6d9b8414', cid: 'bn1ab7m56qolupi5sa0g', caid: '5e26ccd8d4106bb1ae2b6455', vid: 'test-perf',
         });
         expect(spyExtractDesiredModifications).toHaveBeenCalledWith(responseObject.data.campaigns, [
           { activate: true, defaultValue: '', key: 'toto' },
@@ -1020,7 +1020,7 @@ describe('FlagshipVisitor', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(1);
         expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-          caid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', vaid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
+          vaid: 'blntcamqmdvg04g371hg', cid: 'bn1ab7m56qolupi5sa0g', caid: 'blntcamqmdvg04g371h0', vid: 'test-perf',
         });
         expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
         expect(spyFetchModifs).toHaveBeenCalledTimes(1);

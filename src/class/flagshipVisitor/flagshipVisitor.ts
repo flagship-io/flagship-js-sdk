@@ -77,8 +77,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     return axios.post(`${this.config.flagshipApi}activate`, {
       vid: this.id,
       cid: this.envId,
-      caid: variationId,
-      vaid: variationGroupId,
+      caid: variationGroupId,
+      vaid: variationId,
     })
       .then((response: DecisionApiResponse) => {
         let successLog = `VariationId "${variationId}" successfully activate with status code:${response.status}`;
