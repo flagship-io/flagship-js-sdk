@@ -7,7 +7,6 @@ import {
 export type FlagshipSdkConfig = {
   fetchNow?: boolean;
   activateNow?: boolean;
-  logPathName?: string;
   enableConsoleLogs?: boolean;
   nodeEnv?: string;
   flagshipApi?: string;

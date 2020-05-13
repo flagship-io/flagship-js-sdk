@@ -55,7 +55,7 @@ module.exports = {
   },
   externals: [
     nodeExternals({
-      whitelist: ['axios'],
+      whitelist: ['axios', 'validate.js'],
     }),
   ],
   plugins: [new webpack.DefinePlugin({ 'global.GENTLY': false })],

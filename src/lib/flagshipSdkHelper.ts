@@ -3,6 +3,7 @@ import { validate } from 'validate.js';
 import { DecisionApiResponseData, DecisionApiResponse, DecisionApiCampaign } from '../class/flagshipVisitor/flagshipVisitor.d';
 
 import defaultConfig from '../config/default';
+import otherSdkConfig from '../config/otherSdk';
 
 const flagshipSdkHelper = {
   logIgnoredAttributesFromObject: (obj: object, log: FsLogger, objectName = ''): void => {
@@ -22,6 +23,9 @@ const flagshipSdkHelper = {
     const dirtyObject: {[key: string]: string} = {};
     const validAttributesList: Array<string> = [];
     Object.entries(defaultConfig).forEach(
+      ([key]) => validAttributesList.push(key),
+    );
+    Object.entries(otherSdkConfig).forEach(
       ([key]) => validAttributesList.push(key),
     );
     Object.entries(unknownConfig).forEach(
