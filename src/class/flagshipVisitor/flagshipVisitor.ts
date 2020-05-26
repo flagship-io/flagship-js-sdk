@@ -19,6 +19,7 @@ import {
   HitShape,
   ItemHit,
   TransactionHit,
+  GetModificationInfoOutput,
 } from './flagshipVisitor.d';
 
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
@@ -300,6 +301,40 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
   public getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean|null = null): GetModificationsOutput {
     return this.getModificationsCache(modificationsRequested, activateAllModifications);
+  }
+
+
+  public getModificationInfo(key: string): Promise<null | GetModificationInfoOutput> {
+    const polishOutput = (data: DecisionApiCampaign): GetModificationInfoOutput => ({
+      campaignId: data.id,
+      variationId: data.variation.id,
+      variationGroupId: data.variationGroupId,
+    });
+    return new Promise(
+      (resolve, reject) => {
+        const fetchedModif = this.fetchAllModifications({ activate: false, force: true }) as Promise<DecisionApiResponse >;
+        fetchedModif.then(
+          (response: DecisionApiResponse) => {
+            const castResponse = response as DecisionApiResponse;
+            flagshipSdkHelper.checkDecisionApiResponseFormat(castResponse, this.log);
+            const campaigns = castResponse.data.campaigns as DecisionApiCampaign[];
+            const { detailsModifications } = this.extractDesiredModifications(campaigns, [{ key, defaultValue: '', activate: false }], false) as {detailsModifications: {[key: string]: any}};
+            if (!detailsModifications[key]) {
+              resolve(null);
+            } else if (detailsModifications[key].campaignId.length > 1) {
+              const consideredCampaignId = detailsModifications[key].campaignId[0];
+              this.log.warn(`Modification "${key}" is involved in further campgains with:\nid="${detailsModifications[key].campaignId.toString()}"\nKeeping data from:\ncampaignId="${consideredCampaignId}"`);
+              resolve(polishOutput(campaigns.filter((cpgn) => cpgn.id === consideredCampaignId)[0]));
+            }
+            resolve(polishOutput(campaigns.filter((cpgn) => cpgn.id === detailsModifications[key].campaignId[0])[0]));
+          },
+        )
+          .catch((error: Error) => {
+            this.fetchedModifications = null;
+            reject(error);
+          });
+      },
+    );
   }
 
   // deprecated

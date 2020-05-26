@@ -455,6 +455,83 @@ describe('FlagshipVisitor', () => {
     });
   });
 
+  describe('GetModificationInfo function', () => {
+    beforeEach(() => {
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
+      spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
+      spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
+      spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
+      spyDebugLogs = jest.spyOn(visitorInstance.log, 'debug');
+    });
+    it('should return all info of a modification if key match one campaigns', (done) => {
+      const responseObj = {
+        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
+        status: 200,
+        statusText: 'OK',
+      };
+      visitorInstance.getModificationInfo('hello')
+        .then((response) => {
+          try {
+            expect(response).toEqual({
+              campaignId: 'bmjdprsjan0g01uq2ceg',
+              variationGroupId: 'bmjdprsjan0g01uq2ceg',
+              variationId: 'bmjdprsjan0g01uq1ctg',
+            });
+          } catch (error) {
+            done.fail(error);
+          }
+          done();
+        });
+      mockAxios.mockResponse(responseObj);
+      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
+    });
+    it('should return all info of first modification if key match FURTHER campaigns', (done) => {
+      const responseObj = {
+        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
+        status: 200,
+        statusText: 'OK',
+      };
+      visitorInstance.getModificationInfo('psp')
+        .then((response) => {
+          try {
+            expect(response).toEqual({
+              campaignId: 'blntcamqmdvg04g371f0',
+              variationGroupId: 'blntcamqmdvg04g371h0',
+              variationId: 'blntcamqmdvg04g371hg',
+            });
+            const spyObject = spyWarnLogs.mock.calls[0];
+            expect(spyObject[0].includes('Modification "psp" is involved in further campgains with:')).toBe(true);
+            expect(spyObject[0].includes('id="blntcamqmdvg04g371f0,bmjdprsjan0g01uq2ceg"')).toBe(true);
+            expect(spyObject[0].includes('campaignId="blntcamqmdvg04g371f0"')).toBe(true);
+          } catch (error) {
+            done.fail(error);
+          }
+          done();
+        });
+      mockAxios.mockResponse(responseObj);
+      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
+    });
+    it('should return null if key does not match any campaigns', (done) => {
+      const responseObj = {
+        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
+        status: 200,
+        statusText: 'OK',
+      };
+      visitorInstance.getModificationInfo('nothing')
+        .then((response) => {
+          try {
+            expect(response).toEqual(null);
+          } catch (error) {
+            done.fail(error);
+          }
+          done();
+        });
+      mockAxios.mockResponse(responseObj);
+      expect(mockAxios.post).toHaveBeenNthCalledWith(1, `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] });
+    });
+  });
+
   describe('GetAllModifications function', () => {
     beforeEach(() => {
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
