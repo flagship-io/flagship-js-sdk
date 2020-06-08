@@ -1,5 +1,17 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 1.0.2
+
+### New features 🎉
+
+- Add [`getModificationInfo`](README.md#getModificationInfo) function.
+
+### Breaking changes ⚠️
+
+- Function removed:
+
+  - createVisitor --> [use `newVisitor` instead](README.md#newVisitor)
+
 ## ➡️ Version 1.0.1
 
 ### Bug fixes 🐛

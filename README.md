@@ -57,7 +57,7 @@ const sdk = flagship.start("YOUR_ENV_ID", { /* sdk settings */ });
 ## 4. **Create** a visitor:
 
 ```
-const visitorInstance = sdk.createVisitor("YOUR_VISITOR_ID",{
+const visitorInstance = sdk.newVisitor("YOUR_VISITOR_ID",{
     //...
     some: "VISITOR_CONTEXT",
     //...
@@ -139,7 +139,7 @@ Here are the attributes which you can set inside the SDK settings object:
         </tr>
         <tr>
           <td>initialModifications</td>
-          <td>object</td>
+          <td>Array(object)</td>
           <td>null</td>
           <td>This is an array of modifications where each element must be same shape as <a href="http://developers.flagship.io/api/v1/#mode">element inside "campaigns" attribute</a>.<br>Providing this prop avoid the SDK to have an empty cache during first initialization.<br>If the shape of an element is not correct, an error log will give the reason why.
         </tr>
@@ -159,7 +159,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 
 ### <i>Flagship</i> class
 
-- [createVisitor](#createVisitor)
+- [newVisitor](#newVisitor)
 
 ### <i>FlagshipVisitor</i> class
 
@@ -168,6 +168,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 - [getAllModifications](#getAllModifications)
 - [getModificationsForCampaign](#getModificationsForCampaign)
 - [getModifications](#getModifications)
+- [getModificationInfo](#getModificationInfo)
 - [activateModifications](#activateModifications)
 - [sendHit](#sendHit)
 - [sendHits](#sendHits)
@@ -226,9 +227,9 @@ const sdk = flagship.start("YOUR_ENV_ID",
 
 ## Summary
 
-- [createVisitor](#createVisitor)
+- [newVisitor](#newVisitor)
 
-## `createVisitor`
+## `newVisitor`
 
 > return a <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a> instance.
 
@@ -260,7 +261,7 @@ const sdk = flagship.start("YOUR_ENV_ID",
 > **Demo:**
 
 ```
-const visitorInstance = sdk.createVisitor("YOUR_VISITOR_ID",{
+const visitorInstance = sdk.newVisitor("YOUR_VISITOR_ID",{
     //...
     some: "VISITOR_CONTEXT",
     //...
@@ -718,6 +719,57 @@ will return:
   btnColor: '#dcbc02',
   customLabel: 'Flagship is awesome' // default value set (ie: no campaigns have specified this modification)
 }
+```
+
+## `getModificationInfo`
+
+- return an `object` containing informations about modification matching the key specified in argument.
+
+**NOTE1**: If the key does not match any campaign, it will return `null`.
+
+**NOTE2**: If the key match more than one campaign, it will return informations about the first campaign that the Flagship API returns.
+
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th style="width: 100px;">Attribute</th>
+        <th style="width: 50px;">Type</th>
+        <th style="width: 50px;">Default</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>key</td>
+          <td>string</td>
+          <td>*required*</td>
+          <td>The key that you want to get modification informations of.</td>
+        </tr>
+    </tbody>
+</table>
+
+> **Demo:**
+
+```
+visitorInstance.getModificationInfo('myKey')
+```
+
+will return:
+
+```
+// when at least a modification is found
+{
+  campaignId: 'blntvamqmdvg04g333f0',
+  variationGroupId: 'blntcamqmdag04g123h0',
+  variationId: 'blntcamqmdag04g331hg',
+}
+```
+
+or:
+
+```
+// when nothing found
+null
 ```
 
 ## `sendHit`

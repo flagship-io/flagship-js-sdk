@@ -18,6 +18,12 @@ export type DecisionApiResponseData = {
     campaigns: DecisionApiCampaign[ ];
 }
 
+export type GetModificationInfoOutput = {
+    campaignId: string;
+    variationId: string;
+    variationGroupId: string;
+}
+
 export type GetModificationsOutput = {
     [key: string]: any;
 }
