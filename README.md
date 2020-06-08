@@ -163,6 +163,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 
 ### <i>FlagshipVisitor</i> class
 
+- [events listener](#events-listener)
 - [updateContext](#updateContext)
 - [synchronizeModifications](#synchronizeModifications)
 - [getAllModifications](#getAllModifications)
@@ -282,6 +283,8 @@ visitorInstance.on('ready', () => {
 - [getAllModifications](#getAllModifications)
 - [getModificationsForCampaign](#getModificationsForCampaign)
 - [getModifications](#getModifications)
+- [getModificationInfo](#getModificationInfo)
+- [activateModifications](#activateModifications)
 - [sendHit](#sendHit)
 - [sendHits](#sendHits)
 
