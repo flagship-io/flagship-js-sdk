@@ -57,7 +57,7 @@ const sdk = flagship.start("YOUR_ENV_ID", { /* sdk settings */ });
 ## 4. **Create** a visitor:
 
 ```
-const visitorInstance = sdk.createVisitor("YOUR_VISITOR_ID",{
+const visitorInstance = sdk.newVisitor("YOUR_VISITOR_ID",{
     //...
     some: "VISITOR_CONTEXT",
     //...
@@ -159,7 +159,7 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 
 ### <i>Flagship</i> class
 
-- [createVisitor](#createVisitor)
+- [newVisitor](#newVisitor)
 
 ### <i>FlagshipVisitor</i> class
 
@@ -227,9 +227,9 @@ const sdk = flagship.start("YOUR_ENV_ID",
 
 ## Summary
 
-- [createVisitor](#createVisitor)
+- [newVisitor](#newVisitor)
 
-## `createVisitor`
+## `newVisitor`
 
 > return a <a href='README.md#flagshipvisitor-class'>FlagshipVisitor</a> instance.
 
@@ -261,7 +261,7 @@ const sdk = flagship.start("YOUR_ENV_ID",
 > **Demo:**
 
 ```
-const visitorInstance = sdk.createVisitor("YOUR_VISITOR_ID",{
+const visitorInstance = sdk.newVisitor("YOUR_VISITOR_ID",{
     //...
     some: "VISITOR_CONTEXT",
     //...

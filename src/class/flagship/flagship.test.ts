@@ -27,11 +27,11 @@ describe('FlagshipVisitor', () => {
     spyInfoLogs.mockRestore();
     mockAxios.reset();
   });
-  describe('createVisitor function', () => {
+  describe('newVisitor function', () => {
     it('should have .once("ready") triggered also when fetchNow=false', (done) => {
       const mockFn = jest.fn();
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: false });
-      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       visitorInstance.on('ready', () => {
         try {
           mockFn();
@@ -46,7 +46,7 @@ describe('FlagshipVisitor', () => {
       const mockFn = jest.fn();
       let modificationsWhichWillBeSavedInCache;
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
-      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       visitorInstance.on('saveCache', (args) => {
         try {
           mockFn();
@@ -77,7 +77,7 @@ describe('FlagshipVisitor', () => {
       const mockFn = jest.fn();
       const modificationsWhichWillBeSavedInCache = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns;
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
-      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       visitorInstance.on('saveCache', (args) => {
         try {
           mockFn();
@@ -109,7 +109,7 @@ describe('FlagshipVisitor', () => {
       const mockFn = jest.fn();
       let modificationsWhichWillBeSavedInCache;
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
-      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       visitorInstance.on('saveCache', (args) => {
         try {
           mockFn();
@@ -143,7 +143,7 @@ describe('FlagshipVisitor', () => {
         statusText: 'OK',
       };
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
-      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       expect(visitorInstance.config).toMatchObject({ ...testConfig, fetchNow: true });
       visitorInstance.once('ready', () => {
         done();
@@ -153,7 +153,7 @@ describe('FlagshipVisitor', () => {
     });
     it('should create a Visitor with modifications already loaded and activated if config "activateNow=true"', (done) => {
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true });
-      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true });
       visitorInstance.once('ready', () => {
         try {
@@ -179,7 +179,7 @@ describe('FlagshipVisitor', () => {
     it('should use correct endpoint when "flagshipApi" is set in config', (done) => {
       const mockEndpoint = 'https://decision-api.flagship.io/v999/';
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true, flagshipApi: mockEndpoint });
-      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true, flagshipApi: mockEndpoint });
       visitorInstance.once('ready', () => {
         try {
@@ -206,7 +206,7 @@ describe('FlagshipVisitor', () => {
       const mockApiKey = 'toto';
       const endPoint = 'https://decision-api.flagship.io/v1/';
       sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true, apiKey: mockApiKey });
-      visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
       expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true, apiKey: mockApiKey });
       visitorInstance.once('ready', () => {
         try {
@@ -235,7 +235,7 @@ describe('FlagshipVisitor', () => {
   it('should have setting "initialModifications" working correctly', (done) => {
     const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
     sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: false, initialModifications: defaultCacheData });
-    visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+    visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
     visitorInstance.on('ready', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(0);
@@ -267,7 +267,7 @@ describe('FlagshipVisitor', () => {
     sdk = flagshipSdk.initSdk(demoData.envId[0], {
       ...testConfig, enableConsoleLogs: true, fetchNow: false, initialModifications: defaultCacheData,
     });
-    visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+    visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
 
     visitorInstance.on('ready', () => {
       try {
@@ -300,7 +300,7 @@ describe('FlagshipVisitor', () => {
   it('should fetch decision api if "initialModifications" and "fetchNow" are set', (done) => {
     const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
     sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true, initialModifications: defaultCacheData });
-    visitorInstance = sdk.createVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+    visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
     visitorInstance.on('ready', () => {
       try {
         expect(mockAxios.post).toHaveBeenCalledTimes(1);
