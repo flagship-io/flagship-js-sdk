@@ -1,5 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { validate } from 'validate.js';
+import { FlagshipSdkConfig } from '../index.d';
 import { DecisionApiResponseData, DecisionApiResponse, DecisionApiCampaign } from '../class/flagshipVisitor/flagshipVisitor.d';
 
 import defaultConfig from '../config/default';
@@ -19,8 +20,8 @@ const flagshipSdkHelper = {
     }
   },
   checkConfig: (unknownConfig: object): {cleanConfig: object; ignoredConfig: object} => {
-    const cleanObject: {[key: string]: string} = {};
-    const dirtyObject: {[key: string]: string} = {};
+    const cleanObject: {[key: string]: string | boolean | null} = {};
+    const dirtyObject: {[key: string]: string | boolean | null} = {};
     const validAttributesList: Array<string> = [];
     Object.entries(defaultConfig).forEach(
       ([key]) => validAttributesList.push(key),
@@ -31,7 +32,11 @@ const flagshipSdkHelper = {
     Object.entries(unknownConfig).forEach(
       ([key, value]) => {
         if (validAttributesList.includes(key)) {
-          cleanObject[key] = value;
+          if (typeof value === 'undefined' || value === null) {
+            cleanObject[key] = defaultConfig[key as keyof(FlagshipSdkConfig)];
+          } else {
+            cleanObject[key] = value;
+          }
         } else {
           dirtyObject[key] = value;
         }

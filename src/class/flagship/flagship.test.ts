@@ -231,6 +231,40 @@ describe('FlagshipVisitor', () => {
       });
       expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
     });
+    it('should use default config even if user has set empty/undefined values', (done) => {
+      responseObj = {
+        data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
+        status: 200,
+        statusText: 'OK',
+      };
+      const emptyConfig = {
+        activateNow: false,
+        apiKey: undefined,
+        enableConsoleLogs: false,
+        enableErrorLayout: false,
+        enableSafeMode: false,
+        fetchNow: true,
+        flagshipApi: undefined,
+        nodeEnv: 'production',
+      };
+      sdk = flagshipSdk.initSdk(demoData.envId[0], { ...emptyConfig });
+      visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+      expect(visitorInstance.config).toEqual({
+        activateNow: false,
+        apiKey: null,
+        enableConsoleLogs: false,
+        enableErrorLayout: false,
+        fetchNow: true,
+        flagshipApi: 'https://decision-api.flagship.io/v1/',
+        initialModifications: null,
+        nodeEnv: 'production',
+      });
+      visitorInstance.once('ready', () => {
+        done();
+      });
+      mockAxios.mockResponse(responseObj);
+      expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
+    });
   });
   it('should have setting "initialModifications" working correctly', (done) => {
     const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;

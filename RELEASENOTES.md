@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 1.1.1
+
+### Bug fixes 🐛
+
+- Fix `config` issue when specifying empty values.
+
 ## ➡️ Version 1.1.0
 
 ### New features 🎉
