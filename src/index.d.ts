@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 import {
-  FlagshipVisitorContext, FsModifsRequestedList, DecisionApiResponse, DecisionApiResponseData, HitShape, GetModificationsOutput, DecisionApiCampaign,
+  FlagshipVisitorContext, FsModifsRequestedList, DecisionApiResponse, HitShape, GetModificationsOutput, DecisionApiCampaign, GetModificationInfoOutput,
 } from './class/flagshipVisitor/flagshipVisitor.d';
 
 export type FlagshipSdkConfig = {
@@ -33,6 +33,7 @@ export interface IFlagshipVisitor extends EventEmitter {
   activateModifications(modifications: Array<{ key: string; variationId?: string; variationGroupId?: string }>): void;
   getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null,): GetModificationsOutput;
   getModificationsCache(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null,): GetModificationsOutput;
+  getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;
   setContext(context: FlagshipVisitorContext): void;
   updateContext(context: FlagshipVisitorContext): void;
   synchronizeModifications(activate?: boolean): Promise<number>;
