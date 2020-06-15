@@ -1,5 +1,6 @@
 const react = {
   enableErrorLayout: false,
+  enableSafeMode: false,
 };
 
 const reactNative = {

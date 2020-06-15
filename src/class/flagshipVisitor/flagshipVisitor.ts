@@ -1,7 +1,8 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { EventEmitter } from 'events';
-
+import { BucketingApiResponse } from '../bucketing/bucketing.d';
+import { internalConfig } from '../../config/default';
 import { FlagshipSdkConfig, IFlagshipVisitor } from '../../index.d';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
@@ -21,6 +22,7 @@ import {
   TransactionHit,
   GetModificationInfoOutput,
 } from './flagshipVisitor.d';
+import Bucketing from '../bucketing/bucketing';
 
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   config: FlagshipSdkConfig;
@@ -509,6 +511,21 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         resolve(
           this.fetchAllModificationsPostProcess({ visitorId: this.id, campaigns: this.fetchedModifications as DecisionApiCampaign[] }, { ...defaultArgs, ...args }) as DecisionApiResponse,
         );
+      } else if (this.config.decisionMode === 'Bucketing') {
+        const bucket = new Bucketing(this.envId, this.config, this.id, this.context);
+        bucket.launch();
+        bucket.on('launched', () => {
+          resolve(
+            this.fetchAllModificationsPostProcess(bucket.computedData as DecisionApiResponseData, { ...defaultArgs, ...args }) as DecisionApiResponse,
+          );
+        });
+        bucket.on('error', (error: Error) => {
+          this.saveModificationsInCache(null);
+          if (activate) {
+            this.log.fatal('fetchAllModifications: activate canceled due to errors...');
+          }
+          reject(error);
+        });
       } else {
         const additionalParam: {[key: string]: string} = {};
         if (this.config.apiKey) {
