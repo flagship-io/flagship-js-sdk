@@ -546,8 +546,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       case 'SCREENVIEW': {
         const { documentLocation, pageTitle } = hitData.data;
         if (!documentLocation || !pageTitle) {
-          if (!documentLocation) this.log.error('sendHits(ScreenView): failed because attribute "documentLocation" is missing...');
-          if (!pageTitle) this.log.error('sendHits(ScreenView): failed because attribute "pageTitle" is missing...');
+          if (!documentLocation) this.log.error('sendHits(ScreenView): failed because following required attribute "documentLocation" is missing...');
+          if (!pageTitle) this.log.error('sendHits(ScreenView): failed because following required attribute "pageTitle" is missing...');
           return null;
         }
         return {
@@ -603,8 +603,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           optionalAttributes.pt = pageTitle; // string, max length = 1500 BYTES
         }
         if (!transactionId || !affiliation) {
-          if (!transactionId) this.log.error('sendHits(Transaction): failed because attribute "transactionId" is missing...');
-          if (!affiliation) this.log.error('sendHits(Transaction): failed because attribute "affiliation" is missing...');
+          if (!transactionId) this.log.error('sendHits(Transaction): failed because following required attribute "transactionId" is missing...');
+          if (!affiliation) this.log.error('sendHits(Transaction): failed because following required attribute "affiliation" is missing...');
           return null;
         }
 
@@ -620,17 +620,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           transactionId, name, documentLocation, pageTitle, price, code, category, quantity,
         } = hitData.data as ItemHit;
 
-        if (category) {
-          optionalAttributes.iv = category;
-        }
-        if (code) {
-          optionalAttributes.ic = code;
+        if (price) {
+          optionalAttributes.ip = price; // number, max length = NONE
         }
         if (quantity) {
-          optionalAttributes.iq = quantity;
+          optionalAttributes.iq = quantity; // number, max length = NONE
         }
-        if (price) {
-          optionalAttributes.ip = price;
+        if (category) {
+          optionalAttributes.iv = category; // string, max length = 500 BYTES
         }
         if (documentLocation) {
           optionalAttributes.dl = documentLocation; // string, max length = 2048 BYTES
@@ -638,16 +635,18 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         if (pageTitle) {
           optionalAttributes.pt = pageTitle; // string, max length = 1500 BYTES
         }
-        if (!transactionId || !name) {
-          if (!transactionId) this.log.error('sendHits(Item): failed because attribute "transactionId" is missing...');
-          if (!name) this.log.error('sendHits(Item): failed because attribute "name" is missing...');
+        if (!transactionId || !name || !code) {
+          if (!transactionId) this.log.error('sendHits(Item): failed because following required attribute "transactionId" is missing...');
+          if (!name) this.log.error('sendHits(Item): failed because following required attribute "name" is missing...');
+          if (!code) this.log.error('sendHits(Item): failed because following required attribute "code" is missing...');
           return null;
         }
 
         return {
           t: 'ITEM',
-          tid: transactionId,
-          in: name,
+          tid: transactionId, // string, max length = 500 BYTES
+          in: name, // string, max length = 500 BYTES
+          ic: code, // string, max length = 500 BYTES
           ...optionalAttributes,
         };
       }
@@ -670,8 +669,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
         if (!category || !action) {
           this.log.debug(`sendHits(Event) this hits is missing attributes:\n${JSON.stringify(hitData)}`);
-          if (!category) this.log.error('sendHits(Event): failed because attribute "category" is missing...');
-          if (!action) this.log.error('sendHits(Event): failed because attribute "action" is missing...');
+          if (!category) this.log.error('sendHits(Event): failed because following required attribute "category" is missing...');
+          if (!action) this.log.error('sendHits(Event): failed because following required attribute "action" is missing...');
           return null;
         }
 

@@ -1039,14 +1039,14 @@ visitorInstance.sendHits(
           <td><b>Required</b>. The name of your item.</td>
         </tr>
         <tr>
+          <td>code</td>
+          <td>string</td>
+          <td><b>Required</b>. Specifies the SKU or item code.</td>
+        </tr>
+        <tr>
           <td>price</td>
           <td>number</td>
           <td><b>Optional</b>. Specifies the price for a single item / unit.</td>
-        </tr>
-        <tr>
-          <td>code</td>
-          <td>string</td>
-          <td><b>Optional</b>. Specifies the SKU or item code.</td>
         </tr>
         <tr>
           <td>category</td>
