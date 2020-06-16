@@ -1,5 +1,5 @@
 export type FlagshipVisitorContext = {
-  [key: string]: boolean | number | string | Array<boolean | number | string>;
+  [key: string]: boolean | number | string;
 };
 
 export type FsModifsRequestedList = Array<{
