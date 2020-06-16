@@ -37,15 +37,14 @@ describe('Flagship initialization', () => {
 
   it('initSdk should log when a setting is not recognized except for React special settings', () => {
     const customConfig = {
-      ...testConfig, nodeEnv: 'debug', enableConsoleLogs: true, enableErrorLayout: true, unknownSettings: 'hello world',
+      ...testConfig, nodeEnv: 'debug', enableConsoleLogs: true, unknownSettings: 'hello world',
     };
     const sdk = flagship.start(randomUUID, customConfig);
     const splitElement = spyWarnLogs.mock.calls[0][0].split(' - ');
-    expect(sdk.config).toMatchObject({
+    expect(sdk.config).toEqual({
       activateNow: false,
       apiKey: null,
       enableConsoleLogs: true,
-      enableErrorLayout: true,
       fetchNow: false,
       flagshipApi: 'https://decision-api.flagship.io/v1/',
       initialModifications: null,
