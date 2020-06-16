@@ -40,7 +40,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
     private getEligibleCampaigns(bucketingData: BucketingApiResponse): DecisionApiCampaign[] {
       let result = [];
       const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean): boolean => apiValueArray.map((apiValue) => assertionCallback(vcValue, apiValue)).filter((answer) => answer === true).length > 0;
-      const computeAssertion = ({ operator, key, value }: BucketingTargetings): boolean => {
+      const computeAssertion = ({ operator, key, value }: BucketingTargetings, compareWithVisitorId: boolean): boolean => {
+        const vtc = compareWithVisitorId ? this.visitorId : this.visitorContext[key]; // vtc = 'value to compare'
         const checkTypeMatch = (vcValue: string|number|boolean, apiValue: BucketingTypes, vcKey: string): boolean => {
           if (typeof apiValue !== 'object' && (typeof vcValue !== typeof apiValue)) {
             this.log.error('');
@@ -60,25 +61,88 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         };
         switch (operator) {
           case 'EQUALS':
-            return this.visitorContext[key] === value;
+            return vtc === value;
           case 'NOT_EQUALS':
-            return this.visitorContext[key] !== value;
+            return vtc !== value;
           case 'LOWER_THAN':
-            if (checkTypeMatch(this.visitorContext[key], value, key)) {
-              switch (typeof this.visitorContext[key]) {
+            if (checkTypeMatch(vtc, value, key)) {
+              switch (typeof vtc) {
                 case 'string':
                   if (Array.isArray(value)) {
-                    return checkAssertion<string>(this.visitorContext[key] as string, value as string[], (a, b) => a.toLowerCase() < b.toLowerCase());
+                    return checkAssertion<string>(vtc as string, value as string[], (a, b) => a.toLowerCase() < b.toLowerCase());
                   }
-                  return (this.visitorContext[key] as string).toLowerCase() < (value as string).toLowerCase();
+                  return (vtc as string).toLowerCase() < (value as string).toLowerCase();
                 case 'number':
                 case 'boolean':
                   if (Array.isArray(value)) {
-                    return checkAssertion<boolean | number>(this.visitorContext[key] as boolean | number, value as (boolean | number)[], (a, b) => a < b);
+                    return checkAssertion<boolean | number>(vtc as boolean | number, value as (boolean | number)[], (a, b) => a < b);
                   }
-                  return this.visitorContext[key] < value;
+                  return vtc < value;
                 default:
-                  this.log.fatal(`Bucketing:getEligibleCampaigns unexpected visitor context key type ("${typeof this.visitorContext[key]}"). This type is not supported. Assertion aborted.`);
+                  this.log.fatal(`Bucketing:getEligibleCampaigns unexpected visitor context key type ("${typeof vtc}"). This type is not supported. Assertion aborted.`);
+                  return false;
+              }
+            } else {
+              return false; // error message send with "checkTypeMatch" function
+            }
+          case 'LOWER_THAN_OR_EQUALS':
+            if (checkTypeMatch(vtc, value, key)) {
+              switch (typeof vtc) {
+                case 'string':
+                  if (Array.isArray(value)) {
+                    return checkAssertion<string>(vtc as string, value as string[], (a, b) => a.toLowerCase() <= b.toLowerCase());
+                  }
+                  return (vtc as string).toLowerCase() <= (value as string).toLowerCase();
+                case 'number':
+                case 'boolean':
+                  if (Array.isArray(value)) {
+                    return checkAssertion<boolean | number>(vtc as boolean | number, value as (boolean | number)[], (a, b) => a <= b);
+                  }
+                  return vtc <= value;
+                default:
+                  this.log.fatal(`Bucketing:getEligibleCampaigns unexpected visitor context key type ("${typeof vtc}"). This type is not supported. Assertion aborted.`);
+                  return false;
+              }
+            } else {
+              return false; // error message send with "checkTypeMatch" function
+            }
+          case 'GREATER_THAN':
+            if (checkTypeMatch(vtc, value, key)) {
+              switch (typeof vtc) {
+                case 'string':
+                  if (Array.isArray(value)) {
+                    return checkAssertion<string>(vtc as string, value as string[], (a, b) => a.toLowerCase() > b.toLowerCase());
+                  }
+                  return (vtc as string).toLowerCase() > (value as string).toLowerCase();
+                case 'number':
+                case 'boolean':
+                  if (Array.isArray(value)) {
+                    return checkAssertion<boolean | number>(vtc as boolean | number, value as (boolean | number)[], (a, b) => a > b);
+                  }
+                  return vtc > value;
+                default:
+                  this.log.fatal(`Bucketing:getEligibleCampaigns unexpected visitor context key type ("${typeof vtc}"). This type is not supported. Assertion aborted.`);
+                  return false;
+              }
+            } else {
+              return false; // error message send with "checkTypeMatch" function
+            }
+          case 'GREATER_THAN_OR_EQUALS':
+            if (checkTypeMatch(vtc, value, key)) {
+              switch (typeof vtc) {
+                case 'string':
+                  if (Array.isArray(value)) {
+                    return checkAssertion<string>(vtc as string, value as string[], (a, b) => a.toLowerCase() >= b.toLowerCase());
+                  }
+                  return (vtc as string).toLowerCase() >= (value as string).toLowerCase();
+                case 'number':
+                case 'boolean':
+                  if (Array.isArray(value)) {
+                    return checkAssertion<boolean | number>(vtc as boolean | number, value as (boolean | number)[], (a, b) => a >= b);
+                  }
+                  return vtc >= value;
+                default:
+                  this.log.fatal(`Bucketing:getEligibleCampaigns unexpected visitor context key type ("${typeof vtc}"). This type is not supported. Assertion aborted.`);
                   return false;
               }
             } else {
@@ -109,11 +173,10 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                         operatorAndBox.push(true);
                         break;
                       case 'fs_users':
-                        // TODO:
+                        operatorAndBox.push(computeAssertion(targeting, true));
                         break;
                       default:
-                        // TODO:
-                        operatorAndBox.push(computeAssertion(targeting));
+                        operatorAndBox.push(computeAssertion(targeting, false));
                         break;
                     }
                   });
