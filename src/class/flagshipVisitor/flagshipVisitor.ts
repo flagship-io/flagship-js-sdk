@@ -573,31 +573,29 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         } = hitData.data as TransactionHit;
 
         if (totalRevenue) {
-          optionalAttributes.tr = totalRevenue;
+          optionalAttributes.tr = totalRevenue; // number, max length = NONE
         }
         if (shippingCost) {
-          optionalAttributes.ts = shippingCost;
+          optionalAttributes.ts = shippingCost; // number, max length = NONE
         }
         if (taxes) {
-          optionalAttributes.tt = taxes;
+          optionalAttributes.tt = taxes; // number, max length = NONE
         }
         if (currency) {
-          optionalAttributes.tc = currency;
+          optionalAttributes.tc = currency; // string, max length = 10 BYTES
         }
         if (couponCode) {
-          optionalAttributes.tcc = couponCode;
+          optionalAttributes.tcc = couponCode; // string, max length = 10 BYTES
         }
         if (paymentMethod) {
-          optionalAttributes.pm = paymentMethod;
+          optionalAttributes.pm = paymentMethod; // string, max length = 10 BYTES
         }
         if (shippingMethod) {
-          optionalAttributes.sm = shippingMethod;
+          optionalAttributes.sm = shippingMethod; // string, max length = 10 BYTES
         }
         if (itemCount) {
-          optionalAttributes.icn = itemCount;
+          optionalAttributes.icn = itemCount; // number, max length = NONE
         }
-
-
         if (documentLocation) {
           optionalAttributes.dl = documentLocation; // string, max length = 2048 BYTES
         }
@@ -612,8 +610,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         return {
           t: 'TRANSACTION',
-          tid: transactionId,
-          ta: affiliation,
+          tid: transactionId, // string, max length = 500 BYTES
+          ta: affiliation, // string, max length = 500 BYTES
           ...optionalAttributes,
         };
       }
