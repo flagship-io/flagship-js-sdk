@@ -68,11 +68,11 @@ export type DecisionApiResponseDataFullComputed = {
   };
 };
 
-export type HitShape =
-  | { type: 'Screen'; data: ScreenHit }
-  | { type: 'Transaction'; data: TransactionHit }
-  | { type: 'Item'; data: ItemHit }
-  | { type: 'Event'; data: EventHit };
+export type HitShape = { type: 'Screen'; data: ScreenHit } // Deprecated type: 'Screen'
+| { type: 'ScreenView'; data: ScreenHit }
+| { type: 'Transaction'; data: TransactionHit }
+| { type: 'Item'; data: ItemHit }
+| { type: 'Event'; data: EventHit };
 
 export type TransactionHit = CommonHit & {
   transactionId: string;

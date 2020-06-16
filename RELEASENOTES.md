@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 1.2.0
+
+### Breaking changes ⚠️
+
+- When sending a hit "Item", the attribute `ic`(="item code") is now **required** (was optional before). If you do not specify it, the hit won't be send and an error log will be display.
+
 ## ➡️ Version 1.1.2
 
 ### Bug fixes 🐛

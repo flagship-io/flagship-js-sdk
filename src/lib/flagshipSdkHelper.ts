@@ -26,9 +26,7 @@ const flagshipSdkHelper = {
     Object.entries(defaultConfig).forEach(
       ([key]) => validAttributesList.push(key),
     );
-    Object.entries(otherSdkConfig).forEach(
-      ([key]) => validAttributesList.push(key),
-    );
+    const whiteListedAttributesList: Array<string> = Object.keys(otherSdkConfig); // specific config coming from other SDK.
     Object.entries(unknownConfig).forEach(
       ([key, value]) => {
         if (validAttributesList.includes(key)) {
@@ -37,6 +35,8 @@ const flagshipSdkHelper = {
           } else {
             cleanObject[key] = value;
           }
+        } else if (whiteListedAttributesList.includes(key)) {
+          // do nothing
         } else {
           dirtyObject[key] = value;
         }
