@@ -63,7 +63,8 @@ export type DecisionApiResponseDataFullComputed = {
     };
 }
 
-export type HitShape = { type: 'Screen'; data: ScreenHit }
+export type HitShape = { type: 'Screen'; data: ScreenHit } // Deprecated type: 'Screen'
+| { type: 'ScreenView'; data: ScreenHit }
 | { type: 'Transaction'; data: TransactionHit }
 | { type: 'Item'; data: ItemHit }
 | { type: 'Event'; data: EventHit };
