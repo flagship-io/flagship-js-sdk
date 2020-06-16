@@ -241,7 +241,7 @@ describe('FlagshipVisitor', () => {
         activateNow: false,
         apiKey: undefined,
         enableConsoleLogs: false,
-        enableErrorLayout: false,
+        enableErrorLayout: true, // simulate extra config from other SDK
         enableSafeMode: false,
         fetchNow: true,
         flagshipApi: undefined,
@@ -253,7 +253,6 @@ describe('FlagshipVisitor', () => {
         activateNow: false,
         apiKey: null,
         enableConsoleLogs: false,
-        enableErrorLayout: false,
         fetchNow: true,
         flagshipApi: 'https://decision-api.flagship.io/v1/',
         initialModifications: null,
