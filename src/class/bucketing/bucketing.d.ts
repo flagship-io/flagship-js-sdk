@@ -14,17 +14,17 @@ export type BucketingVariationGroups = {
   targeting: {
     targetingGroups: BucketingTargetingGroups[];
   };
-  variations: BucketingVariations[];
+  variations: BucketingVariation[];
 };
 
-export type BucketingVariations = {
+export type BucketingVariation = {
   id: string;
   modifications: {
     type: string;
     value: { [key: string]: null | string };
-    allocation: number;
-    reference?: boolean;
   };
+  allocation: number;
+  reference: boolean;
 };
 
 export type BucketingTargetingGroups = {

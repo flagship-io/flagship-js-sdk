@@ -4,7 +4,7 @@ import Axios, { AxiosResponse } from 'axios';
 import { DecisionApiCampaign, DecisionApiResponseData, FlagshipVisitorContext } from '../flagshipVisitor/flagshipVisitor.d';
 
 import {
-  BucketingApiResponse, BucketingOperator, BucketingTargetings, BucketingTypes, BucketingVariations,
+  BucketingApiResponse, BucketingOperator, BucketingTargetings, BucketingTypes, BucketingVariation, BucketingCampaign,
 } from './bucketing.d';
 import { IFlagshipBucketing, FlagshipSdkConfig } from '../../index.d';
 import loggerHelper from '../../lib/loggerHelper';
@@ -38,14 +38,34 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
       this.computedData = null;
     }
 
-    private computeMurmurAlgorithm(variations: BucketingVariations[]): void {
-      const toDelete = this.log; // TODO: delete
+    static transformIntoDecisionApiPayload(variation: BucketingVariation, campaign: BucketingCampaign, variationGroupId: string): DecisionApiCampaign {
+      return {
+        id: campaign.id,
+        variationGroupId,
+        variation: {
+          id: variation.id,
+          // reference: variation.reference,
+          modifications: {
+            ...variation.modifications,
+          },
+        },
+      };
+    }
+
+    private computeMurmurAlgorithm(variations: BucketingVariation[]): BucketingVariation | null {
+      let assignedVariation: BucketingVariation | null = null;
       // generates a v3 hash
-      murmurhash.v3('some input', 'some seed value (optional)');
+      const murmurAllocation = murmurhash.v3(this.visitorId) % 100; // 2nd argument is set to 0 by default
+      variations.forEach((variation) => {
+        if (variation.allocation < murmurAllocation) {
+          assignedVariation = variation;
+        }
+      });
+      return assignedVariation;
     }
 
     private getEligibleCampaigns(bucketingData: BucketingApiResponse): DecisionApiCampaign[] {
-      let result = [];
+      const result: DecisionApiCampaign[] = [];
       const reportIssueBetweenValueTypeAndOperator = (type: string, operator: BucketingOperator): void => {
         this.log.warn(`Bucketing:getEligibleCampaigns - operator "${operator}" is not supported for type "${type}". Assertion aborted.`);
       };
@@ -263,7 +283,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
             return false;
         }
       };
-      result = bucketingData.campaigns.filter(
+      bucketingData.campaigns.forEach(
         (campaign) => {
           let matchingVgId: string | null = null;
 
@@ -299,7 +319,11 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
             this.log.debug(`Bucketing - campaign (id="${campaign.id}") match visitor context of visitor (id="${this.visitorId}")`);
             const cleanCampaign = { ...campaign, variationGroups: campaign.variationGroups.filter((varGroup) => varGroup.id === matchingVgId) }; // = campaign with only the desired variation group
             const variationToAffectToVisitor = this.computeMurmurAlgorithm(cleanCampaign.variationGroups[0].variations);
-            result.push(campaign); // TODO: improve
+            if (variationToAffectToVisitor !== null) {
+              result.push(Bucketing.transformIntoDecisionApiPayload(variationToAffectToVisitor, campaign, matchingVgId));
+            } else {
+              this.log.fatal(`Bucketing:computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="${campaign.id}") using murmur for visitor (id="${this.visitorId}")`);
+            }
           } else {
             this.log.debug(`Bucketing - campaign (id="${campaign.id}") NOT MATCH visitor (id="${this.visitorId}")`);
           }
@@ -317,6 +341,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
             const computedCampaigns: DecisionApiCampaign[] = this.getEligibleCampaigns(bucketingData);
             this.data = { ...bucketingData };
             this.computedData = { visitorId: this.visitorId, campaigns: [...computedCampaigns] };
+            this.log.info(`Bucketing:launch - ${this.computedData.campaigns.length} campaign(s) found matching current visitor (id="${this.visitorId}")`);
           }
           this.emit('launched');
         },

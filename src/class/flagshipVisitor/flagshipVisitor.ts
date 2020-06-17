@@ -361,8 +361,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   public synchronizeModifications(activate = false): Promise<number> {
     return new Promise(
       (resolve, reject) => {
-        const fetchedModif = this.fetchAllModifications({ activate, force: true }) as Promise<DecisionApiResponse >;
-        fetchedModif.then(
+        const fetchedModifPromise = this.fetchAllModifications({ activate, force: true }) as Promise<DecisionApiResponse >;
+        fetchedModifPromise.then(
           (response: DecisionApiResponse) => {
             const castResponse = response as DecisionApiResponse;
             const output = flagshipSdkHelper.checkDecisionApiResponseFormat(castResponse, this.log);
