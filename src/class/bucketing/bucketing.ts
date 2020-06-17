@@ -98,8 +98,14 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         };
         switch (operator) {
           case 'EQUALS':
+            if (Array.isArray(value)) {
+              return checkAssertion<string | boolean | number>(vtc, value, (a, b) => a === b);
+            }
             return vtc === value;
           case 'NOT_EQUALS':
+            if (Array.isArray(value)) {
+              return checkAssertion<string | boolean | number>(vtc, value, (a, b) => a !== b);
+            }
             return vtc !== value;
           case 'LOWER_THAN':
             if (checkTypeMatch(vtc, value, key)) {
