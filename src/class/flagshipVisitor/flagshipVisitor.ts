@@ -1,11 +1,11 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { EventEmitter } from 'events';
-import { BucketingApiResponse } from '../bucketing/bucketing.d';
-import { internalConfig } from '../../config/default';
+
 import { FlagshipSdkConfig, IFlagshipVisitor } from '../../index.d';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
+import Bucketing from '../bucketing/bucketing';
 import {
   checkCampaignsActivatedMultipleTimesOutput,
   DecisionApiCampaign,
@@ -16,13 +16,12 @@ import {
   EventHit,
   FlagshipVisitorContext,
   FsModifsRequestedList,
+  GetModificationInfoOutput,
   GetModificationsOutput,
   HitShape,
   ItemHit,
   TransactionHit,
-  GetModificationInfoOutput,
 } from './flagshipVisitor.d';
-import Bucketing from '../bucketing/bucketing';
 
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
   config: FlagshipSdkConfig;
@@ -43,7 +42,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     super();
     this.config = config;
     this.id = id;
-    this.log = loggerHelper.getLogger(this.config, `visitorId:${this.id}`);
+    this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
     this.envId = envId;
     this.context = this.checkContext(context);
     this.isAllModificationsFetched = false;
@@ -555,8 +554,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
       case 'SCREENVIEW': {
         const { documentLocation, pageTitle } = hitData.data;
         if (!documentLocation || !pageTitle) {
-          if (!documentLocation) this.log.error('sendHits(ScreenView): failed because following required attribute "documentLocation" is missing...');
-          if (!pageTitle) this.log.error('sendHits(ScreenView): failed because following required attribute "pageTitle" is missing...');
+          if (!documentLocation) this.log.error('sendHits(ScreenView) - failed because following required attribute "documentLocation" is missing...');
+          if (!pageTitle) this.log.error('sendHits(ScreenView) - failed because following required attribute "pageTitle" is missing...');
           return null;
         }
         return {
@@ -612,8 +611,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           optionalAttributes.pt = pageTitle; // string, max length = 1500 BYTES
         }
         if (!transactionId || !affiliation) {
-          if (!transactionId) this.log.error('sendHits(Transaction): failed because following required attribute "transactionId" is missing...');
-          if (!affiliation) this.log.error('sendHits(Transaction): failed because following required attribute "affiliation" is missing...');
+          if (!transactionId) this.log.error('sendHits(Transaction) - failed because following required attribute "transactionId" is missing...');
+          if (!affiliation) this.log.error('sendHits(Transaction) - failed because following required attribute "affiliation" is missing...');
           return null;
         }
 
@@ -645,9 +644,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           optionalAttributes.pt = pageTitle; // string, max length = 1500 BYTES
         }
         if (!transactionId || !name || !code) {
-          if (!transactionId) this.log.error('sendHits(Item): failed because following required attribute "transactionId" is missing...');
-          if (!name) this.log.error('sendHits(Item): failed because following required attribute "name" is missing...');
-          if (!code) this.log.error('sendHits(Item): failed because following required attribute "code" is missing...');
+          if (!transactionId) this.log.error('sendHits(Item) - failed because following required attribute "transactionId" is missing...');
+          if (!name) this.log.error('sendHits(Item) - failed because following required attribute "name" is missing...');
+          if (!code) this.log.error('sendHits(Item) - failed because following required attribute "code" is missing...');
           return null;
         }
 
@@ -677,9 +676,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
           optionalAttributes.pt = pageTitle; // string, max length = 1500 BYTES
         }
         if (!category || !action) {
-          this.log.debug(`sendHits(Event) this hits is missing attributes:\n${JSON.stringify(hitData)}`);
-          if (!category) this.log.error('sendHits(Event): failed because following required attribute "category" is missing...');
-          if (!action) this.log.error('sendHits(Event): failed because following required attribute "action" is missing...');
+          this.log.debug(`sendHits(Event) - this hits is missing attributes:\n${JSON.stringify(hitData)}`);
+          if (!category) this.log.error('sendHits(Event) - failed because following required attribute "category" is missing...');
+          if (!action) this.log.error('sendHits(Event) - failed because following required attribute "action" is missing...');
           return null;
         }
 
@@ -691,7 +690,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         };
       }
       default:
-        this.log.error(`sendHits: no type found for hit:\n${JSON.stringify(hitData)}`);
+        this.log.error(`sendHits - no type found for hit:\n${JSON.stringify(hitData)}`);
         return null;
     }
   }
@@ -714,25 +713,25 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
               payloads.push(payload);
               return axios.post(url, payload);
             }
-            this.log.debug(`sendHits: skip request to "${url}" because current hit not set correctly`);
+            this.log.debug(`sendHits - skip request to "${url}" because current hit not set correctly`);
             return new Promise((resolveAuto) => resolveAuto()); // do nothing
           }),
         );
 
         promises.then(
           () => {
-            this.log.info('sendHits: success');
-            this.log.debug(`sendHits: with url ${url}`);
-            this.log.debug(`sendHits: with payload:\n${payloads.map((p) => `${JSON.stringify(p)}\n`)}`);
+            this.log.info('sendHits - success');
+            this.log.debug(`sendHits - with url ${url}`);
+            this.log.debug(`sendHits - with payload:\n${payloads.map((p) => `${JSON.stringify(p)}\n`)}`);
 
             resolve();
           },
         ).catch((error) => {
-          this.log.fatal('sendHits: fail');
+          this.log.fatal('sendHits - fail');
           reject(error);
         });
       } catch (error) {
-        this.log.fatal('sendHits: fail');
+        this.log.fatal('sendHits - fail');
         reject(error);
       }
     });

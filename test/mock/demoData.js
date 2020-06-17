@@ -1,4 +1,3 @@
-
 import decisionApi from './decisionApi';
 import flagshipVisitor from './flagshipVisitor';
 import event from './hit/event';
@@ -6,8 +5,10 @@ import item from './hit/item';
 import page from './hit/page';
 import screen from './hit/screen';
 import transaction from './hit/transaction';
+import bucketing from './bucketing';
 
 const demoData = {
+  bucketing,
   envId: ['bn1ab7m56qolupi5sa0g'],
   visitor: {
     id: ['test-perf'],

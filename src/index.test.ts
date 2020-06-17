@@ -44,6 +44,7 @@ describe('Flagship initialization', () => {
     expect(sdk.config).toEqual({
       activateNow: false,
       apiKey: null,
+      decisionMode: 'API',
       enableConsoleLogs: true,
       fetchNow: false,
       flagshipApi: 'https://decision-api.flagship.io/v1/',

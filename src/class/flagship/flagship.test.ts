@@ -254,6 +254,7 @@ describe('FlagshipVisitor', () => {
         apiKey: null,
         enableConsoleLogs: false,
         fetchNow: true,
+        decisionMode: 'API',
         flagshipApi: 'https://decision-api.flagship.io/v1/',
         initialModifications: null,
         nodeEnv: 'production',

@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import Axios, { AxiosResponse } from 'axios';
+import * as murmurhash from 'murmurhash';
 import { DecisionApiCampaign, DecisionApiResponseData, FlagshipVisitorContext } from '../flagshipVisitor/flagshipVisitor.d';
 
 import {
@@ -10,7 +11,6 @@ import { IFlagshipBucketing, FlagshipSdkConfig } from '../../index.d';
 import loggerHelper from '../../lib/loggerHelper';
 import { internalConfig } from '../../config/default';
 
-import murmurhash = require('murmurhash');
 
 class Bucketing extends EventEmitter implements IFlagshipBucketing {
     data: BucketingApiResponse | null;
@@ -31,7 +31,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
       super();
       this.config = config;
       this.visitorId = visitorId;
-      this.log = loggerHelper.getLogger(this.config, `visitorId:${this.visitorId}`);
+      this.log = loggerHelper.getLogger(this.config, `Flagship SDK - Bucketing (vId=${this.visitorId})`);
       this.envId = envId;
       this.visitorContext = visitorContext;
       this.data = null;
@@ -67,10 +67,10 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
     private getEligibleCampaigns(bucketingData: BucketingApiResponse): DecisionApiCampaign[] {
       const result: DecisionApiCampaign[] = [];
       const reportIssueBetweenValueTypeAndOperator = (type: string, operator: BucketingOperator): void => {
-        this.log.warn(`Bucketing:getEligibleCampaigns - operator "${operator}" is not supported for type "${type}". Assertion aborted.`);
+        this.log.warn(`getEligibleCampaigns - operator "${operator}" is not supported for type "${type}". Assertion aborted.`);
       };
       const reportUnexpectedVisitorContextKeyType = (str: string): void => {
-        this.log.fatal(`Bucketing:getEligibleCampaigns unexpected visitor context key type ("${str}"). This type is not supported. Assertion aborted.`);
+        this.log.fatal(`getEligibleCampaigns - unexpected visitor context key type ("${str}"). This type is not supported. Assertion aborted.`);
       };
       const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean): boolean => apiValueArray.map((apiValue) => assertionCallback(vcValue, apiValue)).filter((answer) => answer === true).length > 0;
       const computeAssertion = ({ operator, key, value }: BucketingTargetings, compareWithVisitorId: boolean): boolean => {
@@ -85,12 +85,12 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
             return false;
           }
           if (typeof apiValue === 'object' && !Array.isArray(apiValue)) {
-            this.log.error('Bucketing:getEligibleCampaigns - The bucketing API returned a json object which is not supported by the SDK.');
+            this.log.error('getEligibleCampaigns - The bucketing API returned a json object which is not supported by the SDK.');
             return false;
           }
           if (Array.isArray(apiValue)) {
             if ((apiValue as []).filter((v) => typeof v !== typeof vcValue).length > 0) {
-              this.log.error(`Bucketing:getEligibleCampaigns - The bucketing API returned an array where some elements do not have same type ("${typeof vcValue}") as the visitor context key="${vcKey}"`);
+              this.log.error(`getEligibleCampaigns - The bucketing API returned an array where some elements do not have same type ("${typeof vcValue}") as the visitor context key="${vcKey}"`);
               return false;
             }
           }
@@ -285,7 +285,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
               return false; // error message send with "checkTypeMatch" function
             }
           default:
-            this.log.error(`Bucketing:getEligibleCampaigns unknown operator ${operator} found in bucketing api answer. Assertion aborted.`);
+            this.log.error(`getEligibleCampaigns - unknown operator ${operator} found in bucketing api answer. Assertion aborted.`);
             return false;
         }
       };
@@ -322,16 +322,16 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
             },
           );
           if (matchingVgId !== null) {
-            this.log.debug(`Bucketing - campaign (id="${campaign.id}") match visitor context of visitor (id="${this.visitorId}")`);
+            this.log.debug(`Bucketing - campaign (id="${campaign.id}") is matching visitor context`);
             const cleanCampaign = { ...campaign, variationGroups: campaign.variationGroups.filter((varGroup) => varGroup.id === matchingVgId) }; // = campaign with only the desired variation group
             const variationToAffectToVisitor = this.computeMurmurAlgorithm(cleanCampaign.variationGroups[0].variations);
             if (variationToAffectToVisitor !== null) {
               result.push(Bucketing.transformIntoDecisionApiPayload(variationToAffectToVisitor, campaign, matchingVgId));
             } else {
-              this.log.fatal(`Bucketing:computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="${campaign.id}") using murmur for visitor (id="${this.visitorId}")`);
+              this.log.fatal(`computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="${campaign.id}") using murmur for visitor (id="${this.visitorId}")`);
             }
           } else {
-            this.log.debug(`Bucketing - campaign (id="${campaign.id}") NOT MATCH visitor (id="${this.visitorId}")`);
+            this.log.debug(`Bucketing - campaign (id="${campaign.id}") NOT MATCHING visitor`);
           }
         },
       );
@@ -347,7 +347,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
             const computedCampaigns: DecisionApiCampaign[] = this.getEligibleCampaigns(bucketingData);
             this.data = { ...bucketingData };
             this.computedData = { visitorId: this.visitorId, campaigns: [...computedCampaigns] };
-            this.log.info(`Bucketing:launch - ${this.computedData.campaigns.length} campaign(s) found matching current visitor (id="${this.visitorId}")`);
+            this.log.info(`launch - ${this.computedData.campaigns.length} campaign(s) found matching current visitor`);
           }
           this.emit('launched');
         },

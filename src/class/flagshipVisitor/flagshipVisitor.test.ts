@@ -822,7 +822,7 @@ describe('FlagshipVisitor', () => {
       visitorInstance.sendHit(demoData.hit.transaction).then((response) => {
         try {
           expect(response).not.toBeDefined();
-          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyInfoLogs).toBeCalledWith('sendHits - success');
           expect(spyWarnLogs).toBeCalledTimes(0);
           expect(spyErrorLogs).toBeCalledTimes(0);
           expect(spyFatalLogs).toBeCalledTimes(0);
@@ -862,7 +862,7 @@ describe('FlagshipVisitor', () => {
         ).then((response) => {
           try {
             expect(response).not.toBeDefined();
-            expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+            expect(spyInfoLogs).toBeCalledWith('sendHits - success');
             expect(spyWarnLogs).toBeCalledTimes(0);
             expect(spyErrorLogs).toBeCalledTimes(0);
             expect(spyFatalLogs).toBeCalledTimes(0);
@@ -952,10 +952,10 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
-          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyInfoLogs).toBeCalledWith('sendHits - success');
           expect(spyWarnLogs).toBeCalledTimes(0);
-          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Event): failed because following required attribute "category" is missing...');
-          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Event): failed because following required attribute "action" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Event) - failed because following required attribute "category" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Event) - failed because following required attribute "action" is missing...');
           expect(spyErrorLogs).toBeCalledTimes(2);
           expect(spyFatalLogs).toBeCalledTimes(0);
         } catch (error) {
@@ -976,10 +976,10 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
-          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyInfoLogs).toBeCalledWith('sendHits - success');
           expect(spyWarnLogs).toBeCalledTimes(0);
-          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(ScreenView): failed because following required attribute "pageTitle" is missing...');
-          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(ScreenView): failed because following required attribute "documentLocation" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(ScreenView) - failed because following required attribute "pageTitle" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(ScreenView) - failed because following required attribute "documentLocation" is missing...');
           expect(spyErrorLogs).toBeCalledTimes(2);
           expect(spyFatalLogs).toBeCalledTimes(0);
         } catch (error) {
@@ -999,11 +999,11 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
-          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyInfoLogs).toBeCalledWith('sendHits - success');
           expect(spyWarnLogs).toBeCalledTimes(0);
-          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Item): failed because following required attribute "transactionId" is missing...');
-          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Item): failed because following required attribute "name" is missing...');
-          expect(spyErrorLogs).toHaveBeenNthCalledWith(3, 'sendHits(Item): failed because following required attribute "code" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Item) - failed because following required attribute "transactionId" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Item) - failed because following required attribute "name" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(3, 'sendHits(Item) - failed because following required attribute "code" is missing...');
           expect(spyErrorLogs).toBeCalledTimes(3);
           expect(spyFatalLogs).toBeCalledTimes(0);
         } catch (error) {
@@ -1022,10 +1022,10 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
-          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyInfoLogs).toBeCalledWith('sendHits - success');
           expect(spyWarnLogs).toBeCalledTimes(0);
-          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Transaction): failed because following required attribute "transactionId" is missing...');
-          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Transaction): failed because following required attribute "affiliation" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Transaction) - failed because following required attribute "transactionId" is missing...');
+          expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Transaction) - failed because following required attribute "affiliation" is missing...');
           expect(spyErrorLogs).toBeCalledTimes(2);
           expect(spyFatalLogs).toBeCalledTimes(0);
         } catch (error) {
@@ -1194,14 +1194,15 @@ describe('FlagshipVisitor', () => {
         }
       });
     });
-    it('should not send warn logs if visitor context has array<string | bool | number> attribute', (done) => {
+    it('should send warn logs if visitor context has array<string | bool | number> attribute', (done) => {
       visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.contextWithGoodArrayAttributes);
       spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
       visitorInstance.on('ready', () => {
         try {
           expect(spyWarnLogs).toBeCalledTimes(0);
           visitorInstance.checkContext(demoData.visitor.contextWithGoodArrayAttributes);
-          expect(spyWarnLogs).toBeCalledTimes(0);
+          expect(spyWarnLogs).toBeCalledTimes(1);
+          expect(spyWarnLogs).toHaveBeenCalledWith('Context key "badAttribute" is an array which is not supported. This key will be ignored...');
           done();
         } catch (error) {
           done.fail(error);
@@ -1216,7 +1217,7 @@ describe('FlagshipVisitor', () => {
           expect(visitorInstance.context).toEqual({ pos: 'es' });
           visitorInstance.checkContext(demoData.visitor.contextWithObjectAttributes);
           expect(spyWarnLogs).toBeCalledTimes(1);
-          expect(spyWarnLogs).toHaveBeenCalledWith('Context key "badAttribute" is type of "object" which is not supported. This key will be ignored...');
+          expect(spyWarnLogs).toHaveBeenCalledWith('Context key "badAttribute" is an object (json) which is not supported. This key will be ignored...');
           done();
         } catch (error) {
           done.fail(error);
@@ -1231,7 +1232,7 @@ describe('FlagshipVisitor', () => {
           expect(visitorInstance.context).toEqual({ pos: 'es' });
           visitorInstance.checkContext(demoData.visitor.contextWithBadArrayAttributes);
           expect(spyWarnLogs).toBeCalledTimes(1);
-          expect(spyWarnLogs).toHaveBeenCalledWith('Context key "badAttribute" is type of "Array<object>" which is not supported. This key will be ignored...');
+          expect(spyWarnLogs).toHaveBeenCalledWith('Context key "badAttribute" is an array which is not supported. This key will be ignored...');
           done();
         } catch (error) {
           done.fail(error);
