@@ -54,20 +54,12 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     const validContext: FlagshipVisitorContext = { };
     Object.entries(unknownContext).forEach(
       ([key, value]) => {
-        if (typeof value === 'object' && !Array.isArray(value)) {
-          this.log.warn(`Context key "${key}" is type of "${typeof value}" which is not supported. This key will be ignored...`);
-        } else if (typeof value === 'object' && Array.isArray(value)) {
-          let arrayLooksOkay = true;
-          // check there is no object inside the array
-          value.forEach((element) => {
-            if (typeof element === 'object') {
-              this.log.warn(`Context key "${key}" is type of "Array<${typeof element}>" which is not supported. This key will be ignored...`);
-              arrayLooksOkay = false;
-            }
-          });
-          if (arrayLooksOkay) {
-            validContext[key] = value;
-          }
+        if (typeof value === 'object' && !Array.isArray(value)) { // means value is a json
+          this.log.warn(`Context key "${key}" is an object (json) which is not supported. This key will be ignored...`);
+        } else if (Array.isArray(value)) { // means value is an array
+          this.log.warn(`Context key "${key}" is an array which is not supported. This key will be ignored...`);
+        } else if (typeof value === 'undefined' || value === null) { // means value is not an array
+          this.log.warn(`Context key "${key}" is null or undefined which is not supported. This key will be ignored...`);
         } else {
           validContext[key] = value;
         }
