@@ -1,13 +1,13 @@
 import mockAxios from 'jest-mock-axios';
+import { IFlagship } from '../../index.d';
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
 import flagshipSdk from '../../index';
-import Flagship from '../flagship/flagship';
 import FlagshipVisitor from './flagshipVisitor';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 
 
-let sdk: Flagship;
+let sdk: IFlagship;
 let visitorInstance;
 let spyActivateCampaign;
 let spyGenerateCustomTypeParamsOf;
