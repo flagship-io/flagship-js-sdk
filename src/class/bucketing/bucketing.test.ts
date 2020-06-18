@@ -1,4 +1,5 @@
 import mockAxios from 'jest-mock-axios';
+import { FlagshipVisitorContext } from '../flagshipVisitor/flagshipVisitor.d';
 import { BucketingApiResponse } from './bucketing.d';
 import { FlagshipSdkConfig, IFlagshipVisitor, IFlagshipBucketing, IFlagship } from '../../index.d';
 
@@ -126,6 +127,119 @@ describe('Bucketing - murmur algorithm', () => {
         done();
     });
 });
+
+describe('Bucketing - getEligibleCampaigns', () => {
+    const getCorrespondingOperatorBucketingContext = (
+        operator: string,
+        type: string,
+        bucketingContext: FlagshipVisitorContext
+    ): FlagshipVisitorContext => ({
+        ...Object.keys(bucketingContext).reduce(
+            (reducer, key) => (key.includes(operator) && key.includes(type) ? { ...reducer, [key]: bucketingContext[key] } : reducer),
+            {}
+        )
+    });
+    const getCorrespondingOperatorApiMockResponse = (
+        operator: string,
+        type: string,
+        response: BucketingApiResponse
+    ): BucketingApiResponse => {
+        const campaign = response.campaigns[0];
+        campaign.variationGroups[0].targeting.targetingGroups[0].targetings = campaign.variationGroups[0].targeting.targetingGroups[0].targetings.filter(
+            (t) => t.key.includes(type)
+        );
+        return {
+            ...response,
+            campaigns: [campaign]
+        };
+    };
+    beforeEach(() => {
+        spyCatch = jest.fn();
+        spyThen = jest.fn();
+    });
+    afterEach(() => {
+        sdk = null;
+        bucketingApiMockResponse = null;
+        visitorInstance = null;
+        bucketInstance = null;
+
+        mockAxios.reset();
+    });
+    it('should expect correct behavior for "classic" data received', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
+        initSpyLogs(bucketInstance);
+        const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+
+        expect(result).toEqual([
+            {
+                id: 'bptggipaqi903f3haq0g',
+                variationGroupId: 'bptggipaqi903f3haq1g',
+                variation: {
+                    id: 'bptggipaqi903f3haq2g',
+                    modifications: {
+                        type: 'JSON',
+                        value: {
+                            testCache: 'value'
+                        }
+                    }
+                }
+            },
+            {
+                id: 'bq4sf09oet0006cfihd0',
+                variationGroupId: 'bq4sf09oet0006cfihe0',
+                variation: {
+                    id: 'bq4sf09oet0006cfihf0',
+                    modifications: {
+                        type: 'JSON',
+                        value: {
+                            'btn-color': 'green',
+                            'btn-text': 'Buy now with discount !',
+                            'txt-color': '#A3A3A3'
+                        }
+                    }
+                }
+            }
+        ]);
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        done();
+    });
+
+    it('should compute correctly operator "contains" and type "string"', (done) => {
+        const operator = 'contains';
+        const type = 'String';
+        const bucketingContext = getCorrespondingOperatorBucketingContext(
+            operator,
+            type,
+            demoData.visitor.contextBucketingOperatorTestSuccess
+        );
+        bucketingApiMockResponse = getCorrespondingOperatorApiMockResponse(
+            operator,
+            type,
+            demoData.bucketing[`${operator}Operator`] as BucketingApiResponse
+        );
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], bucketingContext);
+        initSpyLogs(bucketInstance);
+        const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+
+        expect(result).toEqual('');
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        done();
+    });
+});
+
 describe('Bucketing - launch', () => {
     beforeEach(() => {
         spyCatch = jest.fn();
