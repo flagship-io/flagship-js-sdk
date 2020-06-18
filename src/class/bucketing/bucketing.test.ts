@@ -159,6 +159,39 @@ describe('Bucketing - launch', () => {
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
         done();
     });
+    it('should detect when bucket api response return panic mode', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.panic as BucketingApiResponse;
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
+        initSpyLogs(bucketInstance);
+        bucketInstance.launch().then(spyThen).catch(spyCatch);
+        mockAxios.mockResponse({ data: bucketingApiMockResponse });
+        expect(mockAxios.get).toHaveBeenNthCalledWith(1, internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId));
+        expect(spyThen).toHaveBeenCalledWith(bucketingApiMockResponse);
+        expect(spyCatch).not.toHaveBeenCalled();
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'Panic mode detected, running SDK in safe mode...');
+        done();
+    });
+    it('should log an error when bucketing api fail', (done) => {
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
+        initSpyLogs(bucketInstance);
+        bucketInstance.launch().then(spyThen).catch(spyCatch);
+        mockAxios.mockError('server crashed');
+        expect(mockAxios.get).toHaveBeenNthCalledWith(1, internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId));
+        expect(spyCatch).toHaveBeenCalled();
+        expect(spyThen).not.toHaveBeenCalled();
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'An error occurred while fetching using bucketing...');
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+        done();
+    });
 });
 
 describe('Bucketing initialization', () => {
