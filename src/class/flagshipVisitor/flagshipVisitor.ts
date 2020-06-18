@@ -30,7 +30,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     log: FsLogger;
 
-      bucket: IFlagshipBucketing | null;
+    bucket: IFlagshipBucketing | null;
 
     envId: string;
 
@@ -562,8 +562,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 this.bucket = new Bucketing(this.envId, this.config, this.id, this.context);
                 this.bucket.launch();
                 this.bucket.on('launched', () => {
+                    const transformedBucketingData = (this.bucket as IFlagshipBucketing).computedData as DecisionApiResponseData;
+                    this.saveModificationsInCache(transformedBucketingData.campaigns);
                     resolve(
-                        this.fetchAllModificationsPostProcess(this.bucket.computedData as DecisionApiResponseData, {
+                        this.fetchAllModificationsPostProcess(transformedBucketingData, {
                             ...defaultArgs,
                             ...args
                         }) as DecisionApiResponse

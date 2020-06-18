@@ -9,7 +9,8 @@ import {
     HitShape,
     GetModificationsOutput,
     DecisionApiCampaign,
-    GetModificationInfoOutput
+    GetModificationInfoOutput,
+    DecisionApiResponseData
 } from './class/flagshipVisitor/flagshipVisitor.d';
 
 export type FlagshipSdkConfig = {
@@ -37,18 +38,15 @@ export type SaveCacheArgs = {
 
 export interface IFlagshipBucketing extends EventEmitter {
     data: BucketingApiResponse | null;
+    computedData: DecisionApiResponseData | null;
     visitorId: string;
-
     log: FsLogger;
-
     envId: string;
-
     visitorContext: FlagshipVisitorContext;
-
     config: FlagshipSdkConfig;
-
+    launch(): Promise<BucketingApiResponse | void>;
     on(event: 'launched', listener: () => void): this;
-    on(event: 'error', listener: (args: SaveCacheArgs) => void): this;
+    on(event: 'error', listener: (args: Error) => void): this;
 }
 
 export interface IFlagshipVisitor extends EventEmitter {

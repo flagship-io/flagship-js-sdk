@@ -18,6 +18,7 @@ let spyFatalLogs;
 let spyInfoLogs;
 let spyDebugLogs;
 let bucketSpy;
+
 let bucketingApiMockResponse: BucketingApiResponse;
 const bucketingConfig: FlagshipSdkConfig = {
     ...testConfig,
@@ -27,17 +28,20 @@ const bucketingConfig: FlagshipSdkConfig = {
 
 describe('Bucketing', () => {
     beforeEach(() => {
-        //     spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
-        //     spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
-        //     spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
-        //     spyInfoLogs  = jest.spyOn(visitorInstance.log, 'info');
-        //     spyDebugLogs = jest.spyOn(visitorInstance.log, 'debug');
+        spyWarnLogs = jest.spyOn(console, 'warn').mockImplementation();
+        spyErrorLogs = jest.spyOn(console, 'error').mockImplementation();
+        spyInfoLogs = jest.spyOn(console, 'log').mockImplementation();
     });
     afterEach(() => {
         sdk = null;
         bucketingApiMockResponse = null;
         visitorInstance = null;
         bucketInstance = null;
+
+        spyWarnLogs.mockRestore();
+        spyErrorLogs.mockRestore();
+        spyInfoLogs.mockRestore();
+
         mockAxios.reset();
     });
     it('should trigger bucketing behavior when creating new visitor with config having "bucketing" in decision mode', (done) => {
@@ -47,7 +51,14 @@ describe('Bucketing', () => {
         expect(visitorInstance.bucket instanceof Bucketing).toEqual(true);
         mockAxios.mockResponse({ data: bucketingApiMockResponse });
         expect(mockAxios.get).toHaveBeenNthCalledWith(1, internalConfig.bucketingEndpoint.replace('@ENV_ID@', visitorInstance.envId));
-        expect(visitorInstance.fetchedModifications).toEqual(true);
-        done();
+        visitorInstance.on('ready', () => {
+            try {
+                expect(visitorInstance.fetchedModifications[0].id === demoData.bucketing.classical.campaigns[0].id).toEqual(true);
+                expect(visitorInstance.fetchedModifications[1].id === demoData.bucketing.classical.campaigns[1].id).toEqual(true);
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
     });
 });
