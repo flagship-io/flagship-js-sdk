@@ -20,13 +20,23 @@
     "peacock.color": "#eb5424",
     "javascript.preferences.quoteStyle": "single",
     "prettier.singleQuote": true,
-    "files.autoSave":"onFocusChange",
+    "files.autoSave": "onFocusChange",
     "eslint.autoFixOnSave": true,
-  "editor.formatOnPaste": false,
+    "editor.formatOnPaste": false,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
     "eslint.alwaysShowStatus": true,
     "eslint.workingDirectories": [
-        {"directory":"examples/react-app", "changeProcessCWD": true},
-        {"directory":"", "changeProcessCWD": true}
+        { "directory": "examples/react-app", "changeProcessCWD": true },
+        { "directory": "", "changeProcessCWD": true }
     ],
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": true
