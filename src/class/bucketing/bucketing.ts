@@ -64,11 +64,23 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         let assignedVariation: BucketingVariation | null = null;
         // generates a v3 hash
         const murmurAllocation = murmurhash.v3(this.visitorId) % 100; // 2nd argument is set to 0 by default
-        variations.forEach((variation) => {
-            if (variation.allocation < murmurAllocation) {
-                assignedVariation = variation;
+        this.log.debug(`computeMurmurAlgorithm - murmur returned value="${murmurAllocation}"`);
+
+        const variationTrafficCheck = variations.reduce((sum, v) => {
+            const nextSum = v.allocation + sum;
+            if (murmurAllocation < nextSum) {
+                assignedVariation = v;
             }
-        });
+            return nextSum;
+        }, 0);
+
+        if (variationTrafficCheck !== 100) {
+            this.log.fatal(
+                `computeMurmurAlgorithm - the variation traffic is equal to "${variationTrafficCheck}" instead of being equal to "100"`
+            );
+            return null;
+        }
+
         return assignedVariation;
     }
 
@@ -394,8 +406,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         return result;
     }
 
-    public launch(): void {
-        Axios.get(internalConfig.bucketingEndpoint.replace('@ENV_ID@', this.envId))
+    public launch(): Promise<BucketingApiResponse | void> {
+        return Axios.get(internalConfig.bucketingEndpoint.replace('@ENV_ID@', this.envId))
             .then(({ data: bucketingData }: AxiosResponse<BucketingApiResponse>) => {
                 if (bucketingData.panic) {
                     this.log.warn('Panic mode detected, running SDK in safe mode...');
@@ -406,6 +418,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                     this.log.info(`launch - ${this.computedData.campaigns.length} campaign(s) found matching current visitor`);
                 }
                 this.emit('launched');
+                return bucketingData;
             })
             .catch((response: Error) => {
                 this.log.fatal('An error occurred while fetching using bucketing...');

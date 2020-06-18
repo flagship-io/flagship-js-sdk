@@ -14,22 +14,30 @@ import lowerThanOrEqualsOperator from './samples/oneCampaignOneVgOneTggWithAllPo
 import notContainsOperator from './samples/oneCampaignOneVgOneTggWithAllPossibleTargetings/notContainsOperator';
 import notEqualsOperator from './samples/oneCampaignOneVgOneTggWithAllPossibleTargetings/notEqualsOperator';
 import startsWithOperator from './samples/oneCampaignOneVgOneTggWithAllPossibleTargetings/startsWithOperator';
+import murmurDefaultArgs from './murmur/arguments';
+import murmurBadTraffic from './murmur/badTraffic';
 
 export default {
-  oneCampaignOneVgMultipleTgg,
-  badTypeBetweenTargetingAndVisitorContextKey,
-  classical,
-  fs_all_users,
-  fs_users,
-  panic,
-  containsOperator,
-  endsWithOperator,
-  equalsOperator,
-  greaterThanOperator,
-  greaterThanOrEqualsOperator,
-  lowerThanOperator,
-  lowerThanOrEqualsOperator,
-  notContainsOperator,
-  notEqualsOperator,
-  startsWithOperator,
+    functions: {
+        murmur: {
+            defaultArgs: murmurDefaultArgs,
+            badTraffic: murmurBadTraffic
+        }
+    },
+    oneCampaignOneVgMultipleTgg,
+    badTypeBetweenTargetingAndVisitorContextKey,
+    classical,
+    fs_all_users,
+    fs_users,
+    panic,
+    containsOperator,
+    endsWithOperator,
+    equalsOperator,
+    greaterThanOperator,
+    greaterThanOrEqualsOperator,
+    lowerThanOperator,
+    lowerThanOrEqualsOperator,
+    notContainsOperator,
+    notEqualsOperator,
+    startsWithOperator
 };
