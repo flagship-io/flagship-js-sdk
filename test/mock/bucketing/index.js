@@ -16,6 +16,8 @@ import notEqualsOperator from './samples/oneCampaignOneVgOneTggWithAllPossibleTa
 import startsWithOperator from './samples/oneCampaignOneVgOneTggWithAllPossibleTargetings/startsWithOperator';
 import murmurDefaultArgs from './murmur/arguments';
 import murmurBadTraffic from './murmur/badTraffic';
+import multipleCampaigns from './samples/multipleCampaigns';
+import badOperator from './samples/badOperator';
 
 export default {
     functions: {
@@ -24,9 +26,11 @@ export default {
             badTraffic: murmurBadTraffic
         }
     },
+    multipleCampaigns,
     oneCampaignOneVgMultipleTgg,
     badTypeBetweenTargetingAndVisitorContextKey,
     classical,
+    badOperator,
     fs_all_users,
     fs_users,
     panic,

@@ -1,10 +1,3 @@
-/*
-
-  USE CASE:
-   # test any type of 'value'
-
-*/
-
 export default {
     campaigns: [
         {
@@ -18,9 +11,9 @@ export default {
                             {
                                 targetings: [
                                     {
-                                        operator: 'EQUALS',
-                                        key: 'fs_all_users',
-                                        value: ''
+                                        operator: 'I_DONT_EXIST',
+                                        key: 'isVip',
+                                        value: false
                                     }
                                 ]
                             }

@@ -307,6 +307,129 @@ describe('Bucketing - getEligibleCampaigns', () => {
 
         done();
     });
+
+    it('should expect correct behavior for "multiple variation groups" data received', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.oneCampaignOneVgMultipleTgg as BucketingApiResponse;
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], { foo1: 'yes1' });
+        const bucketInstance2 = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], { foo2: 'yes2' });
+        const bucketInstance3 = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], { foo3: 'yes3' });
+        initSpyLogs(bucketInstance);
+        let result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+        expect(Array.isArray(result) && result.length === 1).toEqual(true);
+        result = bucketInstance2.getEligibleCampaigns(bucketingApiMockResponse);
+        expect(Array.isArray(result) && result.length === 1).toEqual(true);
+        result = bucketInstance3.getEligibleCampaigns(bucketingApiMockResponse);
+        expect(Array.isArray(result) && result.length === 1).toEqual(true);
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        done();
+    });
+
+    it('should expect correct behavior for "multiple campaigns" data received', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.multipleCampaigns as BucketingApiResponse;
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], { foo1: 'yes1' });
+        const bucketInstance2 = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], { foo1: 'yes1', isVip: true });
+        initSpyLogs(bucketInstance);
+        let result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+        expect(Array.isArray(result) && result.length === 1).toEqual(true);
+        result = bucketInstance2.getEligibleCampaigns(bucketingApiMockResponse);
+        expect(Array.isArray(result) && result.length === 2).toEqual(true);
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(6);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        done();
+    });
+
+    it('should expect correct behavior for "bad type between visitor context and" data received', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.badTypeBetweenTargetingAndVisitorContextKey as BucketingApiResponse;
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], {
+            lowerThanBadType: 123,
+            lowerThanBadTypeArray: 0,
+            lowerThanBadTypeJson: 2
+        });
+        initSpyLogs(bucketInstance);
+        const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+        expect(result).toEqual([]);
+
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'Bucketing - campaign (id="bptggipaqi903f3haq0g") NOT MATCHING visitor');
+        expect(spyErrorLogs).toHaveBeenNthCalledWith(
+            1,
+            'getEligibleCampaigns - The bucketing API returned a value which have not the same type ("number") as the visitor context key="lowerThanBadType"'
+        );
+        expect(spyErrorLogs).toHaveBeenNthCalledWith(
+            2,
+            'getEligibleCampaigns - The bucketing API returned a json object which is not supported by the SDK.'
+        );
+
+        expect(spyErrorLogs).toHaveBeenNthCalledWith(
+            3,
+            'getEligibleCampaigns - The bucketing API returned an array where some elements do not have same type ("number") as the visitor context key="lowerThanBadTypeArray"'
+        );
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        done();
+    });
+    it('should expect correct behavior for "fs_all_users" data received', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.fs_all_users as BucketingApiResponse;
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], {});
+        initSpyLogs(bucketInstance);
+        const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+        expect(Array.isArray(result) && result.length === 1).toEqual(true);
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        done();
+    });
+
+    it('should expect correct behavior for "fs_users" data received', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.fs_all_users as BucketingApiResponse;
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], {});
+        initSpyLogs(bucketInstance);
+        const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+        expect(Array.isArray(result) && result.length === 1).toEqual(true);
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        done();
+    });
+
+    it('should expect correct behavior for "unknown operator" data received', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.badOperator as BucketingApiResponse;
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], { isVip: false });
+        initSpyLogs(bucketInstance);
+        const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+        expect(result).toEqual([]);
+
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'Bucketing - campaign (id="bptggipaqi903f3haq0g") NOT MATCHING visitor');
+        expect(spyErrorLogs).toHaveBeenNthCalledWith(
+            1,
+            'getEligibleCampaigns - unknown operator "I_DONT_EXIST" found in bucketing api answer. Assertion aborted.'
+        );
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        done();
+    });
 });
 
 describe('Bucketing - launch', () => {

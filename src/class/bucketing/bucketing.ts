@@ -104,7 +104,9 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
             }
             const checkTypeMatch = (vcValue: string | number | boolean, apiValue: BucketingTypes, vcKey: string): boolean => {
                 if (typeof apiValue !== 'object' && typeof vcValue !== typeof apiValue) {
-                    this.log.error('');
+                    this.log.error(
+                        `getEligibleCampaigns - The bucketing API returned a value which have not the same type ("${typeof vcValue}") as the visitor context key="${vcKey}"`
+                    );
                     return false;
                 }
                 if (typeof apiValue === 'object' && !Array.isArray(apiValue)) {
@@ -352,7 +354,9 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                         return false; // error message send with "checkTypeMatch" function
                     }
                 default:
-                    this.log.error(`getEligibleCampaigns - unknown operator ${operator} found in bucketing api answer. Assertion aborted.`);
+                    this.log.error(
+                        `getEligibleCampaigns - unknown operator "${operator}" found in bucketing api answer. Assertion aborted.`
+                    );
                     return false;
             }
         };
