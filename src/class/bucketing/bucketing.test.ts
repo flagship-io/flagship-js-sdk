@@ -49,7 +49,7 @@ describe('Bucketing used from visitor instance', () => {
         bucketInstance = null;
         mockAxios.reset();
     });
-    it('should trigger bucketing behavior when creating new visitor with config having "bucketing" in decision mode', (done) => {
+    it('should trigger bucketing behavior when creating new visitor with config having "bucketing" in decision mode + fetchNow=true', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.initSdk(demoData.envId[0], bucketingConfig);
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
@@ -60,6 +60,22 @@ describe('Bucketing used from visitor instance', () => {
             try {
                 expect(visitorInstance.fetchedModifications[0].id === demoData.bucketing.classical.campaigns[0].id).toEqual(true);
                 expect(visitorInstance.fetchedModifications[1].id === demoData.bucketing.classical.campaigns[1].id).toEqual(true);
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+    });
+
+    it('should NOT trigger bucketing behavior when creating new visitor with config having "bucketing" in decision mode + fetchNow=false', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        expect(visitorInstance.bucket).toEqual(null);
+        expect(mockAxios.get).toHaveBeenCalledTimes(0);
+        visitorInstance.on('ready', () => {
+            try {
+                expect(visitorInstance.fetchedModifications).toEqual(null);
                 done();
             } catch (error) {
                 done.fail(error);
