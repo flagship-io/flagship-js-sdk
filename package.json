@@ -26,6 +26,7 @@
     "publish:react": "cd ./examples/react-app && npm run deploy:github",
     "update:react-app": "cd ./examples/react-app && npm install @flagship.io/js-sdk@latest --save && cd ../../",
     "update:api-server": "cd ./examples/api-server && npm install @flagship.io/js-sdk@latest --save && cd ../../",
+    "update:fsLog": "npm install @flagship.io/js-sdk-logs@latest --save",
     "stats:dev": "rm -rf dist && webpack --env=stats",
     "stats:prod": "webpack --profile --json --env=prod > stats.json && webpack-bundle-analyzer ./stats.json",
     "build": "rm -rf dist && webpack --env=prod && prettier --write ./dist/flagship.d.ts"
@@ -89,7 +90,7 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
-    "@flagship.io/js-sdk-logs": "0.0.4",
+    "@flagship.io/js-sdk-logs": "^0.1.0",
     "@types/murmurhash": "0.0.1",
     "axios": "^0.19.0",
     "events": "^3.1.0",

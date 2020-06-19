@@ -228,9 +228,10 @@ describe('Bucketing - getEligibleCampaigns', () => {
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
 
-        expect(result).toEqual('');
+        expect(Array.isArray(result) && result.length === 1).toEqual(true);
+        expect(result[0].id === bucketingApiMockResponse.campaigns[0].id).toEqual(true);
 
-        expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
