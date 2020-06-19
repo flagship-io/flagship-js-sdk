@@ -139,19 +139,43 @@ describe('Bucketing - getEligibleCampaigns', () => {
             {}
         )
     });
-    const getCorrespondingOperatorApiMockResponse = (
-        operator: string,
-        type: string,
-        response: BucketingApiResponse
-    ): BucketingApiResponse => {
-        const campaign = response.campaigns[0];
-        campaign.variationGroups[0].targeting.targetingGroups[0].targetings = campaign.variationGroups[0].targeting.targetingGroups[0].targetings.filter(
-            (t) => t.key.includes(type)
+    const getCorrespondingOperatorApiMockResponse = (operator: string, type: string): BucketingApiResponse => {
+        const campaign = (demoData.bucketing[`${operator}Operator`] as BucketingApiResponse).campaigns[0];
+        const cloneCampaign = JSON.parse(JSON.stringify(campaign));
+        cloneCampaign.variationGroups[0].targeting.targetingGroups[0].targetings = campaign.variationGroups[0].targeting.targetingGroups[0].targetings.filter(
+            (t) => {
+                //
+                return t.key.includes(type);
+            }
         );
         return {
-            ...response,
-            campaigns: [campaign]
+            ...(demoData.bucketing[`${operator}Operator`] as BucketingApiResponse),
+            campaigns: [cloneCampaign]
         };
+    };
+    const assertOperatorBehavior = (operator: string, type: string): void => {
+        it(`should compute correctly operator "${operator}" and type "${type}"`, (done) => {
+            const bucketingContext = getCorrespondingOperatorBucketingContext(
+                operator,
+                type,
+                demoData.visitor.contextBucketingOperatorTestSuccess
+            );
+            bucketingApiMockResponse = getCorrespondingOperatorApiMockResponse(operator, type);
+            bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], bucketingContext);
+            initSpyLogs(bucketInstance);
+            const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+
+            expect(Array.isArray(result) && result.length === 1).toEqual(true);
+            expect(result[0].id === bucketingApiMockResponse.campaigns[0].id).toEqual(true);
+
+            expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+            expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+            done();
+        });
     };
     beforeEach(() => {
         spyCatch = jest.fn();
@@ -211,6 +235,26 @@ describe('Bucketing - getEligibleCampaigns', () => {
         done();
     });
 
+    const getBundleOfType = (t): { type: string; operator: string }[] =>
+        [
+            'equals',
+            'notEquals',
+            'lowerThan',
+            'lowerThanOrEquals',
+            'greaterThan',
+            'greaterThanOrEquals',
+            'startsWith',
+            'endsWith',
+            'contains',
+            'notContains'
+        ].map((o) => ({
+            type: t,
+            operator: o
+        }));
+
+    [...getBundleOfType('Bool'), ...getBundleOfType('String'), ...getBundleOfType('Number')].forEach((bt) =>
+        assertOperatorBehavior(bt.operator, bt.type)
+    );
     it('should compute correctly operator "contains" and type "string"', (done) => {
         const operator = 'contains';
         const type = 'String';
@@ -219,11 +263,60 @@ describe('Bucketing - getEligibleCampaigns', () => {
             type,
             demoData.visitor.contextBucketingOperatorTestSuccess
         );
-        bucketingApiMockResponse = getCorrespondingOperatorApiMockResponse(
+        bucketingApiMockResponse = getCorrespondingOperatorApiMockResponse(operator, type);
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], bucketingContext);
+        initSpyLogs(bucketInstance);
+        const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+
+        expect(Array.isArray(result) && result.length === 1).toEqual(true);
+        expect(result[0].id === bucketingApiMockResponse.campaigns[0].id).toEqual(true);
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        done();
+    });
+    // it('should compute correctly operator "contains" and type "bool"', (done) => {
+    //     const operator = 'contains';
+    //     const type = 'Bool';
+    //     const bucketingContext = getCorrespondingOperatorBucketingContext(
+    //         operator,
+    //         type,
+    //         demoData.visitor.contextBucketingOperatorTestSuccess
+    //     );
+    //     bucketingApiMockResponse = getCorrespondingOperatorApiMockResponse(
+    //         operator,
+    //         type,
+    //         demoData.bucketing[`${operator}Operator`] as BucketingApiResponse
+    //     );
+    //     bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], bucketingContext);
+    //     initSpyLogs(bucketInstance);
+    //     const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+
+    //     expect(Array.isArray(result) && result.length === 1).toEqual(true);
+    //     expect(result[0].id === bucketingApiMockResponse.campaigns[0].id).toEqual(true);
+
+    //     expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+    //     expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+    //     expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+    //     expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+    //     expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+    //     done();
+    // });
+
+    it('should compute correctly operator "contains" and type "number"', (done) => {
+        const operator = 'contains';
+        const type = 'Bool';
+        const bucketingContext = getCorrespondingOperatorBucketingContext(
             operator,
             type,
-            demoData.bucketing[`${operator}Operator`] as BucketingApiResponse
+            demoData.visitor.contextBucketingOperatorTestSuccess
         );
+        bucketingApiMockResponse = getCorrespondingOperatorApiMockResponse(operator, type);
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], bucketingContext);
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
