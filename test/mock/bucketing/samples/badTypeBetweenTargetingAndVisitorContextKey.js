@@ -27,6 +27,48 @@ export default {
                                         operator: 'LOWER_THAN',
                                         key: 'lowerThanBadTypeArray', // 98
                                         value: [1, 2, "I'm supposed to be a number"]
+                                    },
+                                    {
+                                        // LOWER_THAN_OR_EQUALS - BAD TYPE
+                                        operator: 'LOWER_THAN_OR_EQUALS',
+                                        key: 'lowerThanBadType',
+                                        value: "I'm supposed to be a number"
+                                    },
+                                    {
+                                        // GREATER_THAN - BAD TYPE
+                                        operator: 'GREATER_THAN',
+                                        key: 'lowerThanBadType',
+                                        value: "I'm supposed to be a number"
+                                    },
+                                    {
+                                        // GREATER_THAN_OR_EQUALS - BAD TYPE
+                                        operator: 'GREATER_THAN_OR_EQUALS',
+                                        key: 'lowerThanBadType',
+                                        value: "I'm supposed to be a number"
+                                    },
+                                    {
+                                        // STARTS_WITH - BAD TYPE
+                                        operator: 'STARTS_WITH',
+                                        key: 'lowerThanBadType',
+                                        value: "I'm supposed to be a number"
+                                    },
+                                    {
+                                        // ENDS_WITH - BAD TYPE
+                                        operator: 'ENDS_WITH',
+                                        key: 'lowerThanBadType',
+                                        value: "I'm supposed to be a number"
+                                    },
+                                    {
+                                        // CONTAINS - BAD TYPE
+                                        operator: 'CONTAINS',
+                                        key: 'lowerThanBadType',
+                                        value: "I'm supposed to be a number"
+                                    },
+                                    {
+                                        // NOT_CONTAINS - BAD TYPE
+                                        operator: 'NOT_CONTAINS',
+                                        key: 'lowerThanBadType',
+                                        value: "I'm supposed to be a number"
                                     }
                                 ]
                             }

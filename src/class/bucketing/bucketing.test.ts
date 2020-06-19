@@ -327,7 +327,7 @@ describe('Bucketing - getEligibleCampaigns', () => {
     it('should expect correct behavior for "multiple variation groups" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.oneCampaignOneVgMultipleTgg as BucketingApiResponse;
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], { foo1: 'yes1' });
-        const bucketInstance2 = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], { foo2: 'yes2' });
+        const bucketInstance2 = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], { foo1: 'NOPE', foo2: 'yes2' });
         const bucketInstance3 = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], { foo3: 'yes3' });
         initSpyLogs(bucketInstance);
         let result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
@@ -413,7 +413,7 @@ describe('Bucketing - getEligibleCampaigns', () => {
     });
 
     it('should expect correct behavior for "fs_users" data received', (done) => {
-        bucketingApiMockResponse = demoData.bucketing.fs_all_users as BucketingApiResponse;
+        bucketingApiMockResponse = demoData.bucketing.fs_users as BucketingApiResponse;
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], {});
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
@@ -422,6 +422,30 @@ describe('Bucketing - getEligibleCampaigns', () => {
         expect(spyDebugLogs).toHaveBeenCalledTimes(2);
         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        done();
+    });
+
+    it('should expect correct behavior for "bad murmur allocation" data received', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.oneCampaignWithBadTraffic as BucketingApiResponse;
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], {});
+        initSpyLogs(bucketInstance);
+        const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
+        expect(result).toEqual([]);
+
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'Bucketing - campaign (id="bptggipaqi903f3haq0g") is matching visitor context');
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'computeMurmurAlgorithm - murmur returned value="79"');
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenNthCalledWith(
+            1,
+            'computeMurmurAlgorithm - the variation traffic is equal to "110" instead of being equal to "100"'
+        );
+        expect(spyFatalLogs).toHaveBeenNthCalledWith(
+            2,
+            'computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="bptggipaqi903f3haq0g") using murmur for visitor (id="test-perf")'
+        );
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 

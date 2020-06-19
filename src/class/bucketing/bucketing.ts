@@ -89,11 +89,6 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         const reportIssueBetweenValueTypeAndOperator = (type: string, operator: BucketingOperator): void => {
             this.log.warn(`getEligibleCampaigns - operator "${operator}" is not supported for type "${type}". Assertion aborted.`);
         };
-        const reportUnexpectedVisitorContextKeyType = (str: string): void => {
-            this.log.fatal(
-                `getEligibleCampaigns - unexpected visitor context key type ("${str}"). This type is not supported. Assertion aborted.`
-            );
-        };
         const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean): boolean =>
             apiValueArray.map((apiValue) => assertionCallback(vcValue, apiValue)).filter((answer) => answer === true).length > 0;
         const computeAssertion = ({ operator, key, value }: BucketingTargetings, compareWithVisitorId: boolean): boolean => {
@@ -156,10 +151,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                                 }
                                 return vtc < value;
                             case 'boolean':
-                                reportIssueBetweenValueTypeAndOperator('boolean', 'LOWER_THAN');
-                                return false;
                             default:
-                                reportUnexpectedVisitorContextKeyType(typeof vtc);
+                                reportIssueBetweenValueTypeAndOperator('boolean', 'LOWER_THAN');
                                 return false;
                         }
                     } else {
@@ -187,10 +180,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                                 }
                                 return vtc <= value;
                             case 'boolean':
-                                reportIssueBetweenValueTypeAndOperator('boolean', 'LOWER_THAN_OR_EQUALS');
-                                return false;
                             default:
-                                reportUnexpectedVisitorContextKeyType(typeof vtc);
+                                reportIssueBetweenValueTypeAndOperator('boolean', 'LOWER_THAN_OR_EQUALS');
                                 return false;
                         }
                     } else {
@@ -218,10 +209,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                                 }
                                 return vtc > value;
                             case 'boolean':
-                                reportIssueBetweenValueTypeAndOperator('boolean', 'GREATER_THAN');
-                                return false;
                             default:
-                                reportUnexpectedVisitorContextKeyType(typeof vtc);
+                                reportIssueBetweenValueTypeAndOperator('boolean', 'GREATER_THAN');
                                 return false;
                         }
                     } else {
@@ -249,10 +238,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                                 }
                                 return vtc >= value;
                             case 'boolean':
-                                reportIssueBetweenValueTypeAndOperator('boolean', 'GREATER_THAN_OR_EQUALS');
-                                return false;
                             default:
-                                reportUnexpectedVisitorContextKeyType(typeof vtc);
+                                reportIssueBetweenValueTypeAndOperator('boolean', 'GREATER_THAN_OR_EQUALS');
                                 return false;
                         }
                     } else {
@@ -273,10 +260,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                                 reportIssueBetweenValueTypeAndOperator('number', 'STARTS_WITH');
                                 return false;
                             case 'boolean':
-                                reportIssueBetweenValueTypeAndOperator('boolean', 'STARTS_WITH');
-                                return false;
                             default:
-                                reportUnexpectedVisitorContextKeyType(typeof vtc);
+                                reportIssueBetweenValueTypeAndOperator('boolean', 'STARTS_WITH');
                                 return false;
                         }
                     } else {
@@ -296,10 +281,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                                 reportIssueBetweenValueTypeAndOperator('number', 'ENDS_WITH');
                                 return false;
                             case 'boolean':
-                                reportIssueBetweenValueTypeAndOperator('boolean', 'ENDS_WITH');
-                                return false;
                             default:
-                                reportUnexpectedVisitorContextKeyType(typeof vtc);
+                                reportIssueBetweenValueTypeAndOperator('boolean', 'ENDS_WITH');
                                 return false;
                         }
                     } else {
@@ -319,10 +302,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                                 reportIssueBetweenValueTypeAndOperator('number', 'CONTAINS');
                                 return false;
                             case 'boolean':
-                                reportIssueBetweenValueTypeAndOperator('boolean', 'CONTAINS');
-                                return false;
                             default:
-                                reportUnexpectedVisitorContextKeyType(typeof vtc);
+                                reportIssueBetweenValueTypeAndOperator('boolean', 'CONTAINS');
                                 return false;
                         }
                     } else {
@@ -344,10 +325,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                                 reportIssueBetweenValueTypeAndOperator('number', 'NOT_CONTAINS');
                                 return false;
                             case 'boolean':
-                                reportIssueBetweenValueTypeAndOperator('boolean', 'NOT_CONTAINS');
-                                return false;
                             default:
-                                reportUnexpectedVisitorContextKeyType(typeof vtc);
+                                reportIssueBetweenValueTypeAndOperator('boolean', 'NOT_CONTAINS');
                                 return false;
                         }
                     } else {

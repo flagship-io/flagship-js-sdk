@@ -18,6 +18,7 @@ import murmurDefaultArgs from './murmur/arguments';
 import murmurBadTraffic from './murmur/badTraffic';
 import multipleCampaigns from './samples/multipleCampaigns';
 import badOperator from './samples/badOperator';
+import oneCampaignWithBadTraffic from './samples/badTraffic';
 
 export default {
     functions: {
@@ -26,6 +27,7 @@ export default {
             badTraffic: murmurBadTraffic
         }
     },
+    oneCampaignWithBadTraffic,
     multipleCampaigns,
     oneCampaignOneVgMultipleTgg,
     badTypeBetweenTargetingAndVisitorContextKey,
