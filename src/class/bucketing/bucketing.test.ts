@@ -153,7 +153,19 @@ describe('Bucketing - getEligibleCampaigns', () => {
             campaigns: [cloneCampaign]
         };
     };
-    const assertOperatorBehavior = (operator: string, type: string): void => {
+    const assertOperatorBehavior = (operator: string, type: string, shouldReportIssueBetweenValueTypeAndOperator: boolean): void => {
+        const mapping = {
+            equals: 'EQUALS',
+            notEquals: 'NOT_EQUALS',
+            lowerThan: 'LOWER_THAN',
+            lowerThanOrEquals: 'LOWER_THAN_OR_EQUALS',
+            greaterThan: 'GREATER_THAN',
+            greaterThanOrEquals: 'GREATER_THAN_OR_EQUALS',
+            startsWith: 'STARTS_WITH',
+            endsWith: 'ENDS_WITH',
+            contains: 'CONTAINS',
+            notContains: 'NOT_CONTAINS'
+        };
         it(`should compute correctly operator "${operator}" and type "${type}"`, (done) => {
             const bucketingContext = getCorrespondingOperatorBucketingContext(
                 operator,
@@ -165,14 +177,36 @@ describe('Bucketing - getEligibleCampaigns', () => {
             initSpyLogs(bucketInstance);
             const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
 
-            expect(Array.isArray(result) && result.length === 1).toEqual(true);
-            expect(result[0].id === bucketingApiMockResponse.campaigns[0].id).toEqual(true);
+            if (shouldReportIssueBetweenValueTypeAndOperator) {
+                expect(result).toEqual([]);
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'Bucketing - campaign (id="bptggipaqi903f3haq0g") NOT MATCHING visitor');
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenNthCalledWith(
+                    1,
+                    `getEligibleCampaigns - operator "${mapping[operator]}" is not supported for type "${(type === 'Bool'
+                        ? 'boolean'
+                        : type
+                    ).toLowerCase()}". Assertion aborted.`
+                );
+                expect(spyWarnLogs).toHaveBeenNthCalledWith(
+                    2,
+                    `getEligibleCampaigns - operator "${mapping[operator]}" is not supported for type "${(type === 'Bool'
+                        ? 'boolean'
+                        : type
+                    ).toLowerCase()}". Assertion aborted.`
+                );
+            } else {
+                expect(Array.isArray(result) && result.length === 1).toEqual(true);
+                expect(result[0].id === bucketingApiMockResponse.campaigns[0].id).toEqual(true);
 
-            expect(spyDebugLogs).toHaveBeenCalledTimes(2);
-            expect(spyErrorLogs).toHaveBeenCalledTimes(0);
-            expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-            expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-            expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+            }
 
             done();
         });
@@ -189,6 +223,45 @@ describe('Bucketing - getEligibleCampaigns', () => {
 
         mockAxios.reset();
     });
+
+    const getBundleOfType = (t): { type: string; operator: string }[] =>
+        [
+            'equals',
+            'notEquals',
+            'lowerThan',
+            'lowerThanOrEquals',
+            'greaterThan',
+            'greaterThanOrEquals',
+            'startsWith',
+            'endsWith',
+            'contains',
+            'notContains'
+        ].map((o) => ({
+            type: t,
+            operator: o
+        }));
+
+    [...getBundleOfType('Bool'), ...getBundleOfType('String'), ...getBundleOfType('Number')].forEach((bt) => {
+        switch (bt.operator) {
+            case 'lowerThan': // ONLY BOOL
+            case 'lowerThanOrEquals':
+            case 'greaterThan':
+            case 'greaterThanOrEquals':
+                assertOperatorBehavior(bt.operator, bt.type, bt.type === 'Bool');
+                break;
+
+            case 'startsWith': // BOTH BOOL AND STRING
+            case 'endsWith':
+            case 'contains':
+            case 'notContains':
+                assertOperatorBehavior(bt.operator, bt.type, bt.type === 'Bool' || bt.type === 'Number');
+                break;
+
+            default:
+                assertOperatorBehavior(bt.operator, bt.type, false);
+        }
+    });
+
     it('should expect correct behavior for "classic" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
@@ -227,104 +300,6 @@ describe('Bucketing - getEligibleCampaigns', () => {
         ]);
 
         expect(spyDebugLogs).toHaveBeenCalledTimes(4);
-        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
-        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-
-        done();
-    });
-
-    const getBundleOfType = (t): { type: string; operator: string }[] =>
-        [
-            'equals',
-            'notEquals',
-            'lowerThan',
-            'lowerThanOrEquals',
-            'greaterThan',
-            'greaterThanOrEquals',
-            'startsWith',
-            'endsWith',
-            'contains',
-            'notContains'
-        ].map((o) => ({
-            type: t,
-            operator: o
-        }));
-
-    [...getBundleOfType('Bool'), ...getBundleOfType('String'), ...getBundleOfType('Number')].forEach((bt) =>
-        assertOperatorBehavior(bt.operator, bt.type)
-    );
-    it('should compute correctly operator "contains" and type "string"', (done) => {
-        const operator = 'contains';
-        const type = 'String';
-        const bucketingContext = getCorrespondingOperatorBucketingContext(
-            operator,
-            type,
-            demoData.visitor.contextBucketingOperatorTestSuccess
-        );
-        bucketingApiMockResponse = getCorrespondingOperatorApiMockResponse(operator, type);
-        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], bucketingContext);
-        initSpyLogs(bucketInstance);
-        const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
-
-        expect(Array.isArray(result) && result.length === 1).toEqual(true);
-        expect(result[0].id === bucketingApiMockResponse.campaigns[0].id).toEqual(true);
-
-        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
-        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
-        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-
-        done();
-    });
-    // it('should compute correctly operator "contains" and type "bool"', (done) => {
-    //     const operator = 'contains';
-    //     const type = 'Bool';
-    //     const bucketingContext = getCorrespondingOperatorBucketingContext(
-    //         operator,
-    //         type,
-    //         demoData.visitor.contextBucketingOperatorTestSuccess
-    //     );
-    //     bucketingApiMockResponse = getCorrespondingOperatorApiMockResponse(
-    //         operator,
-    //         type,
-    //         demoData.bucketing[`${operator}Operator`] as BucketingApiResponse
-    //     );
-    //     bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], bucketingContext);
-    //     initSpyLogs(bucketInstance);
-    //     const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
-
-    //     expect(Array.isArray(result) && result.length === 1).toEqual(true);
-    //     expect(result[0].id === bucketingApiMockResponse.campaigns[0].id).toEqual(true);
-
-    //     expect(spyDebugLogs).toHaveBeenCalledTimes(2);
-    //     expect(spyErrorLogs).toHaveBeenCalledTimes(0);
-    //     expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-    //     expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-    //     expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-
-    //     done();
-    // });
-
-    it('should compute correctly operator "contains" and type "number"', (done) => {
-        const operator = 'contains';
-        const type = 'Bool';
-        const bucketingContext = getCorrespondingOperatorBucketingContext(
-            operator,
-            type,
-            demoData.visitor.contextBucketingOperatorTestSuccess
-        );
-        bucketingApiMockResponse = getCorrespondingOperatorApiMockResponse(operator, type);
-        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], bucketingContext);
-        initSpyLogs(bucketInstance);
-        const result = bucketInstance.getEligibleCampaigns(bucketingApiMockResponse);
-
-        expect(Array.isArray(result) && result.length === 1).toEqual(true);
-        expect(result[0].id === bucketingApiMockResponse.campaigns[0].id).toEqual(true);
-
-        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);

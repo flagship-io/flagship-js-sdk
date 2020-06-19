@@ -75,8 +75,8 @@ const demoData = {
             lowerThanOrEqualsBool: false,
             lowerThanOrEqualsBoolArray: false,
             // NOT_CONTAINS OPERATOR
-            notContainsString: 'testttt',
-            notContainsStringArray: 'testttt1',
+            notContainsString: 'teeestttt',
+            notContainsStringArray: 'teeeestttt1',
             notContainsNumber: 124343433,
             notContainsNumberArray: 124343433,
             notContainsBool: false,
