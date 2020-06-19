@@ -4,9 +4,9 @@
 
 ## Prerequisites
 
-- **Node.js**: version 6.0.0 or later...
+-   **Node.js**: version 6.0.0 or later...
 
-- **Npm**: version 3.0.0 or later...
+-   **Npm**: version 3.0.0 or later...
 
 ## Good to know
 
@@ -155,31 +155,31 @@ Don't hesitate to have a look to the main [Flagship technical doc](http://develo
 
 ### _flagshipSdk_ object
 
-- [start](#start)
+-   [start](#start)
 
 ### <i>Flagship</i> class
 
-- [newVisitor](#newVisitor)
+-   [newVisitor](#newVisitor)
 
 ### <i>FlagshipVisitor</i> class
 
-- [events listener](#events-listener)
-- [updateContext](#updateContext)
-- [synchronizeModifications](#synchronizeModifications)
-- [getAllModifications](#getAllModifications)
-- [getModificationsForCampaign](#getModificationsForCampaign)
-- [getModifications](#getModifications)
-- [getModificationInfo](#getModificationInfo)
-- [activateModifications](#activateModifications)
-- [sendHit](#sendHit)
-- [sendHits](#sendHits)
+-   [events listener](#events-listener)
+-   [updateContext](#updateContext)
+-   [synchronizeModifications](#synchronizeModifications)
+-   [getAllModifications](#getAllModifications)
+-   [getModificationsForCampaign](#getModificationsForCampaign)
+-   [getModifications](#getModifications)
+-   [getModificationInfo](#getModificationInfo)
+-   [activateModifications](#activateModifications)
+-   [sendHit](#sendHit)
+-   [sendHits](#sendHits)
 
 ### <i>Shape</i> of possible hits to send
 
-- [Transaction Hit](#transaction-hit)
-- [Screen Hit](#screen-hit)
-- [Item Hit](#item-hit)
-- [Event Hit](#event-hit)
+-   [Transaction Hit](#transaction-hit)
+-   [Screen Hit](#screen-hit)
+-   [Item Hit](#item-hit)
+-   [Event Hit](#event-hit)
 
 ---
 
@@ -228,7 +228,7 @@ const sdk = flagship.start("YOUR_ENV_ID",
 
 ## Summary
 
-- [newVisitor](#newVisitor)
+-   [newVisitor](#newVisitor)
 
 ## `newVisitor`
 
@@ -277,16 +277,16 @@ visitorInstance.on('ready', () => {
 
 ## Summary
 
-- [events listener](#events-listener)
-- [updateContext](#updateContext)
-- [synchronizeModifications](#synchronizeModifications)
-- [getAllModifications](#getAllModifications)
-- [getModificationsForCampaign](#getModificationsForCampaign)
-- [getModifications](#getModifications)
-- [getModificationInfo](#getModificationInfo)
-- [activateModifications](#activateModifications)
-- [sendHit](#sendHit)
-- [sendHits](#sendHits)
+-   [events listener](#events-listener)
+-   [updateContext](#updateContext)
+-   [synchronizeModifications](#synchronizeModifications)
+-   [getAllModifications](#getAllModifications)
+-   [getModificationsForCampaign](#getModificationsForCampaign)
+-   [getModifications](#getModifications)
+-   [getModificationInfo](#getModificationInfo)
+-   [activateModifications](#activateModifications)
+-   [sendHit](#sendHit)
+-   [sendHits](#sendHits)
 
 ## `events listener`
 
@@ -620,8 +620,8 @@ will produce following behaviour:
 
 Assuming the api gives those informations in the following order:
 
-- modification <b>btnColor</b> is in campaign **campaignA**
-- modification <b>customLabel</b> is in campaign **campaignB**
+-   modification <b>btnColor</b> is in campaign **campaignA**
+-   modification <b>customLabel</b> is in campaign **campaignB**
 
 => Both **campaignA** and **campaignB** will be activated
 
@@ -629,8 +629,8 @@ Assuming the api gives those informations in the following order:
 
 Assuming the api gives those informations in the following order:
 
-- modification <b>btnColor</b> and <b>customLabel</b> is in campaign **campaignA**
-- modification <b>customLabel</b> is in campaign **campaignB**
+-   modification <b>btnColor</b> and <b>customLabel</b> is in campaign **campaignA**
+-   modification <b>customLabel</b> is in campaign **campaignB**
 
 => Only **campaignA** will be activated
 
@@ -638,8 +638,8 @@ Assuming the api gives those informations in the following order:
 
 Assuming the api gives those informations in the following order:
 
-- modification <b>customLabel</b> is in campaign **campaignA**
-- modification <b>btnColor</b> and <b>customLabel</b> is in campaign **campaignB**
+-   modification <b>customLabel</b> is in campaign **campaignA**
+-   modification <b>btnColor</b> and <b>customLabel</b> is in campaign **campaignB**
 
 => Both **campaignA** and **campaignB** will be activated. But the SDK will logs a conflict for modification <b>customLabel</b> as it is considered as it is not supposed to happen.
 
@@ -726,7 +726,7 @@ will return:
 
 ## `getModificationInfo`
 
-- return an `object` containing informations about modification matching the key specified in argument.
+-   return an `object` containing informations about modification matching the key specified in argument.
 
 **NOTE1**: If the key does not match any campaign, it will return `null`.
 
@@ -814,7 +814,7 @@ visitorInstance.sendHit(
     type: 'Screen',
     data: {
         documentLocation: "http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F",
-        pageTitle: "yoloScreen"
+        pageTitle: "totoScreen"
   }
 ).then(() => console.log('Hit send !')
 ```
@@ -860,7 +860,7 @@ visitorInstance.sendHits(
             type: 'Screen',
             data: {
                 documentLocation: "http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F",
-                pageTitle: "yoloScreen"
+                pageTitle: "totoScreen"
             }
         },
         {
@@ -871,37 +871,37 @@ visitorInstance.sendHits(
                 label: 'Hello world',
                 value: 123,
                 documentLocation: "http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F",
-                pageTitle: "yoloEvent"
+                pageTitle: "totoEvent"
             }
         },
         {
             type: 'Item',
             data: {
                 transactionId: '0987654321',
-                name: 'yoloItem',
+                name: 'totoItem',
                 price: 999,
-                code: 'yoloCode',
-                category: 'yoloCategory',
+                code: 'totoCode',
+                category: 'totoCategory',
                 quantity: 123,
                 documentLocation: "http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F",
-                pageTitle: "yoloItem"
+                pageTitle: "totoItem"
             }
         },
         {
             type: 'Transaction',
             data: {
                 transactionId: '1234567890',
-                affiliation: 'yoloAffiliation',
+                affiliation: 'totoAffiliation',
                 totalRevenue: 999,
                 shippingCost: 888,
-                shippingMethod: 'yoloShippingMethod',
-                currency: 'yoloCurrency',
+                shippingMethod: 'totoShippingMethod',
+                currency: 'totoCurrency',
                 taxes: 1234444,
-                paymentMethod:'yoloPaymentMethod',
+                paymentMethod:'totoPaymentMethod',
                 itemCount: 2,
-                couponCode: 'YOLOCOUPON',
+                couponCode: 'totoCOUPON',
                 documentLocation: "http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F",
-                pageTitle: "yoloTransaction"
+                pageTitle: "totoTransaction"
             }
         },
     ]
@@ -914,10 +914,10 @@ visitorInstance.sendHits(
 
 <i>Shape</i> of possible hits to send:
 
-- [Transaction Hit](#transaction-hit)
-- [Screen Hit](#screen-hit)
-- [Item Hit](#item-hit)
-- [Event Hit](#event-hit)
+-   [Transaction Hit](#transaction-hit)
+-   [Screen Hit](#screen-hit)
+-   [Item Hit](#item-hit)
+-   [Event Hit](#event-hit)
 
 ## `Transaction Hit`
 
