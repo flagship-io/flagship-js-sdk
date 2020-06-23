@@ -510,7 +510,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             this.fetchedModifications = data || null;
         }
         this.log.debug(
-            `Saving in cache those modifications:\n${this.fetchedModifications ? JSON.stringify(this.fetchedModifications) : 'null'}`
+            `Saving in cache those modifications: "${this.fetchedModifications ? JSON.stringify(this.fetchedModifications) : 'null'}"`
         );
     }
 
@@ -758,7 +758,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 };
             }
             default:
-                this.log.error(`sendHits - no type found for hit:\n${JSON.stringify(hitData)}`);
+                this.log.error(`sendHits - no type found for hit: "${JSON.stringify(hitData)}"`);
                 return null;
         }
     }
@@ -767,46 +767,42 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         const payloads: any[] = [];
         const url = 'https://ariane.abtasty.com';
         const handleHitsError = (error: Error): void => {
-            this.log.fatal(`sendHits - fail with error:\n${error}`);
+            this.log.fatal(`sendHits - fail with error: "${error}"`);
         };
         return new Promise((resolve, reject) => {
-            try {
-                const promises = Promise.all(
-                    hitsArray.map(async (hit) => {
-                        const customParams = this.generateCustomTypeParamsOf(hit);
-                        if (customParams) {
-                            const payload = {
-                                vid: this.id, // string, max length = NONE
-                                cid: this.envId, // string, max length = NONE
-                                ds: 'APP', // string, max length = NONE
-                                ...customParams
-                            };
-                            payloads.push(payload);
-                            return axios.post(url, payload).then(() => ({ skipped: false, ...payload }));
-                        }
-                        this.log.debug(`sendHits - skip request to "${url}" because current hit not set correctly`);
-                        return new Promise((resolveAuto) => resolveAuto({ skipped: true })); // do nothing
-                    })
-                ) as Promise<{ [key: string]: any; skipped: boolean }[]>;
+            const promises = Promise.all(
+                hitsArray.map(async (hit) => {
+                    const customParams = this.generateCustomTypeParamsOf(hit);
+                    if (customParams) {
+                        const payload = {
+                            vid: this.id, // string, max length = NONE
+                            cid: this.envId, // string, max length = NONE
+                            ds: 'APP', // string, max length = NONE
+                            ...customParams
+                        };
+                        payloads.push(payload);
+                        return axios.post(url, payload).then(() => ({ skipped: false, ...payload }));
+                    }
+                    this.log.debug(`sendHits - skip request to "${url}" because current hit not set correctly`);
+                    return new Promise((resolveAuto) => resolveAuto({ skipped: true })); // do nothing
+                })
+            ) as Promise<{ [key: string]: any; skipped: boolean }[]>;
 
-                promises
-                    .then((data) => {
-                        data.forEach((d) => {
-                            if (d && !d.skipped) {
-                                this.log.info(`sendHits - hit (type"${d.t}") send successfully`);
-                                this.log.debug(`sendHits - with url ${url}`);
-                                this.log.debug(`sendHits - with payload:\n${payloads.map((p) => `${JSON.stringify(p)}\n`)}`);
-                            }
-                        });
-                        resolve();
-                    })
-                    .catch((error) => {
-                        handleHitsError(error);
-                        reject(error);
+            promises
+                .then((data) => {
+                    data.forEach((d) => {
+                        if (d && !d.skipped) {
+                            this.log.info(`sendHits - hit (type"${d.t}") send successfully`);
+                            this.log.debug(`sendHits - with url ${url}`);
+                            this.log.debug(`sendHits - with payload:\n${payloads.map((p) => `${JSON.stringify(p)}\n`)}`);
+                        }
                     });
-            } catch (error) {
-                handleHitsError(error);
-            }
+                    resolve();
+                })
+                .catch((error) => {
+                    handleHitsError(error);
+                    reject(error);
+                });
         });
     }
 

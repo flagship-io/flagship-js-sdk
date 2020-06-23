@@ -189,7 +189,11 @@ describe('FlagshipVisitor', () => {
             spyActivateCampaign = jest.spyOn(visitorInstance, 'activateCampaign');
             spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
             spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
+            spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
+            spyDebugLogs = jest.spyOn(visitorInstance.log, 'debug');
+            spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
         });
+
         it('should return decision API response (mode=normal) when there is no optional argument set', () => {
             visitorInstance.fetchAllModifications();
             expect(mockAxios.post).toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, {
@@ -199,6 +203,7 @@ describe('FlagshipVisitor', () => {
             });
             expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
         });
+
         it('should logs specifically when error and already fetched before and forced', (done) => {
             const responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -237,6 +242,42 @@ describe('FlagshipVisitor', () => {
             expect(spyThen).toHaveBeenCalledTimes(0);
             expect(mockAxios.post).toHaveBeenCalledTimes(1);
         });
+
+        it('should logs specifically when error and try to activate', (done) => {
+            const errorObj = {
+                data: 'Oh no, error is coming !',
+                status: '422',
+                source: { pointer: '/data/attributes/envId' },
+                title: 'Invalid Attribute',
+                detail: 'Env id must contain at least three characters.'
+            };
+            const spyThen = jest.fn();
+            visitorInstance
+                .fetchAllModifications({
+                    activate: true,
+                    campaignCustomID: 'bmjdprsjan0g01uq2ceg',
+                    force: true
+                })
+                .then(spyThen)
+                .catch((errorResponse) => {
+                    try {
+                        expect(errorResponse).toEqual(errorObj);
+                        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                        expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - an error occurred while fetching...');
+                        expect(spyFatalLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - activate canceled due to errors...');
+                        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'Saving in cache those modifications: "null"');
+                        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                        done();
+                    } catch (error) {
+                        done.fail(error);
+                    }
+                });
+            mockAxios.mockError(errorObj);
+            expect(spyThen).toHaveBeenCalledTimes(0);
+            expect(mockAxios.post).toHaveBeenCalledTimes(1);
+        });
+
         it('should return correct modification found for a specific campaign', (done) => {
             const responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -279,6 +320,7 @@ describe('FlagshipVisitor', () => {
                 });
             mockAxios.mockResponse(responseObj);
         });
+
         it('should return empty array if no modification found for a specific campaign', (done) => {
             const responseObj = {
                 data: [],
@@ -297,6 +339,7 @@ describe('FlagshipVisitor', () => {
             });
             mockAxios.mockResponse(responseObj);
         });
+
         it('should call activate only ONCE when specific campaign is set', (done) => {
             const responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -315,6 +358,7 @@ describe('FlagshipVisitor', () => {
                 { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] }
             );
         });
+
         it('should get all modifications and then activate individually each campaign if activate=true', (done) => {
             const responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -351,6 +395,7 @@ describe('FlagshipVisitor', () => {
                 { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] }
             );
         });
+
         it('should not call decision API if already fetched before', (done) => {
             const responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -373,6 +418,7 @@ describe('FlagshipVisitor', () => {
             });
             expect(mockAxios.post).not.toHaveBeenCalled();
         });
+
         it('should call decision API if already fetched before and need to activate', (done) => {
             const responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -1143,6 +1189,44 @@ describe('FlagshipVisitor', () => {
             } catch (error) {
                 done.fail(error);
             }
+        });
+        it('should have correct behavior when trying to send a hit where type does not exist', (done) => {
+            try {
+                visitorInstance
+                    .sendHits([{ ...demoData.hit.event, type: 'toto' }])
+                    .then((response) => {
+                        try {
+                            expect(response).not.toBeDefined();
+                            expect(spyInfoLogs).toBeCalledTimes(0);
+                            expect(spyWarnLogs).toBeCalledTimes(0);
+                            expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                                1,
+                                'sendHits - no type found for hit: "{"type":"toto","data":{"category":"User Engagement","action":"signOff","label":"yolo label ;)","value":123,"documentLocation":"http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F","pageTitle":"YoloTitle"}}"'
+                            );
+                            expect(spyFatalLogs).toBeCalledTimes(0);
+                            done();
+                        } catch (error) {
+                            done.fail(error);
+                        }
+                    })
+                    .catch((error) => {
+                        done.fail(error);
+                    });
+                expect(mockAxios.post).not.toHaveBeenCalled();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+        it('should logs error when hit api failed', (done) => {
+            visitorInstance.sendHits([demoData.hit.event]).catch((err) => {
+                expect(err).toEqual('server crashed');
+                expect(spyInfoLogs).toBeCalledTimes(0);
+                expect(spyWarnLogs).toBeCalledTimes(0);
+                expect(spyErrorLogs).toBeCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'sendHits - fail with error: "server crashed"');
+                done();
+            });
+            mockAxios.mockError('server crashed');
         });
         it('should logs error when hit "event" not set correctly', (done) => {
             const brokenEvent1 = { ...demoData.hit.event, data: { ...demoData.hit.event.data, action: null } };
