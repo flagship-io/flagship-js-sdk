@@ -347,6 +347,10 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                     return false;
             }
         };
+        if (!bucketingData || !bucketingData.campaigns) {
+            this.log.warn('getEligibleCampaigns - no bucketing data found');
+            return result;
+        }
         bucketingData.campaigns.forEach((campaign) => {
             let matchingVgId: string | null = null;
 
@@ -409,15 +413,15 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                 if (bucketingData.panic) {
                     this.log.warn('Panic mode detected, running SDK in safe mode...');
                 } else {
-                    const computedCampaigns: DecisionApiCampaign[] = this.getEligibleCampaigns(bucketingData);
                     if (!other.headers['Last-Modified']) {
                         this.log.warn(`launch - http GET request (url="${url}") did not return attribute "Last-Modified"`);
                     } else {
                         this.lastModifiedDate = other.headers['Last-Modified'];
                     }
-                    if (status === 304) {
+                    if (status === 301) {
                         this.log.info(`launch - current visitor already has bucketing up to date (api status=304)`);
                     } else {
+                        const computedCampaigns: DecisionApiCampaign[] = this.getEligibleCampaigns(bucketingData);
                         this.data = { ...bucketingData };
                         this.computedData = { visitorId: this.visitorId, campaigns: [...computedCampaigns] };
                         this.log.info(`launch - ${this.computedData.campaigns.length} campaign(s) found matching current visitor`);

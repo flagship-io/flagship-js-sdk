@@ -23,9 +23,32 @@ let spyThen;
 let spyCatch;
 
 let bucketingApiMockResponse: BucketingApiResponse;
-const bucketingApiMockOterResponse: { status: number; headers: { 'Last-Modified': string } } = {
+
+const bucketingApiMockOtherResponse: { status: number; headers: { 'Last-Modified': string } } = {
     status: 200,
     headers: { 'Last-Modified': 'Wed, 18 Mar 2020 23:29:16 GMT' }
+};
+
+const mockComputedData = {
+    campaigns: [
+        {
+            id: 'bptggipaqi903f3haq0g',
+            variation: { id: 'bptggipaqi903f3haq2g', modifications: { type: 'JSON', value: { testCache: 'value' } } },
+            variationGroupId: 'bptggipaqi903f3haq1g'
+        },
+        {
+            id: 'bq4sf09oet0006cfihd0',
+            variation: {
+                id: 'bq4sf09oet0006cfihf0',
+                modifications: {
+                    type: 'JSON',
+                    value: { 'btn-color': 'green', 'btn-text': 'Buy now with discount !', 'txt-color': '#A3A3A3' }
+                }
+            },
+            variationGroupId: 'bq4sf09oet0006cfihe0'
+        }
+    ],
+    visitorId: 'test-perf'
 };
 
 const bucketingConfig: FlagshipSdkConfig = {
@@ -43,6 +66,7 @@ const initSpyLogs = (bInstance) => {
 };
 
 const expectedRequestHeaderFirstCall = { headers: { 'If-Modified-Since': '' } };
+const expectedRequestHeaderNotFirstCall = { headers: { 'If-Modified-Since': 'Wed, 18 Mar 2020 23:29:16 GMT' } };
 
 describe('Bucketing used from visitor instance', () => {
     beforeEach(() => {
@@ -60,7 +84,7 @@ describe('Bucketing used from visitor instance', () => {
         sdk = flagshipSdk.initSdk(demoData.envId[0], bucketingConfig);
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         expect(visitorInstance.bucket instanceof Bucketing).toEqual(true);
-        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOterResponse });
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
         expect(mockAxios.get).toHaveBeenNthCalledWith(
             1,
             internalConfig.bucketingEndpoint.replace('@ENV_ID@', visitorInstance.envId),
@@ -109,6 +133,10 @@ describe('Bucketing - murmur algorithm', () => {
     });
     it('should works with "classical" scenario', (done) => {
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
+
+        expect(bucketInstance.data).toEqual(null);
+        expect(bucketInstance.computedData).toEqual(null);
+
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
         const result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.defaultArgs); // private function
@@ -498,9 +526,13 @@ describe('Bucketing - launch', () => {
     it('should works with "classical" bucket api response', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
+
+        expect(bucketInstance.data).toEqual(null);
+        expect(bucketInstance.computedData).toEqual(null);
+
         initSpyLogs(bucketInstance);
         bucketInstance.launch().then(spyThen).catch(spyCatch);
-        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOterResponse });
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
         expect(mockAxios.get).toHaveBeenNthCalledWith(
             1,
             internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId),
@@ -517,14 +549,48 @@ describe('Bucketing - launch', () => {
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'launch - 2 campaign(s) found matching current visitor');
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        expect(bucketInstance.data).toEqual(bucketingApiMockResponse);
+        expect(bucketInstance.computedData).toEqual(mockComputedData);
+
         done();
     });
+
+    it('should handle status=301', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
+
+        // simulate already a previous call - BEGIN
+        bucketInstance.lastModifiedDate = 'Wed, 18 Mar 2020 23:29:16 GMT';
+        bucketInstance.data = bucketingApiMockResponse;
+        bucketInstance.computedData = mockComputedData;
+        // simulate already a previous call - END
+
+        initSpyLogs(bucketInstance);
+        bucketInstance.launch().then(spyThen).catch(spyCatch);
+        mockAxios.mockResponse({ data: {}, ...bucketingApiMockOtherResponse, status: 301 });
+        expect(mockAxios.get).toHaveBeenNthCalledWith(
+            1,
+            internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId),
+            expectedRequestHeaderNotFirstCall
+        );
+        expect(spyThen).toHaveBeenCalledWith({});
+        expect(spyCatch).not.toHaveBeenCalled();
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'launch - current visitor already has bucketing up to date (api status=304)');
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+        done();
+    });
+
     it('should detect when bucket api response return panic mode', (done) => {
         bucketingApiMockResponse = demoData.bucketing.panic as BucketingApiResponse;
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(bucketInstance);
         bucketInstance.launch().then(spyThen).catch(spyCatch);
-        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOterResponse });
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
         expect(mockAxios.get).toHaveBeenNthCalledWith(
             1,
             internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId),
