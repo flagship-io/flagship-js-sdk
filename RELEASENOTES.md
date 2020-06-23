@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 1.2.1
+
+### Bug fixes 🐛
+
+- Minor log fix when sending hits.
+
 ## ➡️ Version 1.2.0
 
 ### Breaking changes ⚠️
