@@ -822,7 +822,7 @@ describe('FlagshipVisitor', () => {
       visitorInstance.sendHit(demoData.hit.transaction).then((response) => {
         try {
           expect(response).not.toBeDefined();
-          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'sendHits: hit (type"TRANSACTION") send successfully');
           expect(spyWarnLogs).toBeCalledTimes(0);
           expect(spyErrorLogs).toBeCalledTimes(0);
           expect(spyFatalLogs).toBeCalledTimes(0);
@@ -862,7 +862,10 @@ describe('FlagshipVisitor', () => {
         ).then((response) => {
           try {
             expect(response).not.toBeDefined();
-            expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+            expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'sendHits: hit (type"EVENT") send successfully');
+            expect(spyInfoLogs).toHaveBeenNthCalledWith(2, 'sendHits: hit (type"ITEM") send successfully');
+            expect(spyInfoLogs).toHaveBeenNthCalledWith(3, 'sendHits: hit (type"SCREENVIEW") send successfully');
+            expect(spyInfoLogs).toHaveBeenNthCalledWith(4, 'sendHits: hit (type"TRANSACTION") send successfully');
             expect(spyWarnLogs).toBeCalledTimes(0);
             expect(spyErrorLogs).toBeCalledTimes(0);
             expect(spyFatalLogs).toBeCalledTimes(0);
@@ -952,7 +955,7 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
-          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyInfoLogs).toBeCalledTimes(0);
           expect(spyWarnLogs).toBeCalledTimes(0);
           expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Event): failed because following required attribute "category" is missing...');
           expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Event): failed because following required attribute "action" is missing...');
@@ -976,7 +979,7 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
-          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyInfoLogs).toBeCalledTimes(0);
           expect(spyWarnLogs).toBeCalledTimes(0);
           expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(ScreenView): failed because following required attribute "pageTitle" is missing...');
           expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(ScreenView): failed because following required attribute "documentLocation" is missing...');
@@ -999,7 +1002,7 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
-          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyInfoLogs).toBeCalledTimes(0);
           expect(spyWarnLogs).toBeCalledTimes(0);
           expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Item): failed because following required attribute "transactionId" is missing...');
           expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Item): failed because following required attribute "name" is missing...');
@@ -1022,7 +1025,7 @@ describe('FlagshipVisitor', () => {
       ).then((response) => {
         try {
           expect(response).not.toBeDefined();
-          expect(spyInfoLogs).toBeCalledWith('sendHits: success');
+          expect(spyInfoLogs).toBeCalledTimes(0);
           expect(spyWarnLogs).toBeCalledTimes(0);
           expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'sendHits(Transaction): failed because following required attribute "transactionId" is missing...');
           expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'sendHits(Transaction): failed because following required attribute "affiliation" is missing...');
