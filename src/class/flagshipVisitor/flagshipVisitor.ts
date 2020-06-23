@@ -413,6 +413,21 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public synchronizeModifications(activate = false): Promise<number> {
+        if (this.config.decisionMode === 'Bucketing') {
+            if (this.bucket !== null) {
+                const previousBucketVisitorContext = this.bucket.visitorContext;
+                this.bucket.updateVisitorContext(this.context);
+                this.log.debug(
+                    `synchronizeModifications - updating bucketing visitor context from ${JSON.stringify(
+                        previousBucketVisitorContext
+                    )} to ${JSON.stringify(this.bucket.visitorContext)}`
+                );
+            } else {
+                this.log.warn(
+                    'synchronizeModifications - trying to synchronize modifications in bucketing mode but bucket is null. You might have call synchronizeModifications too early.'
+                );
+            }
+        }
         return new Promise((resolve, reject) => {
             const fetchedModifPromise = this.fetchAllModifications({ activate, force: true }) as Promise<DecisionApiResponse>;
             fetchedModifPromise
@@ -536,14 +551,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         // check if need to return without promise
         if (loadFromCache) {
             if (this.fetchedModifications && !force) {
-                this.log.debug('fetchAllModifications: loadFromCache enabled');
+                this.log.debug('fetchAllModifications - loadFromCache enabled');
                 return this.fetchAllModificationsPostProcess(
                     { visitorId: this.id, campaigns: this.fetchedModifications as DecisionApiCampaign[] },
                     { ...defaultArgs, ...args }
                 ).data;
             }
             this.log.fatal(
-                'fetchAllModifications: loadFromCache enabled but no data in cache. Make sure you fetched at least once before.'
+                'fetchAllModifications - loadFromCache enabled but no data in cache. Make sure you fetched at least once before.'
             );
             return { visitorId: this.id, campaigns: this.fetchedModifications as DecisionApiCampaign[] };
         }
@@ -551,7 +566,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         // default: return a promise
         return new Promise((resolve, reject) => {
             if (this.fetchedModifications && !force) {
-                this.log.info('fetchAllModifications: no calls to the Decision API because it has already been fetched before');
+                this.log.info('fetchAllModifications - no calls to the Decision API because it has already been fetched before');
                 resolve(
                     this.fetchAllModificationsPostProcess(
                         { visitorId: this.id, campaigns: this.fetchedModifications as DecisionApiCampaign[] },
@@ -559,7 +574,16 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     ) as DecisionApiResponse
                 );
             } else if (this.config.decisionMode === 'Bucketing') {
-                this.bucket = new Bucketing(this.envId, this.config, this.id, this.context);
+                if (this.bucket === null) {
+                    this.log.debug('fetchAllModifications - initializing a new bucket');
+                    this.bucket = new Bucketing(this.envId, this.config, this.id, this.context);
+                } else {
+                    this.log.debug(
+                        `fetchAllModifications - already initialized bucket detected. With visitor context: ${JSON.stringify(
+                            this.bucket.visitorContext
+                        )}`
+                    );
+                }
                 this.bucket.launch();
                 this.bucket.on('launched', () => {
                     const transformedBucketingData = (this.bucket as IFlagshipBucketing).computedData as DecisionApiResponseData;
@@ -574,7 +598,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 this.bucket.on('error', (error: Error) => {
                     this.saveModificationsInCache(null);
                     if (activate) {
-                        this.log.fatal('fetchAllModifications: activate canceled due to errors...');
+                        this.log.fatal('fetchAllModifications - activate canceled due to errors...');
                     }
                     reject(error);
                 });
@@ -596,9 +620,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     })
                     .catch((response: Error) => {
                         this.saveModificationsInCache(null);
-                        this.log.fatal('fetchAllModifications: an error occurred while fetching...');
+                        this.log.fatal('fetchAllModifications - an error occurred while fetching...');
                         if (activate) {
-                            this.log.fatal('fetchAllModifications: activate canceled due to errors...');
+                            this.log.fatal('fetchAllModifications - activate canceled due to errors...');
                         }
                         reject(response);
                     });

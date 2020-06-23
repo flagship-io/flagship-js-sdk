@@ -371,7 +371,7 @@ If you want to listen anytime:
 
 ## `updateContext`
 
-edit the context of the visitor
+Edit the context of the visitor. Be aware that after the context has been updated, it does not refresh campaigns potentially matching this new context. To do so, you manually have to call [synchronizeModifications](###synchronizeModifications) function.
 
 > return nothing
 
@@ -408,8 +408,7 @@ const visitorInstance = sdk.updateContext({
 
 > return a `Promise<number>`
 
-Add/update all modifications data which are in cache.
-Might be useful when your visitor instance has been initialized a while ago and some change have been done on Flagship platform meanwhile. From there some modifications may have changes, so calling `synchronizeModifications` make sure everything is fine. 😃
+Refresh all modifications data which are in cache by making a new API call to the Flagship API. It's also updating campaigns matching current visitor context.
 
 It returns a <i>number</i> (=response status code) when promise is resolved.
 

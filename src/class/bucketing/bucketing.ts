@@ -31,6 +31,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
 
     config: FlagshipSdkConfig;
 
+    lastModifiedDate: string | null;
+
     constructor(envId: string, config: FlagshipSdkConfig, visitorId: string, visitorContext: FlagshipVisitorContext = {}) {
         super();
         this.config = config;
@@ -40,6 +42,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         this.visitorContext = visitorContext;
         this.data = null;
         this.computedData = null;
+        this.lastModifiedDate = null;
     }
 
     static transformIntoDecisionApiPayload(
@@ -58,6 +61,11 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                 }
             }
         };
+    }
+
+    public updateVisitorContext(newContext: FlagshipVisitorContext): void {
+        this.visitorContext = newContext;
+        this.lastModifiedDate = null;
     }
 
     private computeMurmurAlgorithm(variations: BucketingVariation[]): BucketingVariation | null {
@@ -390,15 +398,30 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
     }
 
     public launch(): Promise<BucketingApiResponse | void> {
-        return Axios.get(internalConfig.bucketingEndpoint.replace('@ENV_ID@', this.envId))
-            .then(({ data: bucketingData }: AxiosResponse<BucketingApiResponse>) => {
+        const axiosConfig = {
+            headers: {
+                'If-Modified-Since': this.lastModifiedDate !== null ? this.lastModifiedDate : ''
+            }
+        };
+        const url = internalConfig.bucketingEndpoint.replace('@ENV_ID@', this.envId);
+        return Axios.get(url, axiosConfig)
+            .then(({ data: bucketingData, status, ...other }: AxiosResponse<BucketingApiResponse>) => {
                 if (bucketingData.panic) {
                     this.log.warn('Panic mode detected, running SDK in safe mode...');
                 } else {
                     const computedCampaigns: DecisionApiCampaign[] = this.getEligibleCampaigns(bucketingData);
-                    this.data = { ...bucketingData };
-                    this.computedData = { visitorId: this.visitorId, campaigns: [...computedCampaigns] };
-                    this.log.info(`launch - ${this.computedData.campaigns.length} campaign(s) found matching current visitor`);
+                    if (!other.headers['Last-Modified']) {
+                        this.log.warn(`launch - http GET request (url="${url}") did not return attribute "Last-Modified"`);
+                    } else {
+                        this.lastModifiedDate = other.headers['Last-Modified'];
+                    }
+                    if (status === 304) {
+                        this.log.info(`launch - current visitor already has bucketing up to date (api status=304)`);
+                    } else {
+                        this.data = { ...bucketingData };
+                        this.computedData = { visitorId: this.visitorId, campaigns: [...computedCampaigns] };
+                        this.log.info(`launch - ${this.computedData.campaigns.length} campaign(s) found matching current visitor`);
+                    }
                 }
                 this.emit('launched');
                 return bucketingData;

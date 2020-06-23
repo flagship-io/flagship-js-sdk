@@ -23,6 +23,10 @@ let spyThen;
 let spyCatch;
 
 let bucketingApiMockResponse: BucketingApiResponse;
+const bucketingApiMockOterResponse: { status: number; headers: { 'Last-Modified': string } } = {
+    status: 200,
+    headers: { 'Last-Modified': 'Wed, 18 Mar 2020 23:29:16 GMT' }
+};
 
 const bucketingConfig: FlagshipSdkConfig = {
     ...testConfig,
@@ -37,6 +41,8 @@ const initSpyLogs = (bInstance) => {
     spyInfoLogs = jest.spyOn(bInstance.log, 'info');
     spyDebugLogs = jest.spyOn(bInstance.log, 'debug');
 };
+
+const expectedRequestHeaderFirstCall = { headers: { 'If-Modified-Since': '' } };
 
 describe('Bucketing used from visitor instance', () => {
     beforeEach(() => {
@@ -54,8 +60,12 @@ describe('Bucketing used from visitor instance', () => {
         sdk = flagshipSdk.initSdk(demoData.envId[0], bucketingConfig);
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         expect(visitorInstance.bucket instanceof Bucketing).toEqual(true);
-        mockAxios.mockResponse({ data: bucketingApiMockResponse });
-        expect(mockAxios.get).toHaveBeenNthCalledWith(1, internalConfig.bucketingEndpoint.replace('@ENV_ID@', visitorInstance.envId));
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOterResponse });
+        expect(mockAxios.get).toHaveBeenNthCalledWith(
+            1,
+            internalConfig.bucketingEndpoint.replace('@ENV_ID@', visitorInstance.envId),
+            expectedRequestHeaderFirstCall
+        );
         visitorInstance.on('ready', () => {
             try {
                 expect(visitorInstance.fetchedModifications[0].id === demoData.bucketing.classical.campaigns[0].id).toEqual(true);
@@ -490,8 +500,12 @@ describe('Bucketing - launch', () => {
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(bucketInstance);
         bucketInstance.launch().then(spyThen).catch(spyCatch);
-        mockAxios.mockResponse({ data: bucketingApiMockResponse });
-        expect(mockAxios.get).toHaveBeenNthCalledWith(1, internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId));
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOterResponse });
+        expect(mockAxios.get).toHaveBeenNthCalledWith(
+            1,
+            internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId),
+            expectedRequestHeaderFirstCall
+        );
         expect(spyThen).toHaveBeenCalledWith(bucketingApiMockResponse);
         expect(spyCatch).not.toHaveBeenCalled();
 
@@ -510,8 +524,12 @@ describe('Bucketing - launch', () => {
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(bucketInstance);
         bucketInstance.launch().then(spyThen).catch(spyCatch);
-        mockAxios.mockResponse({ data: bucketingApiMockResponse });
-        expect(mockAxios.get).toHaveBeenNthCalledWith(1, internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId));
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOterResponse });
+        expect(mockAxios.get).toHaveBeenNthCalledWith(
+            1,
+            internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId),
+            expectedRequestHeaderFirstCall
+        );
         expect(spyThen).toHaveBeenCalledWith(bucketingApiMockResponse);
         expect(spyCatch).not.toHaveBeenCalled();
 
@@ -527,7 +545,11 @@ describe('Bucketing - launch', () => {
         initSpyLogs(bucketInstance);
         bucketInstance.launch().then(spyThen).catch(spyCatch);
         mockAxios.mockError('server crashed');
-        expect(mockAxios.get).toHaveBeenNthCalledWith(1, internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId));
+        expect(mockAxios.get).toHaveBeenNthCalledWith(
+            1,
+            internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId),
+            expectedRequestHeaderFirstCall
+        );
         expect(spyCatch).toHaveBeenCalled();
         expect(spyThen).not.toHaveBeenCalled();
 

@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { FsLogger } from '@flagship.io/js-sdk-logs';
+import { FlagshipVisitorContext } from '../dist/flagship.d';
 import { BucketingApiResponse } from './class/bucketing/bucketing.d';
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 import {
@@ -45,6 +46,7 @@ export interface IFlagshipBucketing extends EventEmitter {
     visitorContext: FlagshipVisitorContext;
     config: FlagshipSdkConfig;
     launch(): Promise<BucketingApiResponse | void>;
+    updateVisitorContext(newContext: FlagshipVisitorContext): void;
     on(event: 'launched', listener: () => void): this;
     on(event: 'error', listener: (args: Error) => void): this;
 }
