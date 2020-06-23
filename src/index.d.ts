@@ -1,7 +1,5 @@
 import { EventEmitter } from 'events';
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-import { FlagshipVisitorContext } from '../dist/flagship.d';
-import { BucketingApiResponse } from './class/bucketing/bucketing.d';
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 import {
     FlagshipVisitorContext,
@@ -13,6 +11,7 @@ import {
     GetModificationInfoOutput,
     DecisionApiResponseData
 } from './class/flagshipVisitor/flagshipVisitor.d';
+import { BucketingApiResponse } from './class/bucketing/bucketing.d';
 
 export type FlagshipSdkConfig = {
     fetchNow?: boolean;

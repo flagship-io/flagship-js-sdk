@@ -81,6 +81,93 @@ describe('Bucketing used from visitor instance', () => {
         bucketInstance = null;
         mockAxios.reset();
     });
+
+    it('should have correct behavior when there is an error during bucketing + activate', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        initSpyLogs(visitorInstance);
+        visitorInstance.getAllModifications(true).catch((err) => {
+            expect(err).toEqual('bucketing server crash');
+            expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - initializing a new bucket');
+            expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'Saving in cache those modifications: "null"');
+            expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - activate canceled due to errors...');
+            expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(visitorInstance.bucket instanceof Bucketing).toEqual(true);
+            done();
+        });
+        mockAxios.mockError('bucketing server crash');
+        expect(mockAxios.get).toHaveBeenNthCalledWith(
+            1,
+            internalConfig.bucketingEndpoint.replace('@ENV_ID@', visitorInstance.envId),
+            expectedRequestHeaderFirstCall
+        );
+        visitorInstance.on('ready', () => {
+            try {
+                expect(visitorInstance.fetchedModifications).toEqual(null);
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+    });
+
+    it('should have correct behavior for bucketing cache api handling', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], bucketingConfig);
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        initSpyLogs(visitorInstance);
+        expect(visitorInstance.bucket instanceof Bucketing).toEqual(true);
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
+        visitorInstance.on('ready', () => {
+            try {
+                initSpyLogs(visitorInstance);
+                visitorInstance.getAllModifications(false, { force: true }).then((data) => {
+                    expect(data).toEqual({
+                        data: {
+                            campaigns: [
+                                {
+                                    id: 'bptggipaqi903f3haq0g',
+                                    variation: {
+                                        id: 'bptggipaqi903f3haq2g',
+                                        modifications: { type: 'JSON', value: { testCache: 'value' } }
+                                    },
+                                    variationGroupId: 'bptggipaqi903f3haq1g'
+                                },
+                                {
+                                    id: 'bq4sf09oet0006cfihd0',
+                                    variation: {
+                                        id: 'bq4sf09oet0006cfihf0',
+                                        modifications: {
+                                            type: 'JSON',
+                                            value: { 'btn-color': 'green', 'btn-text': 'Buy now with discount !', 'txt-color': '#A3A3A3' }
+                                        }
+                                    },
+                                    variationGroupId: 'bq4sf09oet0006cfihe0'
+                                }
+                            ],
+                            visitorId: 'test-perf'
+                        }
+                    });
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(7);
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                        3,
+                        'fetchAllModifications - already initialized bucket detected. With visitor context: {"pos":"es"}'
+                    );
+                    expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                    done();
+                });
+                mockAxios.mockResponse({ data: {}, ...bucketingApiMockOtherResponse, status: 301 });
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+    });
+
     it('should trigger bucketing behavior when creating new visitor with config having "bucketing" in decision mode + fetchNow=true', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.initSdk(demoData.envId[0], bucketingConfig);

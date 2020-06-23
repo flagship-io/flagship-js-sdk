@@ -1,5 +1,6 @@
 import mockAxios from 'jest-mock-axios';
-import { IFlagship } from '../../index.d';
+import { IFlagshipVisitor, IFlagship } from '../../index.d';
+
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
 import flagshipSdk from '../../index';
@@ -7,7 +8,7 @@ import FlagshipVisitor from './flagshipVisitor';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 
 let sdk: IFlagship;
-let visitorInstance;
+let visitorInstance: IFlagshipVisitor;
 let spyActivateCampaign;
 let spyGenerateCustomTypeParamsOf;
 let responseObject;
@@ -193,7 +194,28 @@ describe('FlagshipVisitor', () => {
             spyDebugLogs = jest.spyOn(visitorInstance.log, 'debug');
             spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
         });
+        it('should log an error when trying to hack args and the cache is null', (done) => {
+            visitorInstance.fetchedModifications = null;
+            const cacheResponse = visitorInstance.fetchAllModifications({ loadFromCache: true, force: true });
+            try {
+                expect(mockAxios.post).toHaveBeenCalledTimes(0);
 
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'fetchAllModifications - loadFromCache enabled but no data in cache. Make sure you fetched at least once before.'
+                );
+
+                expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
+                expect(cacheResponse).toEqual('');
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
         it('should return decision API response (mode=normal) when there is no optional argument set', () => {
             visitorInstance.fetchAllModifications();
             expect(mockAxios.post).toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, {
@@ -1358,7 +1380,7 @@ describe('FlagshipVisitor', () => {
                 statusText: 'OK'
             };
         });
-        it('should not activate an unexisting key + return default value', (done) => {
+        it('should not activate a nonexisting key + return default value', (done) => {
             responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
             visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
             const cacheResponse = visitorInstance.getModifications(
