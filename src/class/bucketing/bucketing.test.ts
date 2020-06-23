@@ -13,11 +13,13 @@ let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
 let bucketInstance: IFlagshipBucketing;
 let responseObject: object;
+
 let spyWarnLogs;
 let spyErrorLogs;
 let spyFatalLogs;
 let spyInfoLogs;
 let spyDebugLogs;
+
 let bucketSpy;
 let spyThen;
 let spyCatch;
