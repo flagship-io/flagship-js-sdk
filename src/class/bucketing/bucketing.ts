@@ -15,6 +15,7 @@ import {
 import { IFlagshipBucketing, FlagshipSdkConfig } from '../../index.d';
 import loggerHelper from '../../lib/loggerHelper';
 import { internalConfig } from '../../config/default';
+import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 
 class Bucketing extends EventEmitter implements IFlagshipBucketing {
     data: BucketingApiResponse | null;
@@ -64,7 +65,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
     }
 
     public updateVisitorContext(newContext: FlagshipVisitorContext): void {
-        this.visitorContext = newContext;
+        this.visitorContext = flagshipSdkHelper.checkVisitorContext(newContext, this.log);
         this.lastModifiedDate = null;
     }
 

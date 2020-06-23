@@ -1426,7 +1426,7 @@ describe('FlagshipVisitor', () => {
             visitorInstance.on('ready', () => {
                 try {
                     expect(spyWarnLogs).toBeCalledTimes(0);
-                    visitorInstance.checkContext(demoData.visitor.cleanContext);
+                    flagshipSdkHelper.checkVisitorContext(demoData.visitor.cleanContext, visitorInstance.log);
                     expect(spyWarnLogs).toBeCalledTimes(0);
                     done();
                 } catch (error) {
@@ -1440,7 +1440,7 @@ describe('FlagshipVisitor', () => {
             visitorInstance.on('ready', () => {
                 try {
                     expect(spyWarnLogs).toBeCalledTimes(0);
-                    visitorInstance.checkContext(demoData.visitor.contextWithGoodArrayAttributes);
+                    flagshipSdkHelper.checkVisitorContext(demoData.visitor.contextWithGoodArrayAttributes, visitorInstance.log);
                     expect(spyWarnLogs).toBeCalledTimes(1);
                     expect(spyWarnLogs).toHaveBeenCalledWith(
                         'Context key "badAttribute" is an array which is not supported. This key will be ignored...'
@@ -1457,7 +1457,7 @@ describe('FlagshipVisitor', () => {
             visitorInstance.on('ready', () => {
                 try {
                     expect(visitorInstance.context).toEqual({ pos: 'es' });
-                    visitorInstance.checkContext(demoData.visitor.contextWithObjectAttributes);
+                    flagshipSdkHelper.checkVisitorContext(demoData.visitor.contextWithObjectAttributes, visitorInstance.log);
                     expect(spyWarnLogs).toBeCalledTimes(1);
                     expect(spyWarnLogs).toHaveBeenCalledWith(
                         'Context key "badAttribute" is an object (json) which is not supported. This key will be ignored...'
@@ -1474,7 +1474,7 @@ describe('FlagshipVisitor', () => {
             visitorInstance.on('ready', () => {
                 try {
                     expect(visitorInstance.context).toEqual({ pos: 'es' });
-                    visitorInstance.checkContext(demoData.visitor.contextWithBadArrayAttributes);
+                    flagshipSdkHelper.checkVisitorContext(demoData.visitor.contextWithBadArrayAttributes, visitorInstance.log);
                     expect(spyWarnLogs).toBeCalledTimes(1);
                     expect(spyWarnLogs).toHaveBeenCalledWith(
                         'Context key "badAttribute" is an array which is not supported. This key will be ignored...'

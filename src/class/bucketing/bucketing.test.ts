@@ -362,6 +362,22 @@ describe('Bucketing - getEligibleCampaigns', () => {
         done();
     });
 
+    it('should expect correct behavior when bucket api return no data', (done) => {
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
+        initSpyLogs(bucketInstance);
+        const result = bucketInstance.getEligibleCampaigns({});
+
+        expect(result).toEqual([]);
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'getEligibleCampaigns - no bucketing data found');
+
+        done();
+    });
+
     it('should expect correct behavior for "multiple variation groups" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.oneCampaignOneVgMultipleTgg as BucketingApiResponse;
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], { foo1: 'yes1' });
@@ -510,6 +526,44 @@ describe('Bucketing - getEligibleCampaigns', () => {
     });
 });
 
+describe('Bucketing - updateVisitorContext', () => {
+    beforeEach(() => {
+        spyCatch = jest.fn();
+        spyThen = jest.fn();
+    });
+    afterEach(() => {
+        sdk = null;
+        bucketingApiMockResponse = null;
+        visitorInstance = null;
+        bucketInstance = null;
+
+        mockAxios.reset();
+    });
+
+    it('should works', (done) => {
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
+        initSpyLogs(bucketInstance);
+        expect(bucketInstance.visitorContext).toEqual(demoData.visitor.cleanContext);
+        bucketInstance.updateVisitorContext({ isVip: false });
+        expect(bucketInstance.visitorContext).toEqual({ isVip: false });
+        done();
+    });
+
+    it('should filter bad values', (done) => {
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
+        initSpyLogs(bucketInstance);
+        expect(bucketInstance.visitorContext).toEqual(demoData.visitor.cleanContext);
+        bucketInstance.updateVisitorContext({ isVip: [false, true, false], ok: 'ok' });
+        expect(bucketInstance.visitorContext).toEqual({ ok: 'ok' });
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+        done();
+    });
+});
 describe('Bucketing - launch', () => {
     beforeEach(() => {
         spyCatch = jest.fn();
@@ -523,6 +577,40 @@ describe('Bucketing - launch', () => {
 
         mockAxios.reset();
     });
+
+    it('should report some logs when bucket api do not return "Last-modified" attribute', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);
+
+        expect(bucketInstance.data).toEqual(null);
+        expect(bucketInstance.computedData).toEqual(null);
+
+        initSpyLogs(bucketInstance);
+        bucketInstance.launch().then(spyThen).catch(spyCatch);
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse, headers: {} });
+        expect(mockAxios.get).toHaveBeenNthCalledWith(
+            1,
+            internalConfig.bucketingEndpoint.replace('@ENV_ID@', bucketInstance.envId),
+            expectedRequestHeaderFirstCall
+        );
+        expect(spyThen).toHaveBeenCalledWith(bucketingApiMockResponse);
+        expect(spyCatch).not.toHaveBeenCalled();
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'launch - 2 campaign(s) found matching current visitor');
+        expect(spyWarnLogs).toHaveBeenNthCalledWith(
+            1,
+            'launch - http GET request (url="http://cdn.flagship.io/bn1ab7m56qolupi5sa0g/bucketing.json") did not return attribute "Last-Modified"'
+        );
+
+        expect(bucketInstance.data).toEqual(bucketingApiMockResponse);
+        expect(bucketInstance.computedData).toEqual(mockComputedData);
+
+        done();
+    });
+
     it('should works with "classical" bucket api response', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, demoData.visitor.id[0], demoData.visitor.cleanContext);

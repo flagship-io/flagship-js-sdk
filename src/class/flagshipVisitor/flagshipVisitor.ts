@@ -47,30 +47,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         this.bucket = null;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
         this.envId = envId;
-        this.context = this.checkContext(context);
+        this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
         this.isAllModificationsFetched = false;
         this.fetchedModifications = config.initialModifications
             ? flagshipSdkHelper.validateDecisionApiData(config.initialModifications, this.log)
             : null;
-    }
-
-    private checkContext(unknownContext: object): FlagshipVisitorContext {
-        const validContext: FlagshipVisitorContext = {};
-        Object.entries(unknownContext).forEach(([key, value]) => {
-            if (typeof value === 'object' && !Array.isArray(value)) {
-                // means value is a json
-                this.log.warn(`Context key "${key}" is an object (json) which is not supported. This key will be ignored...`);
-            } else if (Array.isArray(value)) {
-                // means value is an array
-                this.log.warn(`Context key "${key}" is an array which is not supported. This key will be ignored...`);
-            } else if (typeof value === 'undefined' || value === null) {
-                // means value is not an array
-                this.log.warn(`Context key "${key}" is null or undefined which is not supported. This key will be ignored...`);
-            } else {
-                validContext[key] = value;
-            }
-        });
-        return validContext;
     }
 
     private activateCampaign(variationId: string, variationGroupId: string, customLogs?: { success: string; fail: string }): Promise<void> {
@@ -409,7 +390,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public updateContext(context: FlagshipVisitorContext): void {
-        this.setContext(context);
+        this.setContext(flagshipSdkHelper.checkVisitorContext(context, this.log));
     }
 
     public synchronizeModifications(activate = false): Promise<number> {
