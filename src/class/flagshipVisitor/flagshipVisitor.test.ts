@@ -209,8 +209,8 @@ describe('FlagshipVisitor', () => {
                     'fetchAllModifications - loadFromCache enabled but no data in cache. Make sure you fetched at least once before.'
                 );
 
-                expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
-                expect(cacheResponse).toEqual('');
+                expect(visitorInstance.fetchedModifications).toEqual(null);
+                expect(cacheResponse).toEqual({ campaigns: null, visitorId: 'test-perf' });
                 done();
             } catch (error) {
                 done.fail(error);

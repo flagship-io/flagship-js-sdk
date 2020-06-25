@@ -10,7 +10,7 @@
 export default {
     campaigns: [
         {
-            id: 'bptggipaqi903f3haq0g',
+            id: 'bptiiipaqi903f3haq0g',
             type: 'ab',
             variationGroups: [
                 {

@@ -63,7 +63,7 @@ const flagshipSdkHelper = {
         return { cleanConfig: { ...cleanObject }, ignoredConfig: { ...dirtyObject } };
     },
     checkDecisionApiResponseFormat: (response: DecisionApiResponse, log: FsLogger): DecisionApiResponseData | null => {
-        if (!response.status || !response.data || !response.data.campaigns) {
+        if (!response.data || !response.data.campaigns) {
             log.warn('Unknow Decision Api response received or error happened'); // TODO: can be improved according status value
             return null;
         }

@@ -405,7 +405,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 );
             } else {
                 this.log.warn(
-                    'synchronizeModifications - trying to synchronize modifications in bucketing mode but bucket is null. You might have call synchronizeModifications too early.'
+                    'synchronizeModifications - trying to synchronize modifications in bucketing mode but bucket is null. You might have call synchronizeModifications too early. A new bucket will be initialized.'
                 );
             }
         }
@@ -416,7 +416,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     const castResponse = response as DecisionApiResponse;
                     const output = flagshipSdkHelper.checkDecisionApiResponseFormat(castResponse, this.log);
                     this.fetchedModifications = (output && output.campaigns) || null;
-                    resolve(castResponse.status);
+                    resolve(castResponse.status || 200);
                 })
                 .catch((error: Error) => {
                     this.fetchedModifications = null;
