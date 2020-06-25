@@ -315,7 +315,22 @@ describe('FlagshipVisitor', () => {
             });
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
-
+        it('should report error logs when a Visitor instance has bad context', (done) => {
+            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig });
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], {
+                nullKey: null,
+                undefinedKey: undefined,
+                ...demoData.visitor.cleanContext
+            });
+            visitorInstance.once('ready', () => {
+                try {
+                    expect(visitorInstance.context).toEqual({ pos: 'es' });
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
+        });
         it('should use default config even if user has set empty/undefined values', (done) => {
             responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },

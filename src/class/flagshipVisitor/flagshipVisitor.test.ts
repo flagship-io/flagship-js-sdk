@@ -59,6 +59,29 @@ describe('FlagshipVisitor', () => {
                 caid: '987654321'
             });
         });
+        it('should report error when Api Decision Activate fails', (done) => {
+            initSpyLogs(visitorInstance);
+            visitorInstance.activateCampaign('123456789', '987654321').then((data) => {
+                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
+                    vid: visitorInstance.id,
+                    cid: visitorInstance.envId,
+                    vaid: '123456789',
+                    caid: '987654321'
+                });
+                expect(data).toEqual('server crashed');
+                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+                expect(spyFatalLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'Trigger activate of variationId "123456789" failed with error "server crashed"'
+                );
+                done();
+            });
+            mockAxios.mockError('server crashed');
+        });
     });
 
     describe('SynchronizeModifications function', () => {
@@ -162,7 +185,7 @@ describe('FlagshipVisitor', () => {
         });
         it('should always NOT init "fetchedModifications" attribute when decision API succeed and has a weird answer', (done) => {
             const responseObj = {
-                data: { ...demoData.decisionApi.normalResponse.weirdAnswer },
+                data: { ...demoData.decisionApi.badResponse.weirdAnswer },
                 status: 200,
                 statusText: 'OK'
             };
@@ -505,6 +528,47 @@ describe('FlagshipVisitor', () => {
     });
 
     describe('TriggerActivateIfNeeded function', () => {
+        it('should logs an error when the api failed', () => {
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            initSpyLogs(visitorInstance);
+            visitorInstance.triggerActivateIfNeeded(
+                demoData.flagshipVisitor.getModifications.detailsModifications.oneModifInMoreThanOneCampaign
+            );
+
+            mockAxios.mockResponse({ status: 200, data: {} });
+            mockAxios.mockError('server crashed');
+
+            expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+            expect(spyFatalLogs).toHaveBeenNthCalledWith(
+                1,
+                'Trigger activate of modification key "algorithmVersion" failed. failed with error "server crashed"'
+            );
+            expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+            expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                1,
+                'checkCampaignsActivatedMultipleTimes: Error this.fetchedModifications is empty'
+            );
+            expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'Modification key "psp" successfully activate. with status code "200"');
+            expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+            expect(mockAxios.post).toHaveBeenCalledTimes(2);
+
+            expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
+                vaid: 'blntcamqmdvg04g371hg',
+                cid: demoData.envId[0],
+                caid: 'blntcamqmdvg04g371h0',
+                vid: demoData.visitor.id[0]
+            });
+            expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
+                vaid: 'bmjdprsjan0g01uq2ctg',
+                cid: demoData.envId[0],
+                caid: 'bmjdprsjan0g01uq2csg',
+                vid: demoData.visitor.id[0]
+            });
+        });
+
         it('should not trigger twice activate for a modification which is in more than one campaign (1st use case)', () => {
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.triggerActivateIfNeeded(
@@ -1436,6 +1500,38 @@ describe('FlagshipVisitor', () => {
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(2); // because of key conflict (checked in another UT)
                 expect(spyDebugLogs).toHaveBeenCalledWith('fetchAllModifications - loadFromCache enabled');
+                expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
+                expect(cacheResponse).toMatchObject({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+        it('should checkCampaignsActivatedMultipleTimes log an error if two campaigns have same id', (done) => {
+            responseObject.data = demoData.decisionApi.badResponse.twoCampaignsWithSameId;
+            visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
+
+            const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default);
+            try {
+                expect(mockAxios.post).toHaveBeenCalledTimes(1);
+                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
+                    vaid: 'blntcamqmdvg04g371hg',
+                    cid: 'bn1ab7m56qolupi5sa0g',
+                    caid: 'blntcamqmdvg04g371h0',
+                    vid: 'test-perf'
+                });
+                expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
+                expect(spyFetchModifs).toHaveBeenCalledTimes(1);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(6);
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                    6,
+                    'extractModificationIndirectKeysFromCampaign - detected more than one campaign with same id "bmjdprsjan0g01uq2crg"'
+                );
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - loadFromCache enabled');
                 expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
                 expect(cacheResponse).toMatchObject({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
                 done();

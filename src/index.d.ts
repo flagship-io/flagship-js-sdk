@@ -66,8 +66,8 @@ export interface IFlagshipVisitor extends EventEmitter {
             variationGroupId?: string;
         }>
     ): void;
-    getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null): GetModificationsOutput;
-    getModificationsCache(modificationsRequested: FsModifsRequestedList, activateAllModifications: boolean | null): GetModificationsOutput;
+    getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
+    getModificationsCache(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
     getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;
     setContext(context: FlagshipVisitorContext): void;
     updateContext(context: FlagshipVisitorContext): void;

@@ -54,28 +54,36 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             : null;
     }
 
-    private activateCampaign(variationId: string, variationGroupId: string, customLogs?: { success: string; fail: string }): Promise<void> {
-        return axios
-            .post(`${this.config.flagshipApi}activate`, {
-                vid: this.id,
-                cid: this.envId,
-                caid: variationGroupId,
-                vaid: variationId
-            })
-            .then((response: DecisionApiResponse) => {
-                let successLog = `VariationId "${variationId}" successfully activate with status code:${response.status}`;
-                if (customLogs && customLogs.success) {
-                    successLog = `${customLogs.success}\nStatus code:${response.status}`;
-                }
-                this.log.debug(successLog);
-            })
-            .catch((error: Error) => {
-                let failLog = `Trigger activate of variationId "${variationId}" failed with error:\n${error}`;
-                if (customLogs && customLogs.fail) {
-                    failLog = `${customLogs.fail}\nFailed with error:\n${error}`;
-                }
-                this.log.fatal(failLog);
-            });
+    private activateCampaign(
+        variationId: string,
+        variationGroupId: string,
+        customLogs?: { success: string; fail: string }
+    ): Promise<{ status: number } | Error> {
+        return new Promise<{ status: number } | Error>((resolve) => {
+            axios
+                .post(`${this.config.flagshipApi}activate`, {
+                    vid: this.id,
+                    cid: this.envId,
+                    caid: variationGroupId,
+                    vaid: variationId
+                })
+                .then((response: DecisionApiResponse) => {
+                    let successLog = `VariationId "${variationId}" successfully activate with status code:${response.status}`;
+                    if (customLogs && customLogs.success) {
+                        successLog = `${customLogs.success} with status code "${response.status}"`;
+                    }
+                    this.log.debug(successLog);
+                    resolve({ status: 200 });
+                })
+                .catch((error: Error) => {
+                    let failLog = `Trigger activate of variationId "${variationId}" failed with error "${error}"`;
+                    if (customLogs && customLogs.fail) {
+                        failLog = `${customLogs.fail} failed with error "${error}"`;
+                    }
+                    this.log.fatal(failLog);
+                    resolve(error);
+                });
+        });
     }
 
     // TODO: consider args "variationId" & "variationGroupId" and unit test them
@@ -128,8 +136,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                         return null;
                     })}`
                 );
-            } else if (count !== 1) {
-                this.log.warn(`Key "${key}" has unexpectedly been activated ${count} times`);
             } else {
                 // everything good;
             }
@@ -151,11 +157,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     return Object.keys(campaignDataArray[0].variation.modifications.value).filter((key) => key !== directKey);
                 }
                 this.log.debug(
-                    'extractModificationIndirectKeysFromCampaign: Error campaignDataArray.length has unexpectedly length bigger than 1'
+                    `extractModificationIndirectKeysFromCampaign - detected more than one campaign with same id "${campaignDataArray[0].id}"`
                 );
-                return [];
             }
-            this.log.debug('extractModificationIndirectKeysFromCampaign: Error this.fetchedModifications is empty');
             return [];
         };
 
