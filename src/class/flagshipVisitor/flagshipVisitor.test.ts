@@ -18,6 +18,14 @@ let spyFatalLogs;
 let spyInfoLogs;
 let spyDebugLogs;
 
+const initSpyLogs = (vInstance): void => {
+    spyFatalLogs = jest.spyOn(vInstance.log, 'fatal');
+    spyWarnLogs = jest.spyOn(vInstance.log, 'warn');
+    spyInfoLogs = jest.spyOn(vInstance.log, 'info');
+    spyDebugLogs = jest.spyOn(vInstance.log, 'debug');
+    spyErrorLogs = jest.spyOn(vInstance.log, 'error');
+};
+
 describe('FlagshipVisitor', () => {
     beforeAll(() => {
         sdk = flagshipSdk.initSdk(demoData.envId[0], testConfig);
@@ -188,11 +196,7 @@ describe('FlagshipVisitor', () => {
         beforeEach(() => {
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             spyActivateCampaign = jest.spyOn(visitorInstance, 'activateCampaign');
-            spyFatalLogs = jest.spyOn(visitorInstance.log, 'fatal');
-            spyWarnLogs = jest.spyOn(visitorInstance.log, 'warn');
-            spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
-            spyDebugLogs = jest.spyOn(visitorInstance.log, 'debug');
-            spyErrorLogs = jest.spyOn(visitorInstance.log, 'error');
+            initSpyLogs(visitorInstance);
         });
         it('should log an error when trying to hack args and the cache is null', (done) => {
             visitorInstance.fetchedModifications = null;
@@ -642,9 +646,9 @@ describe('FlagshipVisitor', () => {
                         variationId: 'blntcamqmdvg04g371hg'
                     });
                     const spyObject = spyWarnLogs.mock.calls[0];
-                    expect(spyObject[0].includes('Modification "psp" is involved in further campgains with:')).toBe(true);
-                    expect(spyObject[0].includes('id="blntcamqmdvg04g371f0,bmjdprsjan0g01uq2ceg"')).toBe(true);
-                    expect(spyObject[0].includes('campaignId="blntcamqmdvg04g371f0"')).toBe(true);
+                    expect(spyObject[0]).toEqual(
+                        'Modification "psp" has further values because the modification is involved in campaigns with (id="blntcamqmdvg04g371f0,bmjdprsjan0g01uq2ceg"). Modification value kept is psp="dalenys"'
+                    );
                 } catch (error) {
                     done.fail(error);
                 }
@@ -791,9 +795,9 @@ describe('FlagshipVisitor', () => {
                     ]
                 );
                 // expect(spyTriggerActivateIfNeeded).toHaveBeenCalledWith(""); // DEBUG ONLY
-                expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(2);
                 expect(spyWarnLogs).toHaveBeenNthCalledWith(
-                    1,
+                    2,
                     'Key "toto" has been activated 2 times because it was in conflict in further campaigns (debug logs for more details)'
                 );
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -826,7 +830,11 @@ describe('FlagshipVisitor', () => {
                     [{ activate: true, defaultValue: '', key: 'toto' }]
                 );
                 // expect(spyTriggerActivateIfNeeded).toHaveBeenCalledWith(""); // DEBUG ONLY
-                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+                expect(spyWarnLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'Modification "toto" has further values because the modification is involved in campaigns with (id="5e26ccd821f4634cf53d4cc0,5e26ccd8dcbd133baaa425b8,5e26ccd803533a89c3acda5c"). Modification value kept is toto="55"'
+                );
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
@@ -869,13 +877,13 @@ describe('FlagshipVisitor', () => {
                     ]
                 );
                 // expect(spyTriggerActivateIfNeeded).toHaveBeenCalledWith(""); // DEBUG ONLY
-                expect(spyWarnLogs).toHaveBeenCalledTimes(2);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(5);
                 expect(spyWarnLogs).toHaveBeenNthCalledWith(
-                    1,
+                    4,
                     'Key "toto" has been activated 2 times because it was in conflict in further campaigns (debug logs for more details)'
                 );
                 expect(spyWarnLogs).toHaveBeenNthCalledWith(
-                    2,
+                    5,
                     'Key "titi" has been activated 2 times because it was in conflict in further campaigns (debug logs for more details)'
                 );
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -934,17 +942,17 @@ describe('FlagshipVisitor', () => {
                 ]
             );
             // expect(spyTriggerActivateIfNeeded).toHaveBeenCalledWith(""); // DEBUG ONLY
-            expect(spyWarnLogs).toHaveBeenCalledTimes(3);
+            expect(spyWarnLogs).toHaveBeenCalledTimes(6);
             expect(spyWarnLogs).toHaveBeenNthCalledWith(
-                1,
+                4,
                 'Key "toto" has been activated 3 times because it was in conflict in further campaigns (debug logs for more details)'
             );
             expect(spyWarnLogs).toHaveBeenNthCalledWith(
-                2,
+                5,
                 'Key "titi" has been activated 2 times because it was in conflict in further campaigns (debug logs for more details)'
             );
             expect(spyWarnLogs).toHaveBeenNthCalledWith(
-                3,
+                6,
                 'Key "tata" has been activated 2 times because it was in conflict in further campaigns (debug logs for more details)'
             );
             expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -1002,9 +1010,17 @@ describe('FlagshipVisitor', () => {
                     ]
                 );
                 // expect(spyTriggerActivateIfNeeded).toHaveBeenCalledWith(""); // DEBUG ONLY
-                expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(3);
                 expect(spyWarnLogs).toHaveBeenNthCalledWith(
                     1,
+                    'Modification "toto" has further values because the modification is involved in campaigns with (id="5e26ccd8dcbd133baaa425b8,5e26ccd803533a89c3acda5c,5e26ccd803533a89c3acbbbb"). Modification value kept is toto="2"'
+                );
+                expect(spyWarnLogs).toHaveBeenNthCalledWith(
+                    2,
+                    'Modification "tata" has further values because the modification is involved in campaigns with (id="5e26ccd803533a89c3acda5c,5e26ccd803533a89c3acbbbb"). Modification value kept is tata="2"'
+                );
+                expect(spyWarnLogs).toHaveBeenNthCalledWith(
+                    3,
                     'Key "toto" has been activated 2 times because it was in conflict in further campaigns (debug logs for more details)'
                 );
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -1037,7 +1053,11 @@ describe('FlagshipVisitor', () => {
                     [{ activate: true, defaultValue: '', key: 'toto' }]
                 );
                 // expect(spyTriggerActivateIfNeeded).toHaveBeenCalledWith(""); // DEBUG ONLY
-                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+                expect(spyWarnLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'Modification "toto" has further values because the modification is involved in campaigns with (id="5e26ccd8dcbd133baaa425b8,5e26ccd803533a89c3acda5c,5e26ccd803533a89c3acbbbb"). Modification value kept is toto="2"'
+                );
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
@@ -1414,7 +1434,7 @@ describe('FlagshipVisitor', () => {
                 expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(2); // because of key conflict (checked in another UT)
                 expect(spyDebugLogs).toHaveBeenCalledWith('fetchAllModifications - loadFromCache enabled');
                 expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
                 expect(cacheResponse).toMatchObject({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
@@ -1426,6 +1446,7 @@ describe('FlagshipVisitor', () => {
         it('should not activate two different campaign if two requested keys are in same campaign', (done) => {
             responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
             visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
+
             const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(1);
@@ -1438,10 +1459,22 @@ describe('FlagshipVisitor', () => {
                 expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(3);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(5);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
                 expect(spyWarnLogs).toHaveBeenNthCalledWith(
                     1,
-                    `Unable to activate modification "${demoData.flagshipVisitor.getModifications.args.default[2].key}" because it does not exist on any existing campaign...`
+                    'Modification "psp" has further values because the modification is involved in campaigns with (id="blntcamqmdvg04g371f0,bmjdprsjan0g01uq2crg,bmjdprsjan0g01uq2ceg"). Modification value kept is psp="dalenys"'
+                );
+                expect(spyWarnLogs).toHaveBeenNthCalledWith(
+                    2,
+                    'Modification "algorithmVersion" has further values because the modification is involved in campaigns with (id="blntcamqmdvg04g371f0,bmjdprsjan0g01uq2crg,bmjdprsjan0g01uq2ceg"). Modification value kept is algorithmVersion="new"'
+                );
+                expect(spyWarnLogs).toHaveBeenNthCalledWith(
+                    3,
+                    'Unable to activate modification "testUnexistingKey" because it does not exist on any existing campaign...'
                 );
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - loadFromCache enabled');
                 expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
@@ -1493,14 +1526,19 @@ describe('FlagshipVisitor', () => {
                 done.fail(error);
             }
         });
-        it('should return empty object if nothing in cache (+ full activate requested)', (done) => {
+        it('should return empty object if cache not null but empty (+ undefined requested modifs) (+ full activate requested)', (done) => {
+            visitorInstance.fetchedModifications = [];
             const cacheResponse = visitorInstance.getModifications(undefined, true);
             try {
-                expect(spyFetchModifs).toHaveBeenCalledTimes(0);
+                expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'Requesting some specific modifications but the "modificationsRequested" argument is "undefined"...'
+                );
                 expect(cacheResponse).toMatchObject({});
                 expect(mockAxios.post).toHaveBeenCalledTimes(0);
                 done();
@@ -1512,7 +1550,8 @@ describe('FlagshipVisitor', () => {
             visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns;
             const cacheResponse = visitorInstance.getModifications();
             try {
-                expect(spyFetchModifs).toHaveBeenCalledTimes(0);
+                expect(spyFetchModifs).toHaveBeenCalledTimes(1);
+                expect(spyFetchModifs).toHaveBeenNthCalledWith(1, { activate: false, loadFromCache: true });
                 expect(spyErrorLogs).toHaveBeenCalledTimes(1);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);

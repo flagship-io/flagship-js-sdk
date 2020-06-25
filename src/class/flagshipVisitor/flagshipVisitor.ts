@@ -263,18 +263,18 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         );
         // Notify modifications which have campaign conflict
         Object.entries(detailsModifications).forEach(([key]) => {
-            // log only if it's a requested keyw
-            if (detailsModifications[key].value.length > 1 && detailsModifications.isRequested) {
+            // log only if it's a requested key
+            if (detailsModifications[key].value.length > 1 && detailsModifications[key].isRequested) {
                 this.log.warn(
-                    `Modification "${key}" has further values because the modification is involved in campgains with:\nid="${detailsModifications[
+                    `Modification "${key}" has further values because the modification is involved in campaigns with (id="${detailsModifications[
                         key
-                    ].campaignId.toString()}"\nModification value kept:\n${key}="${detailsModifications[key].value[0]}"`
+                    ].campaignId.toString()}"). Modification value kept is ${key}="${detailsModifications[key].value[0]}"`
                 );
             }
         });
 
         // Check modifications requested (=modificationsRequested) match modifications fetched (=mergedModifications)
-        modificationsRequested.forEach((modifRequested) => {
+        (modificationsRequested || []).forEach((modifRequested) => {
             if (typeof mergedModifications[modifRequested.key] !== 'undefined' && mergedModifications[modifRequested.key] !== null) {
                 desiredModifications[modifRequested.key] = mergedModifications[modifRequested.key];
             } else {
@@ -309,12 +309,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
 
         if (!modificationsRequested) {
-            const errorMsg = 'No modificationsRequested specified...';
-            this.log.error(errorMsg);
-            return {};
+            this.log.error(
+                `Requesting some specific modifications but the "modificationsRequested" argument is "${typeof modificationsRequested}"...`
+            );
         }
 
-        this.log.warn('getModifications: no campaigns found...');
         return {};
     }
 
@@ -368,10 +367,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         modificationsRequested: FsModifsRequestedList,
         activateAllModifications: boolean | null = null
     ): GetModificationsOutput {
-        if (!modificationsRequested) {
-            this.log.error('getModificationsCache: No requested modifications defined...');
-            return {};
-        }
         if (!this.fetchedModifications) {
             this.log.warn('No modifications found in cache...');
             const { desiredModifications } = this.extractDesiredModifications([], modificationsRequested, activateAllModifications);
