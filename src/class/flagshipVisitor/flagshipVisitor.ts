@@ -441,7 +441,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }: {
             activate: boolean;
             campaignCustomID: string | null;
-            getAllModifications;
         }
     ): { data: DecisionApiResponseData } {
         const completeResponse = response as DecisionApiResponse;

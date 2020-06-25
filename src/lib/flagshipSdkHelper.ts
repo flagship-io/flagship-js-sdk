@@ -40,16 +40,17 @@ const flagshipSdkHelper = {
             log.debug(`No unknown key detected :) - ${objectName}`);
         }
     },
-    checkConfig: (unknownConfig: object): { cleanConfig: object; ignoredConfig: object } => {
+    checkConfig: (unknownConfig: { [key: string]: any }): { cleanConfig: object; ignoredConfig: object } => {
         const cleanObject: { [key: string]: string | boolean | null } = {};
         const dirtyObject: { [key: string]: string | boolean | null } = {};
         const validAttributesList: Array<string> = [];
         Object.entries(defaultConfig).forEach(([key]) => validAttributesList.push(key));
         const whiteListedAttributesList: Array<string> = Object.keys(otherSdkConfig); // specific config coming from other SDK.
-        Object.entries(unknownConfig).forEach(([key, value]) => {
+        Object.keys(unknownConfig).forEach((key) => {
+            const value = unknownConfig[key];
             if (validAttributesList.includes(key)) {
                 if (typeof value === 'undefined' || value === null) {
-                    cleanObject[key] = defaultConfig[key as keyof FlagshipSdkConfig];
+                    cleanObject[key] = defaultConfig[key as keyof FlagshipSdkConfig] as string | boolean | null;
                 } else {
                     cleanObject[key] = value;
                 }

@@ -1,113 +1,113 @@
 {
-  "name": "@flagship.io/js-sdk",
-  "version": "1.2.1",
-  "description": "Flagship JS SDK",
-  "main": "dist/index.node.js",
-  "browser": "dist/index.browser.js",
-  "react-native": "dist/index.reactNative.js",
-  "files": [
-    "dist",
-    "CONTRIBUTING.md",
-    "README.md",
-    "package.json"
-  ],
-  "types": "dist/flagship.d.ts",
-  "engines": {
-    "npm": ">=3",
-    "node": ">=6"
-  },
-  "scripts": {
-    "test": "jest --verbose && rm -rf flagshipNodeSdkLogs",
-    "test:coverage": "jest --coverage && rm -rf flagshipNodeSdkLogs",
-    "test:react-sample": "cd ./examples/react-app && npm test",
-    "release": "np",
-    "version": "npm run build",
-    "publish": "npm run update:react-app && npm run update:api-server && git add . && git commit -m\"Post publish update\" && git push && npm run publish:react",
-    "publish:react": "cd ./examples/react-app && npm run deploy:github",
-    "update:react-app": "cd ./examples/react-app && npm install @flagship.io/js-sdk@latest --save && cd ../../",
-    "update:api-server": "cd ./examples/api-server && npm install @flagship.io/js-sdk@latest --save && cd ../../",
-    "update:fsLog": "npm install @flagship.io/js-sdk-logs@latest --save",
-    "stats:dev": "rm -rf dist && webpack --env=stats",
-    "stats:prod": "webpack --profile --json --env=prod > stats.json && webpack-bundle-analyzer ./stats.json",
-    "build": "rm -rf dist && webpack --env=prod && prettier --write ./dist/flagship.d.ts"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/abtasty/flagship-js-sdk"
-  },
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/abtasty/flagship-js-sdk/issues",
-    "email": "emilien.domenge-heritier@abtasty.com"
-  },
-  "contributors": [
-    {
-      "name": "Emilien Domenge-Heritier",
-      "email": "emilien.domenge-heritier@abtasty.com",
-      "url": "https://domenge.fr"
-    },
-    {
-      "name": "Guillaume Jacquart",
-      "email": "guillaume.jacquart@abtasty.com"
-    }
-  ],
-  "keywords": [
-    "flagship",
-    "abtasty",
-    "node",
-    "sdk"
-  ],
-  "homepage": "https://github.com/abtasty/flagship-js-sdk",
-  "devDependencies": {
-    "@babel/core": "^7.7.2",
-    "@babel/preset-env": "^7.7.1",
-    "@babel/preset-typescript": "^7.7.2",
-    "@types/jest": "^24.0.22",
-    "@types/node": "^12.12.7",
-    "@typescript-eslint/eslint-plugin": "^2.8.0",
-    "@typescript-eslint/parser": "^2.8.0",
-    "awesome-typescript-loader": "^5.2.1",
-    "babel-jest": "^24.9.0",
-    "babel-loader": "^8.0.6",
-    "dts-bundle": "^0.7.3",
-    "eslint": "^6.1.0",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-loader": "^3.0.3",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-prettier": "^3.1.4",
-    "jest": "^24.9.0",
-    "jest-mock-axios": "^3.1.2",
-    "np": "^6.2.3",
-    "prettier": "2.0.4",
-    "source-map-loader": "^0.2.4",
-    "supertest": "^4.0.2",
-    "typescript": "^3.7.2",
-    "webpack": "4.41.0",
-    "webpack-bundle-analyzer": "^3.6.0",
-    "webpack-cli": "^3.3.10",
-    "webpack-merge": "^4.2.2",
-    "webpack-node-externals": "^1.7.2"
-  },
-  "dependencies": {
-    "@flagship.io/js-sdk-logs": "^0.1.0",
-    "@types/murmurhash": "0.0.1",
-    "axios": "^0.19.0",
-    "events": "^3.1.0",
-    "murmurhash": "^1.0.0",
-    "validate.js": "^0.13.1"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "transform": {
-      "^.+\\.[t|j]sx?$": "babel-jest"
-    },
-    "coveragePathIgnorePatterns": [
-      "/node_modules/"
+    "name": "@flagship.io/js-sdk",
+    "version": "1.2.1",
+    "description": "Flagship JS SDK",
+    "main": "dist/index.node.js",
+    "browser": "dist/index.browser.js",
+    "react-native": "dist/index.reactNative.js",
+    "files": [
+        "dist",
+        "CONTRIBUTING.md",
+        "README.md",
+        "package.json"
     ],
-    "testPathIgnorePatterns": [
-      "<rootDir>/src/config/",
-      "<rootDir>/examples/"
-    ]
-  }
+    "types": "dist/flagship.d.ts",
+    "engines": {
+        "npm": ">=3",
+        "node": ">=6"
+    },
+    "scripts": {
+        "test": "jest --verbose && rm -rf flagshipNodeSdkLogs",
+        "test:coverage": "jest --coverage && rm -rf flagshipNodeSdkLogs",
+        "test:react-sample": "cd ./examples/react-app && npm test",
+        "eslint": "eslint --version && eslint --quiet .ts,.js",
+        "release": "np",
+        "version": "npm run build",
+        "publish": "npm run update:react-app && npm run update:api-server && git add . && git commit -m\"Post publish update\" && git push && npm run publish:react",
+        "publish:react": "cd ./examples/react-app && npm run deploy:github",
+        "update:react-app": "cd ./examples/react-app && npm install @flagship.io/js-sdk@latest --save && cd ../../",
+        "update:api-server": "cd ./examples/api-server && npm install @flagship.io/js-sdk@latest --save && cd ../../",
+        "update:fsLog": "npm install @flagship.io/js-sdk-logs@latest --save",
+        "stats:dev": "rm -rf dist && webpack --env=stats",
+        "stats:prod": "webpack --profile --json --env=prod > stats.json && webpack-bundle-analyzer ./stats.json",
+        "build": "rm -rf dist && webpack --env=prod"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/abtasty/flagship-js-sdk"
+    },
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/abtasty/flagship-js-sdk/issues",
+        "email": "emilien.domenge-heritier@abtasty.com"
+    },
+    "contributors": [
+        {
+            "name": "Emilien Domenge-Heritier",
+            "email": "emilien.domenge-heritier@abtasty.com",
+            "url": "https://domenge.fr"
+        },
+        {
+            "name": "Guillaume Jacquart",
+            "email": "guillaume.jacquart@abtasty.com"
+        }
+    ],
+    "keywords": [
+        "flagship",
+        "abtasty",
+        "node",
+        "sdk"
+    ],
+    "homepage": "https://github.com/abtasty/flagship-js-sdk",
+    "devDependencies": {
+        "@babel/core": "^7.7.2",
+        "@babel/preset-env": "^7.7.1",
+        "@babel/preset-typescript": "^7.7.2",
+        "@types/jest": "^24.0.22",
+        "@types/node": "^12.12.7",
+        "@typescript-eslint/eslint-plugin": "^2.8.0",
+        "@typescript-eslint/parser": "^2.8.0",
+        "babel-jest": "^24.9.0",
+        "babel-loader": "^8.0.6",
+        "eslint": "^6.1.0",
+        "eslint-config-airbnb-base": "^14.0.0",
+        "eslint-config-prettier": "^6.11.0",
+        "eslint-loader": "^3.0.3",
+        "eslint-plugin-import": "^2.18.2",
+        "eslint-plugin-prettier": "^3.1.4",
+        "jest": "^24.9.0",
+        "jest-mock-axios": "^3.1.2",
+        "np": "^6.2.3",
+        "prettier": "2.0.4",
+        "source-map-loader": "^0.2.4",
+        "supertest": "^4.0.2",
+        "ts-loader": "^7.0.5",
+        "typescript": "^3.7.2",
+        "webpack": "4.41.0",
+        "webpack-bundle-analyzer": "^3.6.0",
+        "webpack-cli": "^3.3.10",
+        "webpack-merge": "^4.2.2",
+        "webpack-node-externals": "^1.7.2"
+    },
+    "dependencies": {
+        "@flagship.io/js-sdk-logs": "^0.1.0",
+        "@types/murmurhash": "0.0.1",
+        "axios": "^0.19.0",
+        "events": "^3.1.0",
+        "murmurhash": "^1.0.0",
+        "validate.js": "^0.13.1"
+    },
+    "jest": {
+        "testEnvironment": "node",
+        "transform": {
+            "^.+\\.[t|j]sx?$": "babel-jest"
+        },
+        "coveragePathIgnorePatterns": [
+            "/node_modules/"
+        ],
+        "testPathIgnorePatterns": [
+            "<rootDir>/src/config/",
+            "<rootDir>/examples/"
+        ]
+    }
 }
