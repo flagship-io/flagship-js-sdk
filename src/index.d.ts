@@ -15,6 +15,7 @@ import { BucketingApiResponse } from './class/bucketing/bucketing.d';
 
 export type FlagshipSdkConfig = {
     fetchNow?: boolean;
+    pollingInterval?: number;
     activateNow?: boolean;
     enableConsoleLogs?: boolean;
     decisionMode: 'API' | 'Bucketing';
@@ -38,14 +39,14 @@ export type SaveCacheArgs = {
 
 export interface IFlagshipBucketing extends EventEmitter {
     data: BucketingApiResponse | null;
-    computedData: DecisionApiResponseData | null;
-    visitorId: string;
     log: FsLogger;
     envId: string;
-    visitorContext: FlagshipVisitorContext;
     config: FlagshipSdkConfig;
+    getEligibleCampaigns(
+        bucketingData: BucketingApiResponse,
+        visitor: { id: string; context: FlagshipVisitorContext }
+    ): DecisionApiCampaign[];
     launch(): Promise<BucketingApiResponse | void>;
-    updateVisitorContext(newContext: FlagshipVisitorContext): void;
     on(event: 'launched', listener: () => void): this;
     on(event: 'error', listener: (args: Error) => void): this;
 }

@@ -1,6 +1,8 @@
+import { EventEmitter, EventEmitter, EventEmitter } from 'events';
+
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
-import { EventEmitter } from 'events';
+import { BucketingApiResponse } from '../bucketing/bucketing.d';
 
 import { FlagshipSdkConfig, IFlagshipVisitor, IFlagshipBucketing } from '../../index.d';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
@@ -40,18 +42,29 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     fetchedModifications: DecisionApiCampaign[] | null;
 
-    constructor(envId: string, config: FlagshipSdkConfig, id: string, context: FlagshipVisitorContext = {}) {
+    constructor(
+        envId: string,
+        config: FlagshipSdkConfig,
+        sdkListener: EventEmitter,
+        bucket: Bucketing,
+        id: string,
+        context: FlagshipVisitorContext = {}
+    ) {
         super();
         this.config = config;
         this.id = id;
-        this.bucket = null;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
         this.envId = envId;
         this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
         this.isAllModificationsFetched = false;
-        this.fetchedModifications = config.initialModifications
+        this.fetchedModifications = config.initialModifications // TODO:
             ? flagshipSdkHelper.validateDecisionApiData(config.initialModifications, this.log)
             : null;
+
+        sdkListener.on('bucketPollingSuccess', (data: BucketingApiResponse) => {
+            this.log.debug('bucketing polling detected.');
+            this.saveModificationsInCache([...bucket.getEligibleCampaigns(data, { id: this.id, context: this.context })]);
+        });
     }
 
     private activateCampaign(

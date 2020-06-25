@@ -20,29 +20,20 @@ import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 class Bucketing extends EventEmitter implements IFlagshipBucketing {
     data: BucketingApiResponse | null;
 
-    computedData: DecisionApiResponseData | null;
-
-    visitorId: string;
-
     log: FsLogger;
 
     envId: string;
-
-    visitorContext: FlagshipVisitorContext;
 
     config: FlagshipSdkConfig;
 
     lastModifiedDate: string | null;
 
-    constructor(envId: string, config: FlagshipSdkConfig, visitorId: string, visitorContext: FlagshipVisitorContext = {}) {
+    constructor(envId: string, config: FlagshipSdkConfig, visitorId: string) {
         super();
         this.config = config;
-        this.visitorId = visitorId;
-        this.log = loggerHelper.getLogger(this.config, `Flagship SDK - Bucketing (vId=${this.visitorId})`);
+        this.log = loggerHelper.getLogger(this.config, `Flagship SDK - Bucketing`);
         this.envId = envId;
-        this.visitorContext = visitorContext;
         this.data = null;
-        this.computedData = null;
         this.lastModifiedDate = null;
     }
 
@@ -62,11 +53,6 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                 }
             }
         };
-    }
-
-    public updateVisitorContext(newContext: FlagshipVisitorContext): void {
-        this.visitorContext = flagshipSdkHelper.checkVisitorContext(newContext, this.log);
-        this.lastModifiedDate = null;
     }
 
     private computeMurmurAlgorithm(variations: BucketingVariation[]): BucketingVariation | null {
@@ -93,15 +79,19 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         return assignedVariation;
     }
 
-    private getEligibleCampaigns(bucketingData: BucketingApiResponse): DecisionApiCampaign[] {
+    public getEligibleCampaigns(
+        bucketingData: BucketingApiResponse,
+        visitor: { id: string; context: FlagshipVisitorContext }
+    ): DecisionApiCampaign[] {
         const result: DecisionApiCampaign[] = [];
+        const { id: visitorId, context: visitorContext } = visitor;
         const reportIssueBetweenValueTypeAndOperator = (type: string, operator: BucketingOperator): void => {
             this.log.warn(`getEligibleCampaigns - operator "${operator}" is not supported for type "${type}". Assertion aborted.`);
         };
         const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean): boolean =>
             apiValueArray.map((apiValue) => assertionCallback(vcValue, apiValue)).filter((answer) => answer === true).length > 0;
         const computeAssertion = ({ operator, key, value }: BucketingTargetings, compareWithVisitorId: boolean): boolean => {
-            const vtc = compareWithVisitorId ? this.visitorId : this.visitorContext[key]; // vtc = 'value to compare'
+            const vtc = compareWithVisitorId ? visitorId : visitorContext[key]; // vtc = 'value to compare'
             if (typeof vtc === 'undefined' || vtc === null) {
                 this.log.debug(`getEligibleCampaigns - Assertion aborted because visitor context key (="${key}") does not exist`);
                 return false;
@@ -392,7 +382,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                     result.push(Bucketing.transformIntoDecisionApiPayload(variationToAffectToVisitor, campaign, matchingVgId));
                 } else {
                     this.log.fatal(
-                        `computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="${campaign.id}") using murmur for visitor (id="${this.visitorId}")`
+                        `computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="${campaign.id}") using murmur for visitor (id="${visitorId}")`
                     );
                 }
             } else {
@@ -420,12 +410,10 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                         this.lastModifiedDate = other.headers['Last-Modified'];
                     }
                     if (status === 301) {
-                        this.log.info(`launch - current visitor already has bucketing up to date (api status=304)`);
+                        this.log.info(`launch - current bucketing up to date (api status=304)`);
                     } else {
-                        const computedCampaigns: DecisionApiCampaign[] = this.getEligibleCampaigns(bucketingData);
+                        this.log.info(`launch - current bucketing updated`);
                         this.data = { ...bucketingData };
-                        this.computedData = { visitorId: this.visitorId, campaigns: [...computedCampaigns] };
-                        this.log.info(`launch - ${this.computedData.campaigns.length} campaign(s) found matching current visitor`);
                     }
                 }
                 this.emit('launched');
