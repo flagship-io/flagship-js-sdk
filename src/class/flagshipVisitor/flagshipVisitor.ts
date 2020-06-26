@@ -1,13 +1,12 @@
-import { EventEmitter, EventEmitter, EventEmitter } from 'events';
-
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
-import { BucketingApiResponse } from '../bucketing/bucketing.d';
+import { EventEmitter } from 'events';
 
-import { FlagshipSdkConfig, IFlagshipVisitor, IFlagshipBucketing } from '../../index.d';
+import { FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipVisitor, IFlagshipBucketing } from '../../index.d';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
-import Bucketing from '../bucketing/bucketing';
+import { BucketingApiResponse } from '../bucketing/bucketing.d';
+import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
     checkCampaignsActivatedMultipleTimesOutput,
     DecisionApiCampaign,
@@ -32,13 +31,13 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     log: FsLogger;
 
-    bucket: IFlagshipBucketing | null;
-
     envId: string;
 
     context: FlagshipVisitorContext;
 
     isAllModificationsFetched: boolean;
+
+    bucket: IFlagshipBucketingVisitor | null;
 
     fetchedModifications: DecisionApiCampaign[] | null;
 
@@ -46,7 +45,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         envId: string,
         config: FlagshipSdkConfig,
         sdkListener: EventEmitter,
-        bucket: Bucketing,
+        bucket: IFlagshipBucketing | null,
         id: string,
         context: FlagshipVisitorContext = {}
     ) {
@@ -57,14 +56,18 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         this.envId = envId;
         this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
         this.isAllModificationsFetched = false;
-        this.fetchedModifications = config.initialModifications // TODO:
+        this.bucket = null;
+        this.fetchedModifications = config.initialModifications
             ? flagshipSdkHelper.validateDecisionApiData(config.initialModifications, this.log)
             : null;
 
-        sdkListener.on('bucketPollingSuccess', (data: BucketingApiResponse) => {
-            this.log.debug('bucketing polling detected.');
-            this.saveModificationsInCache([...bucket.getEligibleCampaigns(data, { id: this.id, context: this.context })]);
-        });
+        if (this.config.decisionMode === 'Bucketing') {
+            this.bucket = new BucketingVisitor(this.envId, this.id, this.context, this.config, bucket && bucket.data);
+            sdkListener.on('bucketPollingSuccess', (data: BucketingApiResponse) => {
+                this.log.debug('bucketing polling detected.');
+                (this.bucket as IFlagshipBucketingVisitor).updateCache(data);
+            });
+        }
     }
 
     private activateCampaign(
@@ -406,20 +409,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public synchronizeModifications(activate = false): Promise<number> {
-        if (this.config.decisionMode === 'Bucketing') {
-            if (this.bucket !== null) {
-                const previousBucketVisitorContext = this.bucket.visitorContext;
-                this.bucket.updateVisitorContext(this.context);
-                this.log.debug(
-                    `synchronizeModifications - updating bucketing visitor context from ${JSON.stringify(
-                        previousBucketVisitorContext
-                    )} to ${JSON.stringify(this.bucket.visitorContext)}`
-                );
-            } else {
-                this.log.warn(
-                    'synchronizeModifications - trying to synchronize modifications in bucketing mode but bucket is null. You might have call synchronizeModifications too early. A new bucket will be initialized.'
-                );
-            }
+        if (this.config.decisionMode === 'Bucketing' && this.bucket !== null) {
+            this.bucket.updateVisitorContext(this.context);
         }
         return new Promise((resolve, reject) => {
             const fetchedModifPromise = this.fetchAllModifications({ activate, force: true }) as Promise<DecisionApiResponse>;
@@ -567,34 +558,20 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     ) as DecisionApiResponse
                 );
             } else if (this.config.decisionMode === 'Bucketing') {
-                if (this.bucket === null) {
-                    this.log.debug('fetchAllModifications - initializing a new bucket');
-                    this.bucket = new Bucketing(this.envId, this.config, this.id, this.context);
+                let transformedBucketingData: DecisionApiResponseData = { visitorId: this.id, campaigns: [] };
+                if (this.bucket && this.bucket.computedData) {
+                    transformedBucketingData = { ...transformedBucketingData, campaigns: this.bucket.computedData.campaigns };
+                    this.log.debug('fetchAllModifications - bucketing with data detected.');
                 } else {
-                    this.log.debug(
-                        `fetchAllModifications - already initialized bucket detected. With visitor context: ${JSON.stringify(
-                            this.bucket.visitorContext
-                        )}`
-                    );
+                    this.log.debug('fetchAllModifications - bucketing has no data yet. Returning an empty response.');
                 }
-                this.bucket.launch();
-                this.bucket.on('launched', () => {
-                    const transformedBucketingData = (this.bucket as IFlagshipBucketing).computedData as DecisionApiResponseData;
-                    this.saveModificationsInCache(transformedBucketingData.campaigns);
-                    resolve(
-                        this.fetchAllModificationsPostProcess(transformedBucketingData, {
-                            ...defaultArgs,
-                            ...args
-                        }) as DecisionApiResponse
-                    );
-                });
-                this.bucket.on('error', (error: Error) => {
-                    this.saveModificationsInCache(null);
-                    if (activate) {
-                        this.log.fatal('fetchAllModifications - activate canceled due to errors...');
-                    }
-                    reject(error);
-                });
+                this.saveModificationsInCache(transformedBucketingData.campaigns);
+                resolve(
+                    this.fetchAllModificationsPostProcess(transformedBucketingData, {
+                        ...defaultArgs,
+                        ...args
+                    }) as DecisionApiResponse
+                );
             } else {
                 const additionalParam: { [key: string]: string } = {};
                 if (this.config.apiKey) {

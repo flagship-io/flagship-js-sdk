@@ -1,5 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { validate } from 'validate.js';
+import defaultConfig, { internalConfig } from '../config/default';
 import {
     FlagshipVisitorContext,
     DecisionApiResponseData,
@@ -8,10 +9,22 @@ import {
 } from '../class/flagshipVisitor/flagshipVisitor.d';
 import { FlagshipSdkConfig } from '../index.d';
 
-import defaultConfig from '../config/default';
 import otherSdkConfig from '../config/otherSdk';
 
 const flagshipSdkHelper = {
+    checkPollingIntervalValue: (pollingIntervalValue: any): 'ok' | 'underLimit' | 'notDefined' | 'notSupported' => {
+        const valueType = typeof pollingIntervalValue;
+        switch (valueType) {
+            case 'number':
+                return pollingIntervalValue >= internalConfig.pollingIntervalMinValue ? 'ok' : 'underLimit';
+            case 'undefined':
+                return 'notDefined';
+            case 'object':
+                return pollingIntervalValue === null ? 'notDefined' : 'notSupported';
+            default:
+                return 'notSupported';
+        }
+    },
     checkVisitorContext: (unknownContext: object, fsLogger: FsLogger): FlagshipVisitorContext => {
         const validContext: FlagshipVisitorContext = {};
         Object.entries(unknownContext).forEach(([key, value]) => {

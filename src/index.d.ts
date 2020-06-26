@@ -15,7 +15,7 @@ import { BucketingApiResponse } from './class/bucketing/bucketing.d';
 
 export type FlagshipSdkConfig = {
     fetchNow?: boolean;
-    pollingInterval?: number;
+    pollingInterval?: number | null;
     activateNow?: boolean;
     enableConsoleLogs?: boolean;
     decisionMode: 'API' | 'Bucketing';
@@ -27,6 +27,7 @@ export type FlagshipSdkConfig = {
 
 export type FlagshipSdkInternalConfig = {
     bucketingEndpoint: string;
+    pollingIntervalMinValue: number;
 };
 
 export type SaveCacheArgs = {
@@ -37,15 +38,24 @@ export type SaveCacheArgs = {
     saveInCacheModifications(modificationsToSaveInCache: DecisionApiCampaign[] | null): void;
 };
 
+export interface IFlagshipBucketingVisitor {
+    data: BucketingApiResponse | null;
+    computedData: DecisionApiResponseData | null;
+    log: FsLogger;
+    envId: string;
+    config: FlagshipSdkConfig;
+    visitorId: string;
+    visitorContext: FlagshipVisitorContext;
+    getEligibleCampaigns(): DecisionApiCampaign[];
+    updateCache(data: BucketingApiResponse): void;
+    updateVisitorContext(newContext: FlagshipVisitorContext): void;
+}
+
 export interface IFlagshipBucketing extends EventEmitter {
     data: BucketingApiResponse | null;
     log: FsLogger;
     envId: string;
     config: FlagshipSdkConfig;
-    getEligibleCampaigns(
-        bucketingData: BucketingApiResponse,
-        visitor: { id: string; context: FlagshipVisitorContext }
-    ): DecisionApiCampaign[];
     launch(): Promise<BucketingApiResponse | void>;
     on(event: 'launched', listener: () => void): this;
     on(event: 'error', listener: (args: Error) => void): this;
@@ -54,7 +64,6 @@ export interface IFlagshipBucketing extends EventEmitter {
 export interface IFlagshipVisitor extends EventEmitter {
     config: FlagshipSdkConfig;
     id: string;
-    bucket: IFlagshipBucketing | null;
     log: FsLogger;
     envId: string;
     context: FlagshipVisitorContext;
@@ -84,6 +93,8 @@ export interface IFlagship {
     config: FlagshipSdkConfig;
     log: FsLogger;
     envId: string;
+    eventEmitter: EventEmitter;
+    bucket: IFlagshipBucketing | null;
     newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;
 }
 
