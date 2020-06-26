@@ -1,8 +1,8 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
 import { EventEmitter } from 'events';
+import { IFlagshipBucketing, FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../index.d';
 
-import { FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipVisitor, IFlagshipBucketing } from '../../index.d';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import { BucketingApiResponse } from '../bucketing/bucketing.d';
@@ -41,6 +41,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     fetchedModifications: DecisionApiCampaign[] | null;
 
+    sdkListener: EventEmitter;
+
     constructor(
         envId: string,
         config: FlagshipSdkConfig,
@@ -57,6 +59,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
         this.isAllModificationsFetched = false;
         this.bucket = null;
+        this.sdkListener = sdkListener;
         this.fetchedModifications = config.initialModifications
             ? flagshipSdkHelper.validateDecisionApiData(config.initialModifications, this.log)
             : null;
@@ -561,17 +564,34 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 let transformedBucketingData: DecisionApiResponseData = { visitorId: this.id, campaigns: [] };
                 if (this.bucket && this.bucket.computedData) {
                     transformedBucketingData = { ...transformedBucketingData, campaigns: this.bucket.computedData.campaigns };
-                    this.log.debug('fetchAllModifications - bucketing with data detected.');
+                    this.saveModificationsInCache(transformedBucketingData.campaigns);
+                    resolve(
+                        this.fetchAllModificationsPostProcess(transformedBucketingData, {
+                            ...defaultArgs,
+                            ...args
+                        }) as DecisionApiResponse
+                    );
                 } else {
-                    this.log.debug('fetchAllModifications - bucketing has no data yet. Returning an empty response.');
+                    this.log.info('fetchAllModifications - no data in current bucket, waiting for bucket to start...');
+                    this.sdkListener.once('bucketPollingSuccess', () => {
+                        transformedBucketingData = {
+                            ...transformedBucketingData,
+                            campaigns: ((this.bucket as IFlagshipBucketingVisitor).computedData as DecisionApiResponseData).campaigns
+                        };
+                        this.saveModificationsInCache(transformedBucketingData.campaigns);
+                        resolve(
+                            this.fetchAllModificationsPostProcess(transformedBucketingData, {
+                                ...defaultArgs,
+                                ...args
+                            }) as DecisionApiResponse
+                        );
+                    });
+                    this.sdkListener.once('bucketPollingFailed', (error) => {
+                        this.log.fatal(`fetchAllModifications - bucketing failed with error "${error}"`);
+                        this.saveModificationsInCache(null);
+                        reject(error);
+                    });
                 }
-                this.saveModificationsInCache(transformedBucketingData.campaigns);
-                resolve(
-                    this.fetchAllModificationsPostProcess(transformedBucketingData, {
-                        ...defaultArgs,
-                        ...args
-                    }) as DecisionApiResponse
-                );
             } else {
                 const additionalParam: { [key: string]: string } = {};
                 if (this.config.apiKey) {

@@ -1,14 +1,14 @@
-import { EventEmitter } from 'events';
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-import defaultConfig, { internalConfig } from '../../config/default';
-import { BucketingApiResponse } from '../bucketing/bucketing.d';
-import { FlagshipSdkConfig, IFlagship, IFlagshipVisitor, IFlagshipBucketing } from '../../index.d';
-import loggerHelper from '../../lib/loggerHelper';
-import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
-import { FlagshipVisitorContext, DecisionApiResponseData } from '../flagshipVisitor/flagshipVisitor.d';
-import FlagshipVisitor from '../flagshipVisitor/flagshipVisitor';
+import { EventEmitter } from 'events';
 
+import defaultConfig from '../../config/default';
+import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor } from '../../index.d';
+import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
+import loggerHelper from '../../lib/loggerHelper';
 import Bucketing from '../bucketing/bucketing';
+import { BucketingApiResponse } from '../bucketing/bucketing.d';
+import FlagshipVisitor from '../flagshipVisitor/flagshipVisitor';
+import { FlagshipVisitorContext } from '../flagshipVisitor/flagshipVisitor.d';
 
 class Flagship implements IFlagship {
     config: FlagshipSdkConfig;
@@ -42,30 +42,33 @@ class Flagship implements IFlagship {
     }
 
     public newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor {
+        const logBook = {
+            API: {
+                newVisitorInfo: `new visitor (id="${id}") calling decision API for initialization (waiting to be ready...)`,
+                modificationSuccess: `new visitor (id="${id}") decision API finished (ready !)`,
+                modificationFailed: (error: Error): string =>
+                    `new visitor (id="${id}") decision API failed during initialization with error "${error}"`
+            },
+            Bucketing: {
+                newVisitorInfo: `new visitor (id="${id}") calling bucketing API for initialization (waiting to be ready...)`,
+                modificationSuccess: `new visitor (id="${id}") bucketing API finished (ready !)`,
+                modificationFailed: (error: Error): string =>
+                    `new visitor (id="${id}") bucket API failed during initialization with error "${error}"`
+            }
+        };
+
         this.log.info(`Creating new visitor (id="${id}")`);
         const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.eventEmitter, this.bucket, id, context);
-        if (this.config.decisionMode === 'Bucketing') {
-            this.eventEmitter.once('bucketPollingSuccess', () => {
-                flagshipVisitorInstance.emit('ready');
-            });
-            this.eventEmitter.once('bucketPollingFailed', (error) => {
-                this.log.fatal(`new visitor (id="${id}") decision API failed during initialization with error "${error}"`);
-                flagshipVisitorInstance.emit('ready');
-            });
-        } else if (this.config.fetchNow || this.config.activateNow) {
-            this.log.info(`new visitor (id="${id}") calling decision API for initialization (waiting to be ready...)`);
+        if (this.config.fetchNow || this.config.activateNow) {
+            this.log.info(logBook[this.config.decisionMode].newVisitorInfo);
             flagshipVisitorInstance
                 .getAllModifications(this.config.activateNow, { force: true })
                 .then(() => {
-                    this.log.info(`new visitor (id="${id}") decision API finished (ready !)`);
+                    this.log.info(logBook[this.config.decisionMode].modificationSuccess);
                     flagshipVisitorInstance.emit('ready');
                 })
                 .catch((response) => {
-                    this.log.fatal(
-                        `new visitor (id="${id}") decision API failed during initialization with error "${
-                            response && ((response.data && response.data.toString()) || response.toString())
-                        }"`
-                    );
+                    this.log.fatal(logBook[this.config.decisionMode].modificationFailed(response));
                     flagshipVisitorInstance.emit('ready');
                 });
         } else {
@@ -79,57 +82,20 @@ class Flagship implements IFlagship {
         return flagshipVisitorInstance;
     }
 
-    private startBucketingPolling(): void {
-        const pollingMechanism = (): void => {
-            const callBucketing = (): void => {
-                if (this.bucket === null) {
-                    this.log.error("bucketingPolling - can't poll because bucket is null");
-                } else {
-                    this.bucket.launch();
-                }
-            };
-            switch (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval)) {
-                case 'ok':
-                    setTimeout(() => {
-                        this.log.debug(`bucketingPolling - starting a new polling...`);
-                        callBucketing();
-                    }, this.config.pollingInterval as number);
-                    break;
-                case 'notDefined':
-                    this.log.info(
-                        `startBucketingPolling - No "pollingInterval" attribute set, the bucketing api will be called only once for initialization.`
-                    );
-                    callBucketing();
-                    break;
-                case 'underLimit':
-                default:
-                    this.log.error(
-                        `startBucketingPolling - The "pollingInterval" setting is below the limit (${internalConfig.pollingIntervalMinValue}ms. The setting will be ignored and the bucketing api will be called only once for initialization.)`
-                    );
-                    callBucketing();
-            }
-        };
-
-        if ((this.bucket as IFlagshipBucketing).data === null) {
-            this.log.debug('bucketingPolling - initializing a new bucket');
+    public startBucketingPolling(): void {
+        if (this.bucket !== null && !this.bucket.isPollingRunning) {
+            this.bucket.startPolling();
+            this.bucket.on('launched', () => {
+                this.eventEmitter.emit('bucketPollingSuccess', (this.bucket as IFlagshipBucketing).data as BucketingApiResponse);
+            });
+            this.bucket.on('error', (error: Error) => {
+                this.eventEmitter.emit('bucketPollingFailed', error);
+            });
+        } else if (this.bucket !== null && this.bucket.isPollingRunning) {
+            this.log.warn(`startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" ms.`);
+        } else {
+            this.log.error('startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"');
         }
-
-        (this.bucket as IFlagshipBucketing).on('launched', () => {
-            this.log.debug('bucketingPolling - polling finished successfully');
-            this.eventEmitter.emit('bucketPollingSuccess', (this.bucket as IFlagshipBucketing).data as BucketingApiResponse);
-            if (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval) === 'ok') {
-                pollingMechanism();
-            }
-        });
-
-        (this.bucket as IFlagshipBucketing).on('error', (error: Error) => {
-            this.log.error(`bucketingPolling - polling failed with error "${error}"`);
-            this.eventEmitter.emit('bucketPollingFailed');
-            if (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval) === 'ok') {
-                pollingMechanism();
-            }
-        });
-        pollingMechanism();
     }
 }
 

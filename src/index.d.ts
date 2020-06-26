@@ -55,8 +55,10 @@ export interface IFlagshipBucketing extends EventEmitter {
     data: BucketingApiResponse | null;
     log: FsLogger;
     envId: string;
+    isPollingRunning: boolean;
     config: FlagshipSdkConfig;
-    launch(): Promise<BucketingApiResponse | void>;
+    callApi(): Promise<BucketingApiResponse | void>;
+    startPolling(): void;
     on(event: 'launched', listener: () => void): this;
     on(event: 'error', listener: (args: Error) => void): this;
 }
