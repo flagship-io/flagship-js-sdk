@@ -13,6 +13,7 @@ import {
 import { FlagshipSdkConfig, IFlagshipBucketingVisitor } from '../../index.d';
 
 import loggerHelper from '../../lib/loggerHelper';
+import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 
 class BucketingVisitor implements IFlagshipBucketingVisitor {
     data: BucketingApiResponse | null;
@@ -70,7 +71,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
 
     public updateVisitorContext(newContext: FlagshipVisitorContext): void {
         this.log.debug(`Updating bucketing visitor context from ${JSON.stringify(this.visitorContext)} to ${JSON.stringify(newContext)}`);
-        this.visitorContext = newContext;
+        this.visitorContext = flagshipSdkHelper.checkVisitorContext(newContext, this.log);
     }
 
     private computeMurmurAlgorithm(variations: BucketingVariation[]): BucketingVariation | null {

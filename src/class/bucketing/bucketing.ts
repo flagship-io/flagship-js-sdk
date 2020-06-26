@@ -13,9 +13,9 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
 
     log: FsLogger;
 
-    isPollingRunning: boolean;
-
     envId: string;
+
+    isPollingRunning: boolean;
 
     config: FlagshipSdkConfig;
 
@@ -32,15 +32,15 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
 
         // init listeners
         this.on('launched', () => {
-            this.log.debug('startPolling - polling finished successfully');
-            if (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval) === 'ok') {
+            if (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval) === 'ok' && this.isPollingRunning) {
+                this.log.debug('startPolling - polling finished successfully');
                 this.pollingMechanism();
             } // no need to do logs on "else" statement because already done before
         });
 
         this.on('error', (error: Error) => {
-            this.log.error(`startPolling - polling failed with error "${error}"`);
-            if (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval) === 'ok') {
+            if (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval) === 'ok' && this.isPollingRunning) {
+                this.log.error(`startPolling - polling failed with error "${error}"`);
                 this.pollingMechanism();
             }
         });
@@ -59,14 +59,14 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                     this.log.warn('Panic mode detected, running SDK in safe mode...');
                 } else {
                     if (!other.headers['Last-Modified']) {
-                        this.log.warn(`launch - http GET request (url="${url}") did not return attribute "Last-Modified"`);
+                        this.log.warn(`callApi - http GET request (url="${url}") did not return attribute "Last-Modified"`);
                     } else {
                         this.lastModifiedDate = other.headers['Last-Modified'];
                     }
-                    if (status === 301) {
-                        this.log.info(`launch - current bucketing up to date (api status=304)`);
+                    if (status === 304) {
+                        this.log.info(`callApi - current bucketing up to date (api status=304)`);
                     } else {
-                        this.log.info(`launch - current bucketing updated`);
+                        this.log.info(`callApi - current bucketing updated`);
                         this.data = { ...bucketingData };
                     }
                 }
