@@ -67,6 +67,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
     public updateCache(data: BucketingApiResponse): void {
         this.log.debug('Updating cache.');
         this.data = data;
+        this.computedData = { visitorId: this.visitorId, campaigns: this.getEligibleCampaigns() };
     }
 
     public updateVisitorContext(newContext: FlagshipVisitorContext): void {

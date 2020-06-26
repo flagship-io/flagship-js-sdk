@@ -71,7 +71,9 @@ export interface IFlagshipVisitor extends EventEmitter {
     envId: string;
     context: FlagshipVisitorContext;
     isAllModificationsFetched: boolean;
+    bucket: IFlagshipBucketingVisitor | null;
     fetchedModifications: DecisionApiCampaign[] | null;
+    sdkListener: EventEmitter;
     activateModifications(
         modifications: Array<{
             key: string;

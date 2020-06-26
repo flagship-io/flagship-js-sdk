@@ -573,12 +573,20 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     );
                 } else {
                     this.log.info('fetchAllModifications - no data in current bucket, waiting for bucket to start...');
-                    this.sdkListener.once('bucketPollingSuccess', () => {
+                    this.sdkListener.once('bucketPollingSuccess', (data) => {
+                        (this.bucket as IFlagshipBucketingVisitor).updateCache(data);
                         transformedBucketingData = {
                             ...transformedBucketingData,
                             campaigns: ((this.bucket as IFlagshipBucketingVisitor).computedData as DecisionApiResponseData).campaigns
                         };
                         this.saveModificationsInCache(transformedBucketingData.campaigns);
+                        if (activate) {
+                            const { detailsModifications } = this.analyseModifications(transformedBucketingData.campaigns, true);
+                            this.log.debug(
+                                `fetchAllModifications - activateNow enabled with bucketing mode. ${detailsModifications.length} campaign(s) will be activated.`
+                            );
+                            this.triggerActivateIfNeeded(detailsModifications);
+                        }
                         resolve(
                             this.fetchAllModificationsPostProcess(transformedBucketingData, {
                                 ...defaultArgs,

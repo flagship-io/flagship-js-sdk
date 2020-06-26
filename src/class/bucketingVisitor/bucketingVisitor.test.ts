@@ -80,11 +80,16 @@ describe('BucketingVisitor - updateVisitorContext', () => {
         bucketInstance.updateVisitorContext({ isVip: [false, true, false], ok: 'ok' });
         expect(bucketInstance.visitorContext).toEqual({ ok: 'ok' });
 
-        expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+        expect(spyDebugLogs).toHaveBeenCalledTimes(1);
         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(
+            1,
+            'Updating bucketing visitor context from {"pos":"es"} to {"isVip":[false,true,false],"ok":"ok"}'
+        );
         done();
     });
 });
