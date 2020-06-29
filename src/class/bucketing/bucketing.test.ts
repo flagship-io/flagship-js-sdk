@@ -451,6 +451,77 @@ describe('Bucketing used from visitor instance', () => {
     });
 });
 
+describe('Bucketing - polling', () => {
+    beforeEach(() => {
+        spyCatch = jest.fn();
+        spyThen = jest.fn();
+    });
+    afterEach(() => {
+        sdk = null;
+        bucketingApiMockResponse = null;
+        visitorInstance = null;
+        bucketInstance = null;
+
+        mockAxios.reset();
+    });
+
+    it('should work when correctly set + fetchNow=true', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, pollingInterval: 222 });
+        initSpyLogs(sdk.bucket);
+        let pollingLoop = 0;
+        sdk.eventEmitter.on('bucketPollingSuccess', () => {
+            pollingLoop += 1;
+
+            if (pollingLoop > 1) {
+                try {
+                    expect(mockAxios.get).toHaveBeenNthCalledWith(
+                        1,
+                        internalConfig.bucketingEndpoint.replace('@ENV_ID@', demoData.envId[0]),
+                        expectedRequestHeaderFirstCall
+                    );
+
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+                    expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(spyInfoLogs).toHaveBeenCalledTimes(2);
+                    expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - starting a new polling...');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'startPolling - polling finished successfully');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'startPolling - starting a new polling...');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(4, 'startPolling - polling finished successfully');
+                    expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
+                    expect(spyInfoLogs).toHaveBeenNthCalledWith(2, 'callApi - current bucketing updated');
+
+                    expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            }
+        });
+        const mock = (): void => {
+            try {
+                mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
+                if (pollingLoop < 2) {
+                    mock();
+                }
+            } catch (error) {
+                if (error.message === 'No request to respond to!') {
+                    setTimeout(() => {
+                        mock();
+                    }, 111);
+                } else {
+                    done.fail(`mock ${error}`);
+                }
+            }
+        };
+        mock();
+    });
+});
+
 describe('Bucketing - callApi', () => {
     beforeEach(() => {
         spyCatch = jest.fn();
