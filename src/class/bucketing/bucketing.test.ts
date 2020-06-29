@@ -568,6 +568,74 @@ describe('Bucketing - polling', () => {
         ]);
     });
 
+    it('should have correct behavior when failure during fetchNow=true', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        const spySdkLogs = initSpyLogs(sdk);
+        const spyVisitorLogs = initSpyLogs(visitorInstance);
+        initSpyLogs(sdk.bucket);
+        let pollingLoop = 0;
+        sdk.eventEmitter.on('bucketPollingFailed', () => {
+            pollingLoop += 1;
+
+            if (pollingLoop > 1) {
+                try {
+                    expect(sdk.bucket.isPollingRunning).toEqual(true);
+
+                    expect(spySdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                    expect(spySdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spySdkLogs.spyFatalLogs).toHaveBeenCalledTimes(1);
+                    expect(spySdkLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(spySdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                    expect(spySdkLogs.spyFatalLogs).toHaveBeenNthCalledWith(
+                        1,
+                        'new visitor (id="test-perf") bucket API failed during initialization with error "server crashed"'
+                    );
+
+                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenCalledTimes(1);
+                    expect(spyVisitorLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(1);
+                    expect(spyVisitorLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(
+                        1,
+                        'saveModificationsInCache - saving in cache those modifications: "null"'
+                    );
+                    expect(spyVisitorLogs.spyFatalLogs).toHaveBeenNthCalledWith(
+                        1,
+                        'fetchAllModifications - bucketing failed with error "server crashed"'
+                    );
+
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                    expect(spyErrorLogs).toHaveBeenCalledTimes(2);
+                    expect(spyFatalLogs).toHaveBeenCalledTimes(2);
+                    expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - starting a new polling...');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'startPolling - starting a new polling...');
+
+                    expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'startPolling - polling failed with error "server crashed"');
+                    expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'startPolling - polling failed with error "server crashed a lot"');
+
+                    expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'An error occurred while fetching using bucketing...');
+                    expect(spyFatalLogs).toHaveBeenNthCalledWith(2, 'An error occurred while fetching using bucketing...');
+
+                    expect(sdk.bucket.data).toEqual(null);
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            }
+        });
+
+        mockPollingRequest(done, () => pollingLoop, ['server crashed', 'server crashed a lot']);
+    });
+
     it('should work when correctly set + fetchNow=false', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: demoPollingInterval });
