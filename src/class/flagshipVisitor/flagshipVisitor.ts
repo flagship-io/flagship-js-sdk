@@ -499,10 +499,18 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     private saveModificationsInCache(data: DecisionApiCampaign[] | null): void {
         let haveBeenCalled = false;
+        const previousFetchedModifications = this.fetchedModifications;
+
         const callback = (campaigns: DecisionApiCampaign[] | null = data): void => {
             haveBeenCalled = true;
+            this.log.debug(
+                `saveModificationsInCache - saving in cache modifications returned by the callback: ${
+                    Array.isArray(campaigns) ? JSON.stringify(campaigns) : campaigns
+                }`
+            );
             this.fetchedModifications = campaigns || null;
         };
+
         this.emit('saveCache', {
             saveInCacheModifications: callback,
             modifications: {
@@ -513,11 +521,17 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         // if callback not used, do default behavior
         if (!haveBeenCalled) {
-            this.fetchedModifications = data || null;
+            if (data === null && previousFetchedModifications && this.config.decisionMode === 'Bucketing') {
+                this.log.info('saveModificationsInCache - keeping previous cache since bucketing did not return data');
+            } else {
+                this.fetchedModifications = data || null; // default behavior
+                this.log.debug(
+                    `saveModificationsInCache - saving in cache those modifications: "${
+                        this.fetchedModifications ? JSON.stringify(this.fetchedModifications) : 'null'
+                    }"`
+                );
+            }
         }
-        this.log.debug(
-            `Saving in cache those modifications: "${this.fetchedModifications ? JSON.stringify(this.fetchedModifications) : 'null'}"`
-        );
     }
 
     private fetchAllModifications(args: {
@@ -580,6 +594,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                             campaigns: ((this.bucket as IFlagshipBucketingVisitor).computedData as DecisionApiResponseData).campaigns
                         };
                         this.saveModificationsInCache(transformedBucketingData.campaigns);
+                        this.log.debug('fetchAllModifications - bucket start detected');
                         if (activate) {
                             const { detailsModifications } = this.analyseModifications(transformedBucketingData.campaigns, true);
                             this.log.debug(

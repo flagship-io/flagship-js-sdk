@@ -315,7 +315,10 @@ describe('FlagshipVisitor', () => {
                         expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - an error occurred while fetching...');
                         expect(spyFatalLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - activate canceled due to errors...');
                         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'Saving in cache those modifications: "null"');
+                        expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                            1,
+                            'saveModificationsInCache - saving in cache those modifications: "null"'
+                        );
                         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                         done();
                     } catch (error) {
