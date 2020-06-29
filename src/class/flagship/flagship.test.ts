@@ -367,6 +367,27 @@ describe('FlagshipVisitor', () => {
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
     });
+    describe('bucketing', () => {
+        it('should report an error if trying to start bucketing but decisionMode is not set to "Bucketing"', (done) => {
+            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: false });
+            initSpyLogs(sdk);
+            sdk.startBucketingPolling();
+
+            expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+            expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+            expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+            expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                1,
+                'startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"'
+            );
+
+            expect(sdk.bucket).toEqual(null);
+            done();
+        });
+    });
     it('should have setting "initialModifications" working correctly', (done) => {
         const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
         sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: false, initialModifications: defaultCacheData });

@@ -506,6 +506,47 @@ describe('Bucketing used from visitor instance', () => {
     });
 });
 
+describe('Bucketing - startPolling', () => {
+    beforeEach(() => {
+        spyCatch = jest.fn();
+        spyThen = jest.fn();
+    });
+    afterEach(() => {
+        if (sdk) {
+            sdk.eventEmitter.removeAllListeners();
+        }
+        if (visitorInstance) {
+            visitorInstance.removeAllListeners();
+        }
+        if (bucketInstance) {
+            bucketInstance.removeAllListeners();
+        }
+        sdk = null;
+        bucketingApiMockResponse = null;
+        visitorInstance = null;
+        bucketInstance = null;
+
+        mockAxios.reset();
+    });
+    it('should notify if polling already started before', (done) => {
+        bucketInstance = new Bucketing(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval });
+        initSpyLogs(bucketInstance);
+
+        bucketInstance.startPolling();
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+
+        bucketInstance.startPolling();
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+
+        expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'startPolling - already running');
+        done();
+    });
+});
+
 describe('Bucketing - polling', () => {
     beforeEach(() => {
         spyCatch = jest.fn();
@@ -552,6 +593,45 @@ describe('Bucketing - polling', () => {
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'startPolling - starting a new polling...');
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(4, 'startPolling - polling finished successfully');
                     expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
+
+                    expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            }
+        });
+
+        mockPollingRequest(done, () => pollingLoop, [
+            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse },
+            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }
+        ]);
+    });
+
+    it('should warn a log when trying to start polling and it has been already launched', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval });
+        const spySdkLogs = initSpyLogs(sdk);
+        initSpyLogs(sdk.bucket);
+        let pollingLoop = 0;
+        sdk.eventEmitter.on('bucketPollingSuccess', () => {
+            if (pollingLoop === 0) {
+                sdk.startBucketingPolling();
+            }
+            pollingLoop += 1;
+            if (pollingLoop > 1 && spyInfoLogs.mock.calls.length >= 2 && spyDebugLogs.mock.calls.length >= 4) {
+                try {
+                    expect(sdk.bucket.isPollingRunning).toEqual(true);
+
+                    expect(spySdkLogs.spyWarnLogs).toHaveBeenCalledTimes(1);
+                    expect(spySdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spySdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+
+                    expect(spySdkLogs.spyWarnLogs).toHaveBeenNthCalledWith(
+                        1,
+                        'startBucketingPolling - bucket already polling with interval set to "222" ms.'
+                    );
 
                     expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
 
