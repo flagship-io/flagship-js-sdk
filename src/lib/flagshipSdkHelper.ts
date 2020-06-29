@@ -12,7 +12,7 @@ import { FlagshipSdkConfig } from '../index.d';
 import otherSdkConfig from '../config/otherSdk';
 
 const flagshipSdkHelper = {
-    checkPollingIntervalValue: (pollingIntervalValue: any): 'ok' | 'underLimit' | 'notDefined' | 'notSupported' => {
+    checkPollingIntervalValue: (pollingIntervalValue: any): 'ok' | 'underLimit' | 'notSupported' => {
         const valueType = typeof pollingIntervalValue;
         switch (valueType) {
             case 'number':
@@ -21,10 +21,9 @@ const flagshipSdkHelper = {
                     return 'ok';
                 }
                 return pollingIntervalValue >= internalConfig.pollingIntervalMinValue ? 'ok' : 'underLimit';
-            case 'undefined':
-                return 'notDefined';
             case 'object':
-                return pollingIntervalValue === null ? 'notDefined' : 'notSupported';
+                return pollingIntervalValue === null ? 'notSupported' : 'notSupported';
+            case 'undefined':
             default:
                 return 'notSupported';
         }

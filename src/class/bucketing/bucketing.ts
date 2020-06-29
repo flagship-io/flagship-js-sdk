@@ -88,10 +88,12 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                     this.callApi();
                 }, this.config.pollingInterval as number);
                 break;
-            case 'notDefined':
+
+            case 'notSupported':
                 this.isPollingRunning = false;
-                this.log.info(
-                    `startPolling - No "pollingInterval" attribute set, the bucketing api will be called only once for initialization.`
+                this.log.error(
+                    `startPolling - The "pollingInterval" setting has value="${this.config.pollingInterval}" and type="${typeof this.config
+                        .pollingInterval}" which is not supported. The setting will be ignored and the bucketing api will be called only once for initialization.)`
                 );
                 this.callApi();
                 break;

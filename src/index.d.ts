@@ -101,6 +101,7 @@ export interface IFlagship {
     eventEmitter: EventEmitter;
     bucket: IFlagshipBucketing | null;
     newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;
+    startBucketingPolling(): void;
 }
 
 export interface FlagshipNodeSdk {

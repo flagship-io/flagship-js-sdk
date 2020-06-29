@@ -1,4 +1,5 @@
 import mockAxios from 'jest-mock-axios';
+import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
 import { FlagshipVisitorContext } from '../flagshipVisitor/flagshipVisitor.d';
 import { BucketingApiResponse } from './bucketing.d';
 import { FlagshipSdkConfig, IFlagshipVisitor, IFlagshipBucketing, IFlagship } from '../../index.d';
@@ -25,11 +26,49 @@ let bucketSpy;
 let spyThen;
 let spyCatch;
 
+const demoPollingInterval = 222;
+
 let bucketingApiMockResponse: BucketingApiResponse;
 
 const bucketingApiMockOtherResponse: { status: number; headers: { 'Last-Modified': string } } = {
     status: 200,
     headers: { 'Last-Modified': 'Wed, 18 Mar 2020 23:29:16 GMT' }
+};
+
+const waitBeforeContinue = (condition, sleep): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        try {
+            const wait = (c, s): void => {
+                if (c) {
+                    resolve();
+                } else {
+                    setTimeout(() => {
+                        wait(c, s);
+                    }, sleep);
+                }
+            };
+            wait(condition, sleep);
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
+const mockPollingRequest = (done, getPollingLoop: () => number, loopScheduler: HttpResponse[]): void => {
+    try {
+        mockAxios.mockResponse(loopScheduler[getPollingLoop()]);
+        if (getPollingLoop() < loopScheduler.length) {
+            mockPollingRequest(done, getPollingLoop, loopScheduler);
+        }
+    } catch (error) {
+        if (error.message === 'No request to respond to!') {
+            setTimeout(() => {
+                mockPollingRequest(done, getPollingLoop, loopScheduler);
+            }, demoPollingInterval - 50);
+        } else {
+            done.fail(`mock ${error}`);
+        }
+    }
 };
 
 const mockComputedData = {
@@ -66,6 +105,14 @@ const initSpyLogs = (bInstance) => {
     spyFatalLogs = jest.spyOn(bInstance.log, 'fatal');
     spyInfoLogs = jest.spyOn(bInstance.log, 'info');
     spyDebugLogs = jest.spyOn(bInstance.log, 'debug');
+
+    return {
+        spyWarnLogs,
+        spyErrorLogs,
+        spyFatalLogs,
+        spyInfoLogs,
+        spyDebugLogs
+    };
 };
 
 const expectedRequestHeaderFirstCall = { headers: { 'If-Modified-Since': '' } };
@@ -467,19 +514,15 @@ describe('Bucketing - polling', () => {
 
     it('should work when correctly set + fetchNow=true', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, pollingInterval: 222 });
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval });
         initSpyLogs(sdk.bucket);
         let pollingLoop = 0;
         sdk.eventEmitter.on('bucketPollingSuccess', () => {
             pollingLoop += 1;
 
-            if (pollingLoop > 1) {
+            if (pollingLoop > 1 && spyInfoLogs.mock.calls.length >= 2 && spyDebugLogs.mock.calls.length >= 4) {
                 try {
-                    expect(mockAxios.get).toHaveBeenNthCalledWith(
-                        1,
-                        internalConfig.bucketingEndpoint.replace('@ENV_ID@', demoData.envId[0]),
-                        expectedRequestHeaderFirstCall
-                    );
+                    expect(sdk.bucket.isPollingRunning).toEqual(true);
 
                     expect(spyDebugLogs).toHaveBeenCalledTimes(4);
                     expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -492,7 +535,6 @@ describe('Bucketing - polling', () => {
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'startPolling - starting a new polling...');
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(4, 'startPolling - polling finished successfully');
                     expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
-                    expect(spyInfoLogs).toHaveBeenNthCalledWith(2, 'callApi - current bucketing updated');
 
                     expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
 
@@ -502,23 +544,250 @@ describe('Bucketing - polling', () => {
                 }
             }
         });
-        const mock = (): void => {
-            try {
-                mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
-                if (pollingLoop < 2) {
-                    mock();
-                }
-            } catch (error) {
-                if (error.message === 'No request to respond to!') {
-                    setTimeout(() => {
-                        mock();
-                    }, 111);
-                } else {
-                    done.fail(`mock ${error}`);
+
+        mockPollingRequest(done, () => pollingLoop, [
+            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse },
+            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }
+        ]);
+    });
+
+    it('should work when correctly set + fetchNow=false', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: demoPollingInterval });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        const spySdkLogs = initSpyLogs(sdk);
+        const spyVisitorLogs = initSpyLogs(visitorInstance);
+        initSpyLogs(sdk.bucket);
+        let pollingLoop = 0;
+        sdk.eventEmitter.on('bucketPollingSuccess', () => {
+            pollingLoop += 1;
+
+            if (pollingLoop > 1 && spyDebugLogs.mock.calls.length >= 5 && spyInfoLogs.mock.calls.length >= 2) {
+                try {
+                    expect(spySdkLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(spySdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                    expect(spySdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spySdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(spySdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                    expect(spyVisitorLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenCalledTimes(2);
+                    expect(spyVisitorLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling detected.');
+                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(2, 'bucketing polling detected.');
+
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(5);
+                    expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(spyInfoLogs).toHaveBeenCalledTimes(2);
+                    expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - initializing bucket');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'startPolling - starting a new polling...');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'startPolling - polling finished successfully');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(4, 'startPolling - starting a new polling...');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(5, 'startPolling - polling finished successfully');
+                    expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
+
+                    expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
                 }
             }
-        };
-        mock();
+        });
+
+        visitorInstance.on('ready', () => {
+            try {
+                expect(visitorInstance.fetchedModifications).toEqual(null);
+                expect(sdk.bucket.isPollingRunning).toEqual(false);
+                sdk.startBucketingPolling(); // manually start polling
+                mockPollingRequest(done, () => pollingLoop, [
+                    { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse },
+                    { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }
+                ]);
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+    });
+
+    it('should report an error if pollingInterval is below limit', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: 2 });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        const spySdkLogs = initSpyLogs(sdk);
+        const spyVisitorLogs = initSpyLogs(visitorInstance);
+        initSpyLogs(sdk.bucket);
+        let pollingLoop = 0;
+        sdk.eventEmitter.on('bucketPollingSuccess', () => {
+            pollingLoop += 1;
+            try {
+                expect(spySdkLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyVisitorLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyVisitorLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling detected.');
+
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - initializing bucket');
+                expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'startPolling - The "pollingInterval" setting is below the limit (120000ms. The setting will be ignored and the bucketing api will be called only once for initialization.)'
+                );
+
+                expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
+
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+
+        visitorInstance.on('ready', () => {
+            try {
+                expect(visitorInstance.fetchedModifications).toEqual(null);
+                expect(sdk.bucket.isPollingRunning).toEqual(false);
+                sdk.startBucketingPolling(); // manually start polling
+                mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }]);
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+    });
+
+    it('should report an error if pollingInterval is not supported format', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: 'hello world' });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        const spySdkLogs = initSpyLogs(sdk);
+        const spyVisitorLogs = initSpyLogs(visitorInstance);
+        initSpyLogs(sdk.bucket);
+        let pollingLoop = 0;
+        sdk.eventEmitter.on('bucketPollingSuccess', () => {
+            pollingLoop += 1;
+            try {
+                expect(spySdkLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyVisitorLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyVisitorLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling detected.');
+
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - initializing bucket');
+                expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'startPolling - The "pollingInterval" setting has value="hello world" and type="string" which is not supported. The setting will be ignored and the bucketing api will be called only once for initialization.)'
+                );
+
+                expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
+
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+
+        visitorInstance.on('ready', () => {
+            try {
+                expect(visitorInstance.fetchedModifications).toEqual(null);
+                expect(sdk.bucket.isPollingRunning).toEqual(false);
+                sdk.startBucketingPolling(); // manually start polling
+                mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }]);
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+    });
+
+    it('should report an error if pollingInterval is null', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: null });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        const spySdkLogs = initSpyLogs(sdk);
+        const spyVisitorLogs = initSpyLogs(visitorInstance);
+        initSpyLogs(sdk.bucket);
+        let pollingLoop = 0;
+        sdk.eventEmitter.on('bucketPollingSuccess', () => {
+            pollingLoop += 1;
+            try {
+                expect(spySdkLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyVisitorLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyVisitorLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling detected.');
+
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - initializing bucket');
+                expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'startPolling - The "pollingInterval" setting has value="null" and type="object" which is not supported. The setting will be ignored and the bucketing api will be called only once for initialization.)'
+                );
+
+                expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
+
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+
+        visitorInstance.on('ready', () => {
+            try {
+                expect(visitorInstance.fetchedModifications).toEqual(null);
+                expect(sdk.bucket.isPollingRunning).toEqual(false);
+                sdk.startBucketingPolling(); // manually start polling
+                mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }]);
+            } catch (error) {
+                done.fail(error);
+            }
+        });
     });
 });
 
