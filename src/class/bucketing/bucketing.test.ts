@@ -512,6 +512,15 @@ describe('Bucketing - polling', () => {
         spyThen = jest.fn();
     });
     afterEach(() => {
+        if (sdk) {
+            sdk.eventEmitter.removeAllListeners();
+        }
+        if (visitorInstance) {
+            visitorInstance.removeAllListeners();
+        }
+        if (bucketInstance) {
+            bucketInstance.removeAllListeners();
+        }
         sdk = null;
         bucketingApiMockResponse = null;
         visitorInstance = null;
@@ -673,6 +682,74 @@ describe('Bucketing - polling', () => {
                 expect(sdk.bucket.isPollingRunning).toEqual(false);
                 sdk.startBucketingPolling(); // manually start polling
                 mockPollingRequest(done, () => pollingLoop, ['server crashed']);
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+    });
+
+    it('should keep the last valid data when api bucketing fail during polling', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: demoPollingInterval });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        const spySdkLogs = initSpyLogs(sdk);
+        const spyVisitorLogs = initSpyLogs(visitorInstance);
+        initSpyLogs(sdk.bucket);
+        let pollingLoop = 0;
+        sdk.eventEmitter.on('bucketPollingFailed', (e) => {
+            pollingLoop += 1;
+            try {
+                expect(e).toEqual('server crashed');
+                expect(spySdkLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyVisitorLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyVisitorLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling detected.');
+
+                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - initializing bucket');
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'startPolling - starting a new polling...');
+                expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
+
+                expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
+                expect(visitorInstance.fetchedModifications).toEqual(null); // because we didn't do synchronize
+
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+        sdk.eventEmitter.on('bucketPollingSuccess', () => {
+            try {
+                pollingLoop += 1;
+                expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
+                expect(visitorInstance.fetchedModifications).toEqual(null); // because we didn't do synchronize
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+        visitorInstance.on('ready', () => {
+            try {
+                expect(visitorInstance.fetchedModifications).toEqual(null);
+                expect(sdk.bucket.isPollingRunning).toEqual(false);
+                sdk.startBucketingPolling(); // manually start polling
+                mockPollingRequest(done, () => pollingLoop, [
+                    { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse },
+                    'server crashed'
+                ]);
             } catch (error) {
                 done.fail(error);
             }
