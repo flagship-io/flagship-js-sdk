@@ -54,9 +54,17 @@ const waitBeforeContinue = (condition, sleep): Promise<void> => {
     });
 };
 
-const mockPollingRequest = (done, getPollingLoop: () => number, loopScheduler: HttpResponse[]): void => {
+const mockPollingRequest = (done, getPollingLoop: () => number, loopScheduler: (HttpResponse | string)[]): void => {
     try {
-        mockAxios.mockResponse(loopScheduler[getPollingLoop()]);
+        if (loopScheduler.length < getPollingLoop()) {
+            return;
+        }
+        if (typeof loopScheduler[getPollingLoop()] === 'string') {
+            mockAxios.mockError(loopScheduler[getPollingLoop()]);
+        } else {
+            mockAxios.mockResponse(loopScheduler[getPollingLoop()] as HttpResponse);
+        }
+
         if (getPollingLoop() < loopScheduler.length) {
             mockPollingRequest(done, getPollingLoop, loopScheduler);
         }
@@ -167,18 +175,18 @@ describe('Bucketing used from visitor instance', () => {
             visitorInstance.synchronizeModifications(true).catch((err) => {
                 expect(err).toEqual('bucketing server crash');
                 expect(spyInfoLogs).toHaveBeenCalledTimes(2);
-                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-                expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyDebugLogs).toHaveBeenCalledTimes(0);
 
                 expect(spyInfoLogs).toHaveBeenNthCalledWith(
                     2,
                     'saveModificationsInCache - keeping previous cache since bucketing did not return data'
                 );
-                expect(spyFatalLogs).toHaveBeenNthCalledWith(
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(
                     1,
-                    'fetchAllModifications - bucketing failed with error "bucketing server crash"'
+                    'fetchAllModifications - bucketing failed with error "bucketing server crash", keeping previous modifications in cache. Should not have any impact on the visitor.'
                 );
                 done();
             });
@@ -600,7 +608,6 @@ describe('Bucketing - polling', () => {
                 }
             }
         });
-
         visitorInstance.on('ready', () => {
             try {
                 expect(visitorInstance.fetchedModifications).toEqual(null);
@@ -610,6 +617,62 @@ describe('Bucketing - polling', () => {
                     { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse },
                     { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }
                 ]);
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+    });
+
+    it('should behave nicely when api bucketing fail during polling', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: demoPollingInterval });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        const spySdkLogs = initSpyLogs(sdk);
+        const spyVisitorLogs = initSpyLogs(visitorInstance);
+        initSpyLogs(sdk.bucket);
+        let pollingLoop = 0;
+        sdk.eventEmitter.on('bucketPollingFailed', (e) => {
+            pollingLoop += 1;
+            try {
+                expect(e).toEqual('server crashed');
+                expect(spySdkLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spySdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyVisitorLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - initializing bucket');
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'startPolling - starting a new polling...');
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'startPolling - polling failed with error "server crashed"');
+                expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'An error occurred while fetching using bucketing...');
+
+                expect(sdk.bucket.data).toEqual(null);
+                expect(visitorInstance.fetchedModifications).toEqual(null);
+
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+
+        visitorInstance.on('ready', () => {
+            try {
+                expect(visitorInstance.fetchedModifications).toEqual(null);
+                expect(sdk.bucket.isPollingRunning).toEqual(false);
+                sdk.startBucketingPolling(); // manually start polling
+                mockPollingRequest(done, () => pollingLoop, ['server crashed']);
             } catch (error) {
                 done.fail(error);
             }

@@ -610,8 +610,16 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                         );
                     });
                     this.sdkListener.once('bucketPollingFailed', (error) => {
-                        this.log.fatal(`fetchAllModifications - bucketing failed with error "${error}"`);
+                        if (this.fetchedModifications) {
+                            this.log.error(
+                                `fetchAllModifications - bucketing failed with error "${error}", keeping previous modifications in cache. Should not have any impact on the visitor.`
+                            );
+                        } else {
+                            this.log.fatal(`fetchAllModifications - bucketing failed with error "${error}"`);
+                        }
+
                         this.saveModificationsInCache(null);
+
                         reject(error);
                     });
                 }
