@@ -92,7 +92,9 @@ class Flagship implements IFlagship {
                 this.eventEmitter.emit('bucketPollingFailed', error);
             });
         } else if (this.bucket !== null && this.bucket.isPollingRunning) {
-            this.log.warn(`startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" ms.`);
+            this.log.warn(
+                `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" minute(s).`
+            );
         } else {
             this.log.error('startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"');
         }

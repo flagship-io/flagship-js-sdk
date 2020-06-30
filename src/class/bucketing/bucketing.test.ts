@@ -25,7 +25,7 @@ let bucketSpy;
 let spyThen;
 let spyCatch;
 
-const demoPollingInterval = 222;
+const demoPollingInterval = 0.222;
 
 let bucketingApiMockResponse: BucketingApiResponse;
 let bucketingEventMockResponse: HttpResponse;
@@ -672,7 +672,7 @@ describe('Bucketing - polling', () => {
 
                     expect(spySdkLogs.spyWarnLogs).toHaveBeenNthCalledWith(
                         1,
-                        'startBucketingPolling - bucket already polling with interval set to "222" ms.'
+                        'startBucketingPolling - bucket already polling with interval set to "0.222" minute(s).'
                     );
 
                     expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
@@ -951,7 +951,7 @@ describe('Bucketing - polling', () => {
 
     it('should report an error if pollingInterval is below limit', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: 2 });
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: 0.1 });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         const spySdkLogs = initSpyLogs(sdk);
         const spyVisitorLogs = initSpyLogs(visitorInstance);
@@ -984,7 +984,7 @@ describe('Bucketing - polling', () => {
                 expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
                 expect(spyErrorLogs).toHaveBeenNthCalledWith(
                     1,
-                    `startPolling - The "pollingInterval" setting is below the limit (${internalConfig.pollingIntervalMinValue}ms. The setting will be ignored and the bucketing api will be called only once for initialization.)`
+                    `startPolling - The "pollingInterval" setting is below the limit (${internalConfig.pollingIntervalMinValue}minute(s). The setting will be ignored and the bucketing api will be called only once for initialization.)`
                 );
 
                 expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);

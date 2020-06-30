@@ -86,7 +86,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                 setTimeout(() => {
                     this.log.debug(`startPolling - starting a new polling...`);
                     this.callApi();
-                }, this.config.pollingInterval as number);
+                }, (this.config.pollingInterval as number) * 1000);
                 break;
 
             case 'notSupported':
@@ -101,7 +101,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
             default:
                 this.isPollingRunning = false;
                 this.log.error(
-                    `startPolling - The "pollingInterval" setting is below the limit (${internalConfig.pollingIntervalMinValue}ms. The setting will be ignored and the bucketing api will be called only once for initialization.)`
+                    `startPolling - The "pollingInterval" setting is below the limit (${internalConfig.pollingIntervalMinValue}minute(s). The setting will be ignored and the bucketing api will be called only once for initialization.)`
                 );
                 this.callApi();
         }
