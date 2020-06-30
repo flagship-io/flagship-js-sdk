@@ -1,9 +1,11 @@
 import mockAxios from 'jest-mock-axios';
-import { BucketingApiResponse } from '../bucketing/bucketing.d';
-import { IFlagship, IFlagshipVisitor, IFlagshipBucketing, FlagshipSdkConfig, IFlagshipBucketingVisitor } from '../../index.d';
-import testConfig from '../../config/test';
-import BucketingVisitor from './bucketingVisitor';
+import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
+
 import demoData from '../../../test/mock/demoData';
+import testConfig from '../../config/test';
+import { FlagshipSdkConfig, IFlagship, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../index.d';
+import { BucketingApiResponse } from '../bucketing/bucketing.d';
+import BucketingVisitor from './bucketingVisitor';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -21,6 +23,7 @@ let spyThen;
 let spyCatch;
 
 let bucketingApiMockResponse: BucketingApiResponse;
+let bucketingEventMockResponse: HttpResponse;
 
 const bucketingConfig: FlagshipSdkConfig = {
     ...testConfig,
@@ -234,10 +237,19 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
 
     it('should expect correct behavior for "classic" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        bucketingEventMockResponse = { status: 204, data: {} };
         bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], demoData.visitor.cleanContext, bucketingConfig);
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
+
+        mockAxios.mockResponse(bucketingEventMockResponse);
+
+        expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${bucketInstance.config.flagshipApi}${bucketInstance.envId}/events`, {
+            data: { ...bucketInstance.visitorContext },
+            type: 'CONTEXT',
+            visitor_id: bucketInstance.visitorId
+        });
 
         expect(result).toEqual([
             {
@@ -270,11 +282,13 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
             }
         ]);
 
-        expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+        expect(spyDebugLogs).toHaveBeenCalledTimes(5);
         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(5, 'callEventEndpoint - returns status=204');
 
         done();
     });
@@ -370,6 +384,8 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
         expect(result).toEqual([]);
+
+        expect(mockAxios.post).toHaveBeenCalledTimes(0);
 
         expect(spyDebugLogs).toHaveBeenCalledTimes(1);
         expect(spyErrorLogs).toHaveBeenCalledTimes(10);

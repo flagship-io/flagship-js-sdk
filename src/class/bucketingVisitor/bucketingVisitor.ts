@@ -1,5 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import * as murmurhash from 'murmurhash';
+import axios from 'axios';
 import { FlagshipVisitorContext, DecisionApiCampaign, DecisionApiResponseData } from '../flagshipVisitor/flagshipVisitor.d';
 
 import {
@@ -97,6 +98,27 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         }
 
         return assignedVariation;
+    }
+
+    private callEventEndpoint(): Promise<number> {
+        return new Promise((resolve, reject) => {
+            axios
+                .post(`${this.config.flagshipApi}${this.envId}/events`, {
+                    visitor_id: this.visitorId,
+                    type: 'CONTEXT',
+                    data: {
+                        ...this.visitorContext
+                    }
+                })
+                .then((response: HttpResponse) => {
+                    this.log.debug(`callEventEndpoint - returns status=${response.status}`);
+                    resolve(response.status);
+                })
+                .catch((error: Error) => {
+                    this.log.error(`callEventEndpoint - failed with error="${error}"`);
+                    reject(error);
+                });
+        });
     }
 
     public getEligibleCampaigns(): DecisionApiCampaign[] {
@@ -404,6 +426,9 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                 log.debug(`Bucketing - campaign (id="${campaign.id}") NOT MATCHING visitor`);
             }
         });
+        if (result.length > 0) {
+            this.callEventEndpoint();
+        }
         return result;
     }
 }
