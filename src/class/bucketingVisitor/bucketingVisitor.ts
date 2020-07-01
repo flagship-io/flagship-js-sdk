@@ -1,6 +1,5 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import * as murmurhash from 'murmurhash';
-import axios from 'axios';
 import { FlagshipVisitorContext, DecisionApiCampaign, DecisionApiResponseData } from '../flagshipVisitor/flagshipVisitor.d';
 
 import {
