@@ -102,15 +102,15 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
 
     private callEventEndpoint(): Promise<number> {
         return new Promise((resolve, reject) => {
-            axios
-                .post(`${this.config.flagshipApi}${this.envId}/events`, {
+            flagshipSdkHelper
+                .postFlagshipApi(this.config, this.log, `${this.config.flagshipApi}${this.envId}/events`, {
                     visitor_id: this.visitorId,
                     type: 'CONTEXT',
                     data: {
                         ...this.visitorContext
                     }
                 })
-                .then((response: HttpResponse) => {
+                .then((response) => {
                     this.log.debug(`callEventEndpoint - returns status=${response.status}`);
                     resolve(response.status);
                 })

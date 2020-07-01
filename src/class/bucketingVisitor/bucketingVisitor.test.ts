@@ -37,6 +37,14 @@ const initSpyLogs = (bInstance) => {
     spyFatalLogs = jest.spyOn(bInstance.log, 'fatal');
     spyInfoLogs = jest.spyOn(bInstance.log, 'info');
     spyDebugLogs = jest.spyOn(bInstance.log, 'debug');
+
+    return {
+        spyWarnLogs,
+        spyErrorLogs,
+        spyFatalLogs,
+        spyInfoLogs,
+        spyDebugLogs
+    };
 };
 
 const expectedRequestHeaderFirstCall = { headers: { 'If-Modified-Since': '' } };
@@ -52,6 +60,100 @@ describe('BucketingVisitor used from visitor instance', () => {
         visitorInstance = null;
         bucketInstance = null;
         mockAxios.reset();
+    });
+});
+
+describe('BucketingVisitor - callEventEndpoint', () => {
+    beforeEach(() => {
+        //
+    });
+    afterEach(() => {
+        sdk = null;
+        bucketingApiMockResponse = null;
+        visitorInstance = null;
+        bucketInstance = null;
+        mockAxios.reset();
+    });
+
+    it('should notify when fail with api v2 and apiKey is missing', (done) => {
+        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], demoData.visitor.cleanContext, {
+            ...bucketingConfig,
+            flagshipApi: 'https://decision.flagship.io/v2/'
+        });
+        initSpyLogs(bucketInstance);
+        bucketInstance
+            .callEventEndpoint()
+            .then(() => {
+                done.fail('callEventEndpoint not supposed to be here');
+            })
+            .catch((e) => {
+                expect(e).toEqual('server crashed');
+                expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'callEventEndpoint - failed with error="server crashed"');
+
+                done();
+            });
+
+        mockAxios.mockError('server crashed');
+    });
+
+    it('should notify when fail with api v2', (done) => {
+        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], demoData.visitor.cleanContext, {
+            ...bucketingConfig,
+            flagshipApi: 'https://decision.flagship.io/v2/',
+            apiKey: 'toto'
+        });
+        initSpyLogs(bucketInstance);
+        bucketInstance
+            .callEventEndpoint()
+            .then(() => {
+                done.fail('callEventEndpoint not supposed to be here');
+            })
+            .catch((e) => {
+                expect(e).toEqual('server crashed');
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'callEventEndpoint - failed with error="server crashed"');
+
+                done();
+            });
+
+        mockAxios.mockError('server crashed');
+    });
+
+    it('should notify when fail with api v1', (done) => {
+        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], demoData.visitor.cleanContext, {
+            ...bucketingConfig
+        });
+        initSpyLogs(bucketInstance);
+        bucketInstance
+            .callEventEndpoint()
+            .then(() => {
+                done.fail('callEventEndpoint not supposed to be here');
+            })
+            .catch((e) => {
+                expect(e).toEqual('server crashed');
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'callEventEndpoint - failed with error="server crashed"');
+
+                done();
+            });
+
+        mockAxios.mockError('server crashed');
     });
 });
 

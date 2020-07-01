@@ -1,11 +1,12 @@
 import mockAxios from 'jest-mock-axios';
+import { IFlagshipVisitor } from '../../index.d';
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
 import Flagship from './flagship';
 import flagshipSdk from '../../index';
 
 let sdk: Flagship;
-let visitorInstance;
+let visitorInstance: IFlagshipVisitor;
 
 let responseObj = {
     data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -28,6 +29,13 @@ const initSpyLogs = (classInstance) => {
     spyFatalLogs = jest.spyOn(classInstance.log, 'fatal');
     spyInfoLogs = jest.spyOn(classInstance.log, 'info');
     spyDebugLogs = jest.spyOn(classInstance.log, 'debug');
+    return {
+        spyWarnLogs,
+        spyErrorLogs,
+        spyFatalLogs,
+        spyInfoLogs,
+        spyDebugLogs
+    };
 };
 
 describe('FlagshipVisitor', () => {
@@ -287,18 +295,21 @@ describe('FlagshipVisitor', () => {
                         vaid: 'blntcamqmdvg04g371hg',
                         cid: 'bn1ab7m56qolupi5sa0g',
                         caid: 'blntcamqmdvg04g371h0',
+                        'x-api-key': 'toto',
                         vid: 'test-perf'
                     });
                     expect(mockAxios.post).toHaveBeenNthCalledWith(3, `${endPoint}activate`, {
                         vaid: 'bmjdprsjan0g01uq2ctg',
                         cid: 'bn1ab7m56qolupi5sa0g',
                         caid: 'bmjdprsjan0g01uq2csg',
+                        'x-api-key': 'toto',
                         vid: 'test-perf'
                     });
                     expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${endPoint}activate`, {
                         vaid: 'bmjdprsjan0g01uq1ctg',
                         cid: 'bn1ab7m56qolupi5sa0g',
                         caid: 'bmjdprsjan0g01uq2ceg',
+                        'x-api-key': 'toto',
                         vid: 'test-perf'
                     });
                     done();
@@ -315,6 +326,38 @@ describe('FlagshipVisitor', () => {
             });
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
+
+        it('if happens, should report that "x-api-key" is missing when api v2 detected', (done) => {
+            sdk = flagshipSdk.initSdk(demoData.envId[0], {
+                ...testConfig,
+                fetchNow: false,
+                flagshipApi: 'https://decision.flagship.io/v2/'
+            });
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            initSpyLogs(visitorInstance);
+            visitorInstance.once('ready', () => {
+                try {
+                    visitorInstance
+                        .synchronizeModifications()
+                        .then(() => {
+                            expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+                            expect(spyFatalLogs).toHaveBeenNthCalledWith(
+                                1,
+                                'initialization - flagshipApi v2 detected but required setting "apiKey" is missing !'
+                            );
+                            done();
+                        })
+                        .catch((e) => {
+                            done.fail(`unexpected ${e}`);
+                        });
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
+
+            mockAxios.mockResponse(responseObj);
+        });
+
         it('should report error logs when a Visitor instance has bad context', (done) => {
             sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], {

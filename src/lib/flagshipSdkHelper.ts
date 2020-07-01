@@ -1,5 +1,8 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { validate } from 'validate.js';
+import axios from 'axios';
+import { FlagshipSdkConfig } from '../index.d';
+
 import defaultConfig, { internalConfig } from '../config/default';
 import {
     FlagshipVisitorContext,
@@ -7,11 +10,34 @@ import {
     DecisionApiResponse,
     DecisionApiCampaign
 } from '../class/flagshipVisitor/flagshipVisitor.d';
-import { FlagshipSdkConfig } from '../index.d';
 
 import otherSdkConfig from '../config/otherSdk';
 
+const checkRequiredSettingsForApiV2 = (config: FlagshipSdkConfig, log: FsLogger): void => {
+    if (config.flagshipApi && config.flagshipApi.includes('/v2/') && !config.apiKey) {
+        log.fatal('initialization - flagshipApi v2 detected but required setting "apiKey" is missing !');
+    }
+};
+
 const flagshipSdkHelper = {
+    postFlagshipApi: (config: FlagshipSdkConfig, log: FsLogger, endpoint: string, params: { [key: string]: any }): Promise<any> => {
+        const additionalParams: { [key: string]: string } = {};
+        checkRequiredSettingsForApiV2(config, log);
+        if (config.apiKey) {
+            additionalParams['x-api-key'] = config.apiKey;
+        }
+        const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
+        return axios.post(url, { ...params, ...additionalParams });
+    },
+    getFlagshipApi: (config: FlagshipSdkConfig, log: FsLogger, endpoint: string, params: { [key: string]: any }): Promise<any> => {
+        const additionalParams: { [key: string]: string } = {};
+        checkRequiredSettingsForApiV2(config, log);
+        if (config.apiKey) {
+            additionalParams['x-api-key'] = config.apiKey;
+        }
+        const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
+        return axios.get(url, { ...params, ...additionalParams });
+    },
     checkPollingIntervalValue: (pollingIntervalValue: any): 'ok' | 'underLimit' | 'notSupported' => {
         const valueType = typeof pollingIntervalValue;
         switch (valueType) {

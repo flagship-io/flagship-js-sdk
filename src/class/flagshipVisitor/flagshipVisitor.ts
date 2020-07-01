@@ -79,8 +79,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         customLogs?: { success: string; fail: string }
     ): Promise<{ status: number } | Error> {
         return new Promise<{ status: number } | Error>((resolve) => {
-            axios
-                .post(`${this.config.flagshipApi}activate`, {
+            flagshipSdkHelper
+                .postFlagshipApi(this.config, this.log, `${this.config.flagshipApi}activate`, {
                     vid: this.id,
                     cid: this.envId,
                     caid: variationGroupId,
@@ -624,16 +624,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     });
                 }
             } else {
-                const additionalParam: { [key: string]: string } = {};
-                if (this.config.apiKey) {
-                    additionalParam['x-api-key'] = this.config.apiKey;
-                }
-                axios
-                    .post(url, {
+                flagshipSdkHelper
+                    .postFlagshipApi(this.config, this.log, url, {
                         visitor_id: this.id,
                         trigger_hit: activate, // TODO: to unit test
-                        context: this.context,
-                        ...additionalParam
+                        context: this.context
                     })
                     .then((response: DecisionApiResponse) => {
                         this.saveModificationsInCache(response.data.campaigns);
