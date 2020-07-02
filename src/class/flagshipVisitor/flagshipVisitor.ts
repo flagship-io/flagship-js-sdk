@@ -1,11 +1,11 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
 import { EventEmitter } from 'events';
-import { IFlagshipBucketing, FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../index.d';
+import { IFlagshipBucketing, FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../types';
 
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
-import { BucketingApiResponse } from '../bucketing/bucketing.d';
+import { BucketingApiResponse } from '../bucketing/types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
     checkCampaignsActivatedMultipleTimesOutput,
@@ -22,7 +22,7 @@ import {
     HitShape,
     ItemHit,
     TransactionHit
-} from './flagshipVisitor.d';
+} from './types';
 
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     config: FlagshipSdkConfig;

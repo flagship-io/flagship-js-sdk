@@ -1,15 +1,10 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { validate } from 'validate.js';
 import axios from 'axios';
-import { FlagshipSdkConfig } from '../index.d';
+import { FlagshipSdkConfig } from '../types';
 
 import defaultConfig, { internalConfig } from '../config/default';
-import {
-    FlagshipVisitorContext,
-    DecisionApiResponseData,
-    DecisionApiResponse,
-    DecisionApiCampaign
-} from '../class/flagshipVisitor/flagshipVisitor.d';
+import { FlagshipVisitorContext, DecisionApiResponseData, DecisionApiResponse, DecisionApiCampaign } from '../class/flagshipVisitor/types';
 
 import otherSdkConfig from '../config/otherSdk';
 

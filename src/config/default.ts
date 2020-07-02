@@ -1,4 +1,4 @@
-import { FlagshipSdkInternalConfig, FlagshipSdkConfig } from '../index.d';
+import { FlagshipSdkInternalConfig, FlagshipSdkConfig } from '../types';
 
 const defaultConfig: FlagshipSdkConfig = {
     fetchNow: false,

@@ -1,6 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import * as murmurhash from 'murmurhash';
-import { FlagshipVisitorContext, DecisionApiCampaign, DecisionApiResponseData } from '../flagshipVisitor/flagshipVisitor.d';
+import { FlagshipVisitorContext, DecisionApiCampaign, DecisionApiResponseData } from '../flagshipVisitor/types';
 
 import {
     BucketingVariation,
@@ -9,8 +9,8 @@ import {
     BucketingTargetings,
     BucketingTypes,
     BucketingCampaign
-} from '../bucketing/bucketing.d';
-import { FlagshipSdkConfig, IFlagshipBucketingVisitor } from '../../index.d';
+} from '../bucketing/types';
+import { FlagshipSdkConfig, IFlagshipBucketingVisitor } from '../../types';
 
 import loggerHelper from '../../lib/loggerHelper';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';

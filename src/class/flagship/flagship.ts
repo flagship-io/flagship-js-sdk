@@ -2,13 +2,13 @@ import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { EventEmitter } from 'events';
 
 import defaultConfig from '../../config/default';
-import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor } from '../../index.d';
+import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor } from '../../types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import Bucketing from '../bucketing/bucketing';
-import { BucketingApiResponse } from '../bucketing/bucketing.d';
+import { BucketingApiResponse } from '../bucketing/types';
 import FlagshipVisitor from '../flagshipVisitor/flagshipVisitor';
-import { FlagshipVisitorContext } from '../flagshipVisitor/flagshipVisitor.d';
+import { FlagshipVisitorContext } from '../flagshipVisitor/types';
 
 class Flagship implements IFlagship {
     config: FlagshipSdkConfig;

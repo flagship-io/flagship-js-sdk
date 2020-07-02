@@ -3,9 +3,9 @@ import Axios, { AxiosResponse } from 'axios';
 import { EventEmitter } from 'events';
 
 import { internalConfig } from '../../config/default';
-import { FlagshipSdkConfig, IFlagshipBucketing } from '../../index.d';
+import { FlagshipSdkConfig, IFlagshipBucketing } from '../../types';
 import loggerHelper from '../../lib/loggerHelper';
-import { BucketingApiResponse } from './bucketing.d';
+import { BucketingApiResponse } from './types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 
 class Bucketing extends EventEmitter implements IFlagshipBucketing {

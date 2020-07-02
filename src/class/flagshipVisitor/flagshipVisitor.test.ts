@@ -1,5 +1,5 @@
 import mockAxios from 'jest-mock-axios';
-import { IFlagshipVisitor, IFlagship } from '../../index.d';
+import { IFlagshipVisitor, IFlagship } from '../../types';
 
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';

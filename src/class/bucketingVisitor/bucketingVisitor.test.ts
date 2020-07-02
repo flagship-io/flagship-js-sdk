@@ -3,8 +3,8 @@ import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
 
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
-import { FlagshipSdkConfig, IFlagship, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../index.d';
-import { BucketingApiResponse } from '../bucketing/bucketing.d';
+import { FlagshipSdkConfig, IFlagship, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../types';
+import { BucketingApiResponse } from '../bucketing/types';
 import BucketingVisitor from './bucketingVisitor';
 
 let sdk: IFlagship;

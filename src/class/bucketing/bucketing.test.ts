@@ -5,10 +5,10 @@ import flagshipSdk from '../..';
 import demoData from '../../../test/mock/demoData';
 import defaultConfig, { internalConfig } from '../../config/default';
 import testConfig from '../../config/test';
-import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor } from '../../index.d';
+import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor } from '../../types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import Bucketing from './bucketing';
-import { BucketingApiResponse } from './bucketing.d';
+import { BucketingApiResponse } from './types';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
