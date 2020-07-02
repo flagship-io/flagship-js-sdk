@@ -18,7 +18,7 @@ export type FlagshipSdkConfig = {
     pollingInterval?: number | null;
     activateNow?: boolean;
     enableConsoleLogs?: boolean;
-    decisionMode: 'API' | 'Bucketing';
+    decisionMode?: 'API' | 'Bucketing';
     nodeEnv?: string;
     flagshipApi?: string;
     apiKey?: string | null;

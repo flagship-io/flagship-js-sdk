@@ -11,7 +11,7 @@
         "README.md",
         "package.json"
     ],
-    "types": "dist/flagship.d.ts",
+    "types": "dist/index.d.ts",
     "engines": {
         "npm": ">=3",
         "node": ">=6"
@@ -30,7 +30,7 @@
         "update:fsLog": "npm install @flagship.io/js-sdk-logs@latest --save",
         "stats:dev": "rm -rf dist && webpack --env=stats",
         "stats:prod": "webpack --profile --json --env=prod > stats.json && webpack-bundle-analyzer ./stats.json",
-        "build": "rm -rf dist && webpack --env=prod"
+        "build": "rm -rf dist && webpack --env=prod && ./cleanDts.sh"
     },
     "repository": {
         "type": "git",
@@ -69,6 +69,7 @@
         "@typescript-eslint/parser": "^2.8.0",
         "babel-jest": "^24.9.0",
         "babel-loader": "^8.0.6",
+        "dts-bundle-generator": "^4.3.0",
         "eslint": "^6.1.0",
         "eslint-config-airbnb-base": "^14.0.0",
         "eslint-config-prettier": "^6.11.0",
@@ -84,7 +85,7 @@
         "ts-loader": "^7.0.5",
         "typescript": "^3.7.2",
         "webpack": "4.41.0",
-        "webpack-bundle-analyzer": "^3.6.0",
+        "webpack-bundle-analyzer": "^3.8.0",
         "webpack-cli": "^3.3.10",
         "webpack-merge": "^4.2.2",
         "webpack-node-externals": "^1.7.2"
