@@ -15,11 +15,10 @@
 
 -   [Installation & Getting Started](https://developers.flagship.io/js/v1.x.x/#getting-started)
 -   [SDK Settings](https://developers.flagship.io/js/v1.x.x/#sdk-settings)
--   [Features](https://developers.flagship.io/js/v1.x.x/#js-sdk-features)
--   [Start the SDK](https://developers.flagship.io/js/v1.x.x/#summary)
+-   [API Summary](https://developers.flagship.io/js/v1.x.x/#js-sdk-features)
 -   [Flagship class](https://developers.flagship.io/js/v1.x.x/#i-flagship-i-class-1)
--   [Flagship visitor](https://developers.flagship.io/js/v1.x.x/#i-flagship-i-class-1)
--   [Hit tracking](https://developers.flagship.io/js/v1.x.x/#i-flagshipvisitor-i-class-1)
+-   [Flagship visitor](https://developers.flagship.io/js/v1.x.x/#i-flagshipvisitor-i-class-1)
+-   [Hit tracking](https://developers.flagship.io/js/v1.x.x/#hits)
 -   [Release Notes](https://github.com/abtasty/flagship-js-sdk/blob/master/RELEASENOTES.md)
 
 ## Examples
