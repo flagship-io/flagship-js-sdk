@@ -86,7 +86,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                 setTimeout(() => {
                     this.log.debug(`startPolling - starting a new polling...`);
                     this.callApi();
-                }, (this.config.pollingInterval as number) * 1000);
+                }, (this.config.pollingInterval as number) * 60 * 1000);
                 break;
 
             case 'notSupported':
