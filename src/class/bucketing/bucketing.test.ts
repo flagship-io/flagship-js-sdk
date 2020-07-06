@@ -25,7 +25,7 @@ let bucketSpy;
 let spyThen;
 let spyCatch;
 
-const demoPollingInterval = 0.222;
+const demoPollingInterval = 0.022;
 
 let bucketingApiMockResponse: BucketingApiResponse;
 let bucketingEventMockResponse: HttpResponse;
@@ -620,20 +620,20 @@ describe('Bucketing - polling', () => {
         sdk.eventEmitter.on('bucketPollingSuccess', () => {
             pollingLoop += 1;
 
-            if (pollingLoop > 1 && spyInfoLogs.mock.calls.length >= 2 && spyDebugLogs.mock.calls.length >= 4) {
+            if (pollingLoop >= 1 && spyInfoLogs.mock.calls.length >= 1 && spyDebugLogs.mock.calls.length >= 1) {
                 try {
                     expect(sdk.bucket.isPollingRunning).toEqual(true);
 
-                    expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                     expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                     expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-                    expect(spyInfoLogs).toHaveBeenCalledTimes(2);
+                    expect(spyInfoLogs).toHaveBeenCalledTimes(1);
                     expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
-                    expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - starting a new polling...');
-                    expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'startPolling - polling finished successfully');
-                    expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'startPolling - starting a new polling...');
-                    expect(spyDebugLogs).toHaveBeenNthCalledWith(4, 'startPolling - polling finished successfully');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                        1,
+                        'startPolling - polling finished successfully. Next polling in 0.022 minute(s)'
+                    );
                     expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
 
                     expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
@@ -651,12 +651,14 @@ describe('Bucketing - polling', () => {
         ]);
     });
 
-    it('should warn a log when trying to start polling and it has been already launched', (done) => {
+    it('should warn a log when trying to start polling and it has been already launched', async (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval });
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval, fetchNow: false });
         const spySdkLogs = initSpyLogs(sdk);
         initSpyLogs(sdk.bucket);
         let pollingLoop = 0;
+
+        sdk.startBucketingPolling();
         sdk.eventEmitter.on('bucketPollingSuccess', () => {
             if (pollingLoop === 0) {
                 sdk.startBucketingPolling();
@@ -672,7 +674,7 @@ describe('Bucketing - polling', () => {
 
                     expect(spySdkLogs.spyWarnLogs).toHaveBeenNthCalledWith(
                         1,
-                        'startBucketingPolling - bucket already polling with interval set to "0.222" minute(s).'
+                        'startBucketingPolling - bucket already polling with interval set to "0.022" minute(s).'
                     );
 
                     expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
@@ -688,16 +690,18 @@ describe('Bucketing - polling', () => {
             { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse },
             { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }
         ]);
-    });
+    }, 20000); // adjust timeout to 20 sec since the test takes about 13 sec
 
-    it('should have correct behavior when failure during fetchNow=true', (done) => {
+    it('should have correct behavior when failure', async (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval });
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval, fetchNow: false });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         const spySdkLogs = initSpyLogs(sdk);
         const spyVisitorLogs = initSpyLogs(visitorInstance);
         initSpyLogs(sdk.bucket);
         let pollingLoop = 0;
+
+        sdk.startBucketingPolling();
         sdk.eventEmitter.on('bucketPollingFailed', () => {
             pollingLoop += 1;
 
@@ -707,41 +711,34 @@ describe('Bucketing - polling', () => {
 
                     expect(spySdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
                     expect(spySdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
-                    expect(spySdkLogs.spyFatalLogs).toHaveBeenCalledTimes(1);
+                    expect(spySdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
                     expect(spySdkLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
                     expect(spySdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
 
-                    expect(spySdkLogs.spyFatalLogs).toHaveBeenNthCalledWith(
-                        1,
-                        'new visitor (id="test-perf") bucket API failed during initialization with error "server crashed"'
-                    );
-
-                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenCalledTimes(1);
+                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
                     expect(spyVisitorLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
-                    expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(1);
+                    expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
                     expect(spyVisitorLogs.spyInfoLogs).toHaveBeenCalledTimes(0);
                     expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
 
-                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(
-                        1,
-                        'saveModificationsInCache - saving in cache those modifications: "null"'
-                    );
-                    expect(spyVisitorLogs.spyFatalLogs).toHaveBeenNthCalledWith(
-                        1,
-                        'fetchAllModifications - bucketing failed with error "server crashed"'
-                    );
-
-                    expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(3);
                     expect(spyErrorLogs).toHaveBeenCalledTimes(2);
                     expect(spyFatalLogs).toHaveBeenCalledTimes(2);
                     expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                     expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
-                    expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - starting a new polling...');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - initializing bucket');
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'startPolling - starting a new polling...');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'startPolling - starting a new polling...');
 
-                    expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'startPolling - polling failed with error "server crashed"');
-                    expect(spyErrorLogs).toHaveBeenNthCalledWith(2, 'startPolling - polling failed with error "server crashed a lot"');
+                    expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        'startPolling - polling failed with error "server crashed". Next polling in 0.022 minute(s)'
+                    );
+                    expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                        2,
+                        'startPolling - polling failed with error "server crashed a lot". Next polling in 0.022 minute(s)'
+                    );
 
                     expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'An error occurred while fetching using bucketing...');
                     expect(spyFatalLogs).toHaveBeenNthCalledWith(2, 'An error occurred while fetching using bucketing...');
@@ -756,7 +753,7 @@ describe('Bucketing - polling', () => {
         });
 
         mockPollingRequest(done, () => pollingLoop, ['server crashed', 'server crashed a lot']);
-    });
+    }, 20000); // adjust timeout to 20 sec since the test takes about 13 sec
 
     it('should work when correctly set + fetchNow=false', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
@@ -794,9 +791,15 @@ describe('Bucketing - polling', () => {
 
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - initializing bucket');
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'startPolling - starting a new polling...');
-                    expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'startPolling - polling finished successfully');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                        3,
+                        'startPolling - polling finished successfully. Next polling in 0.022 minute(s)'
+                    );
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(4, 'startPolling - starting a new polling...');
-                    expect(spyDebugLogs).toHaveBeenNthCalledWith(5, 'startPolling - polling finished successfully');
+                    expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                        5,
+                        'startPolling - polling finished successfully. Next polling in 0.022 minute(s)'
+                    );
                     expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
 
                     expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
@@ -854,7 +857,10 @@ describe('Bucketing - polling', () => {
 
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'startPolling - initializing bucket');
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'startPolling - starting a new polling...');
-                expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'startPolling - polling failed with error "server crashed"');
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'startPolling - polling failed with error "server crashed". Next polling in 0.022 minute(s)'
+                );
                 expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'An error occurred while fetching using bucketing...');
 
                 expect(sdk.bucket.data).toEqual(null);
@@ -1163,7 +1169,7 @@ describe('Bucketing - callApi', () => {
                 expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
                 expect(spyWarnLogs).toHaveBeenNthCalledWith(
                     1,
-                    'callApi - http GET request (url="http://cdn.flagship.io/bn1ab7m56qolupi5sa0g/bucketing.json") did not return attribute "Last-Modified"'
+                    'callApi - http GET request (url="https://cdn.flagship.io/bn1ab7m56qolupi5sa0g/bucketing.json") did not return attribute "Last-Modified"'
                 );
 
                 expect(bucketInstance.data).toEqual(bucketingApiMockResponse);

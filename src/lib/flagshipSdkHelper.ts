@@ -28,7 +28,7 @@ const flagshipSdkHelper = {
         const valueType = typeof pollingIntervalValue;
         switch (valueType) {
             case 'number':
-                if (process && process.env && process.env.NODE_ENV === 'test' && pollingIntervalValue === 0.222) {
+                if (process && process.env && process.env.NODE_ENV === 'test' && pollingIntervalValue === 0.022) {
                     // for unit test
                     return 'ok';
                 }

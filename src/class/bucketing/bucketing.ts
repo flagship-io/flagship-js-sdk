@@ -33,15 +33,21 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         // init listeners
         this.on('launched', () => {
             if (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval) === 'ok' && this.isPollingRunning) {
-                this.log.debug('startPolling - polling finished successfully');
-                this.pollingMechanism();
+                this.log.debug(`startPolling - polling finished successfully. Next polling in ${this.config.pollingInterval} minute(s)`);
+                setTimeout(() => {
+                    this.pollingMechanism();
+                }, (this.config.pollingInterval as number) * 60 * 1000);
             } // no need to do logs on "else" statement because already done before
         });
 
         this.on('error', (error: Error) => {
             if (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval) === 'ok' && this.isPollingRunning) {
-                this.log.error(`startPolling - polling failed with error "${error}"`);
-                this.pollingMechanism();
+                this.log.error(
+                    `startPolling - polling failed with error "${error}". Next polling in ${this.config.pollingInterval} minute(s)`
+                );
+                setTimeout(() => {
+                    this.pollingMechanism();
+                }, (this.config.pollingInterval as number) * 60 * 1000);
             }
         });
     }
@@ -83,10 +89,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         switch (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval)) {
             case 'ok':
                 this.isPollingRunning = true;
-                setTimeout(() => {
-                    this.log.debug(`startPolling - starting a new polling...`);
-                    this.callApi();
-                }, (this.config.pollingInterval as number) * 60 * 1000);
+                this.log.debug(`startPolling - starting a new polling...`);
+                this.callApi();
                 break;
 
             case 'notSupported':

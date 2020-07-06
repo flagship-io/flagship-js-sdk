@@ -13,7 +13,7 @@ const defaultConfig: FlagshipSdkConfig = {
 };
 
 export const internalConfig: FlagshipSdkInternalConfig = {
-    bucketingEndpoint: 'http://cdn.flagship.io/@ENV_ID@/bucketing.json',
+    bucketingEndpoint: 'https://cdn.flagship.io/@ENV_ID@/bucketing.json',
     pollingIntervalMinValue: 1 // (= 1 min)
 };
 
