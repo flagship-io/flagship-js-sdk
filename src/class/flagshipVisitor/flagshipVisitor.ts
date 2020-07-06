@@ -226,7 +226,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         return output;
     }
 
-    private analyseModifications(
+    private static analyseModifications(
         campaigns: DecisionApiCampaign[] = [],
         activate = false,
         modificationsRequested?: FsModifsRequestedList
@@ -268,7 +268,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             });
             return null;
         });
-        this.log.debug(`detailsModifications:\n${JSON.stringify(detailsModifications)}`);
         return { detailsModifications, mergedModifications };
     }
 
@@ -279,7 +278,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     ): { desiredModifications: GetModificationsOutput; detailsModifications: object } {
         const desiredModifications: DecisionApiResponseDataSimpleComputed = {};
         // Extract all modifications from "normal" answer and put them in "mergedModifications" as "simple" mode would do but with additional info.
-        const { detailsModifications, mergedModifications } = this.analyseModifications(
+        const { detailsModifications, mergedModifications } = FlagshipVisitor.analyseModifications(
             response,
             !!activateAllModifications,
             modificationsRequested
@@ -327,6 +326,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 modificationsRequested,
                 activateAllModifications
             );
+            this.log.debug(`getModificationsPostProcess - detailsModifications:\n${JSON.stringify(detailsModifications)}`);
+
             this.triggerActivateIfNeeded(detailsModifications as DecisionApiResponseDataFullComputed);
             return desiredModifications;
         }
@@ -469,7 +470,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 };
             } else {
                 // default behavior
-                const { detailsModifications /* , mergedModifications */ } = this.analyseModifications(responseData.campaigns, !!activate);
+                const { detailsModifications /* , mergedModifications */ } = FlagshipVisitor.analyseModifications(
+                    responseData.campaigns,
+                    !!activate
+                );
                 analysedModifications = detailsModifications;
                 output = { ...reshapeResponse } as DecisionApiResponse;
             }
@@ -596,7 +600,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                         this.saveModificationsInCache(transformedBucketingData.campaigns);
                         this.log.debug('fetchAllModifications - bucket start detected');
                         if (activate) {
-                            const { detailsModifications } = this.analyseModifications(transformedBucketingData.campaigns, true);
+                            const { detailsModifications } = FlagshipVisitor.analyseModifications(transformedBucketingData.campaigns, true);
                             this.log.debug(
                                 `fetchAllModifications - activateNow enabled with bucketing mode. ${detailsModifications.length} campaign(s) will be activated.`
                             );

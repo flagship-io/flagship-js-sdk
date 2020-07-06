@@ -259,7 +259,7 @@ describe('Bucketing used from visitor instance', () => {
                             visitorId: 'test-perf'
                         }
                     });
-                    expect(spyDebugLogs).toHaveBeenCalledTimes(7);
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(5);
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'fetchAllModifications - bucket start detected');
                     expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                     expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -283,7 +283,7 @@ describe('Bucketing used from visitor instance', () => {
         expect(visitorInstance.fetchedModifications).toEqual(null);
         visitorInstance.synchronizeModifications().then(() => {
             try {
-                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(1);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -330,7 +330,7 @@ describe('Bucketing used from visitor instance', () => {
             visitorInstance.synchronizeModifications().then(() => {
                 expect(mockAxios.get).toHaveBeenCalledTimes(1);
 
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -379,7 +379,7 @@ describe('Bucketing used from visitor instance', () => {
             visitorInstance.synchronizeModifications().then(() => {
                 expect(mockAxios.get).toHaveBeenCalledTimes(1);
 
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);

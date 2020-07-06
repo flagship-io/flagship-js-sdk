@@ -829,8 +829,7 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
-                // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, '');
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                 done();
             } catch (error) {
                 done.fail(error);
@@ -870,9 +869,9 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    2,
+                    1,
                     'Here the details:,\n- because key "toto" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.'
                 );
                 done();
@@ -905,7 +904,7 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
                 done();
             } catch (error) {
                 done.fail(error);
@@ -956,13 +955,13 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    2,
+                    1,
                     'Here the details:,,\n- because key "toto" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.'
                 );
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    3,
+                    2,
                     'Here the details:,,\n- because key "titi" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.'
                 );
                 done();
@@ -1025,27 +1024,27 @@ describe('FlagshipVisitor', () => {
             expect(spyErrorLogs).toHaveBeenCalledTimes(0);
             expect(spyFatalLogs).toHaveBeenCalledTimes(0);
             expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-            expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+            expect(spyDebugLogs).toHaveBeenCalledTimes(3);
             expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                2,
+                1,
                 expect.stringContaining(
                     'because key "toto" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.'
                 )
             );
             expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                2,
+                1,
                 expect.stringContaining(
                     'because key "toto" is also include inside campaign id="5e26ccd803533a89c3acbbbb" where key(s) "tyty " is/are also requested'
                 )
             );
             expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                3,
+                2,
                 expect.stringContaining(
                     'because key "titi" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested'
                 )
             );
             expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                4,
+                3,
                 expect.stringContaining(
                     'because key "tata" is also include inside campaign id="5e26ccd803533a89c3acbbbb" where key(s) "tyty " is/are also requested'
                 )
@@ -1093,9 +1092,9 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    2,
+                    1,
                     'Here the details:,\n- because key "toto" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.'
                 );
                 done();
@@ -1128,7 +1127,7 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
                 done();
             } catch (error) {
                 done.fail(error);
@@ -1160,8 +1159,7 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
-                // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, '');
+                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
                 done();
             } catch (error) {
                 done.fail(error);
@@ -1483,7 +1481,7 @@ describe('FlagshipVisitor', () => {
                     1,
                     'Unable to activate modification "testUnexistingKey" because it does not exist on any existing campaign...'
                 );
-                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - loadFromCache enabled');
                 expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
                 expect(cacheResponse).toMatchObject({ testUnexistingKey: 'NOOOOO' });
@@ -1527,9 +1525,9 @@ describe('FlagshipVisitor', () => {
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(1);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(6);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(5);
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    6,
+                    5,
                     'extractModificationIndirectKeysFromCampaign - detected more than one campaign with same id "bmjdprsjan0g01uq2crg"'
                 );
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -1559,7 +1557,7 @@ describe('FlagshipVisitor', () => {
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(3);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(5);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
 
