@@ -6,9 +6,9 @@
 
 -   Following functions not available anymore:
 
-    -   setContext use [`updateContext`](README.md#updateContext) instead.
-    -   initSdk use [`start`](README.md#start) instead.
-    -   getModificationsCache use [`getModifications`](README.md#getModifications) instead.
+    -   `setContext` use [`updateContext`](README.md#updateContext) instead.
+    -   `initSdk` use [`start`](README.md#start) instead.
+    -   `getModificationsCache` use [`getModifications`](README.md#getModifications) instead.
 
 ### New features 🎉
 
