@@ -90,9 +90,17 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
             return nextSum;
         }, 0);
 
-        if (variationTrafficCheck !== 100) {
+        if (variationTrafficCheck < 100) {
+            this.log.debug(`computeMurmurAlgorithm - the total variation traffic allocation is equal to "${variationTrafficCheck}"`);
+            if (assignedVariation === null) {
+                this.log.info(
+                    `computeMurmurAlgorithm - current visitor will be untracked as it is outside the total variation traffic allocation`
+                );
+            }
+        }
+        if (variationTrafficCheck > 100) {
             this.log.fatal(
-                `computeMurmurAlgorithm - the variation traffic is equal to "${variationTrafficCheck}" instead of being equal to "100"`
+                `computeMurmurAlgorithm - the total variation traffic allocation is equal to "${variationTrafficCheck}" instead of being equal to "100"`
             );
             return null;
         }
@@ -418,8 +426,8 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                 if (variationToAffectToVisitor !== null) {
                     result.push(BucketingVisitor.transformIntoDecisionApiPayload(variationToAffectToVisitor, campaign, matchingVgId));
                 } else {
-                    log.fatal(
-                        `computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="${campaign.id}") using murmur for visitor (id="${visitorId}")`
+                    log.debug(
+                        `computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="${campaign.id}") using murmur for visitor (id="${visitorId}"). This visitor will be untracked.`
                     );
                 }
             } else {

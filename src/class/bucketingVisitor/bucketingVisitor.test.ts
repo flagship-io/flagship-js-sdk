@@ -554,22 +554,22 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
         const result = bucketInstance.getEligibleCampaigns();
         expect(result).toEqual([]);
 
-        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+        expect(spyDebugLogs).toHaveBeenCalledTimes(3);
         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
-        expect(spyFatalLogs).toHaveBeenCalledTimes(2);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(1);
 
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
         expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'Bucketing - campaign (id="bptggipaqi903f3haq0g") is matching visitor context');
         expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'computeMurmurAlgorithm - murmur returned value="79"');
-        expect(spyFatalLogs).toHaveBeenNthCalledWith(
-            1,
-            'computeMurmurAlgorithm - the variation traffic is equal to "110" instead of being equal to "100"'
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(
+            3,
+            'computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="bptggipaqi903f3haq0g") using murmur for visitor (id="test-perf"). This visitor will be untracked.'
         );
         expect(spyFatalLogs).toHaveBeenNthCalledWith(
-            2,
-            'computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="bptggipaqi903f3haq0g") using murmur for visitor (id="test-perf")'
+            1,
+            'computeMurmurAlgorithm - the total variation traffic allocation is equal to "110" instead of being equal to "100"'
         );
 
         done();
@@ -687,7 +687,55 @@ describe('BucketingVisitor - murmur algorithm', () => {
         done();
     });
 
-    it('should return an error if variation traffic not correct', (done) => {
+    it('should return a variation if visitor is in the traffic allocation according murmur hash and traffic allocation below 100', (done) => {
+        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], demoData.visitor.cleanContext, bucketingConfig);
+        initSpyLogs(bucketInstance);
+        bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
+        const result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.lowTraffic); // private function
+
+        expect(result).toEqual({
+            allocation: 30,
+            id: 'bptggipaqi903f3haq2g',
+            modifications: { type: 'JSON', value: { testCache: 'value' } }
+        });
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="79"');
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'computeMurmurAlgorithm - the total variation traffic allocation is equal to "80"');
+
+        done();
+    });
+
+    it('should return null and print a log if visitor is NOT in the traffic allocation according murmur hash and traffic allocation below 100', (done) => {
+        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], demoData.visitor.cleanContext, bucketingConfig);
+        initSpyLogs(bucketInstance);
+        bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
+        const result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.extremLowTraffic); // private function
+
+        expect(result).toEqual(null);
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="79"');
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'computeMurmurAlgorithm - the total variation traffic allocation is equal to "14"');
+        expect(spyInfoLogs).toHaveBeenNthCalledWith(
+            1,
+            'computeMurmurAlgorithm - current visitor will be untracked as it is outside the total variation traffic allocation'
+        );
+
+        done();
+    });
+
+    it('should return null and print an error log if traffic allocation is greater than 100', (done) => {
         bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], demoData.visitor.cleanContext, bucketingConfig);
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
@@ -695,12 +743,18 @@ describe('BucketingVisitor - murmur algorithm', () => {
 
         expect(result).toEqual(null);
 
+        expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
         expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="79"');
         expect(spyFatalLogs).toHaveBeenNthCalledWith(
             1,
-            'computeMurmurAlgorithm - the variation traffic is equal to "80" instead of being equal to "100"'
+            'computeMurmurAlgorithm - the total variation traffic allocation is equal to "105" instead of being equal to "100"'
         );
+
         done();
     });
 });

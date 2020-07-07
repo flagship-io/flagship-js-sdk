@@ -15,7 +15,9 @@ import notContainsOperator from './samples/oneCampaignOneVgOneTggWithAllPossible
 import notEqualsOperator from './samples/oneCampaignOneVgOneTggWithAllPossibleTargetings/notEqualsOperator';
 import startsWithOperator from './samples/oneCampaignOneVgOneTggWithAllPossibleTargetings/startsWithOperator';
 import murmurDefaultArgs from './murmur/arguments';
-import murmurBadTraffic from './murmur/badTraffic';
+import murmurLowTraffic from './murmur/badTraffic';
+import murmurBadTraffic from './murmur/badTraffic2';
+import murmurExtremLowTraffic from './murmur/extremLowTraffic';
 import multipleCampaigns from './samples/multipleCampaigns';
 import badOperator from './samples/badOperator';
 import oneCampaignWithBadTraffic from './samples/badTraffic';
@@ -25,6 +27,8 @@ export default {
     functions: {
         murmur: {
             defaultArgs: murmurDefaultArgs,
+            lowTraffic: murmurLowTraffic,
+            extremLowTraffic: murmurExtremLowTraffic,
             badTraffic: murmurBadTraffic
         }
     },
