@@ -352,7 +352,16 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         modificationsRequested: FsModifsRequestedList,
         activateAllModifications: boolean | null = null
     ): GetModificationsOutput {
-        return this.getModificationsCache(modificationsRequested, activateAllModifications);
+        if (!this.fetchedModifications) {
+            this.log.warn('No modifications found in cache...');
+            const { desiredModifications } = this.extractDesiredModifications([], modificationsRequested, activateAllModifications);
+            return desiredModifications;
+        }
+        const response = this.fetchAllModifications({
+            activate: !!activateAllModifications,
+            loadFromCache: true
+        }) as DecisionApiResponseData;
+        return this.getModificationsPostProcess(response, modificationsRequested, activateAllModifications);
     }
 
     public getModificationInfo(key: string): Promise<null | GetModificationInfoOutput> {
@@ -393,30 +402,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         });
     }
 
-    // deprecated
-    public getModificationsCache(
-        modificationsRequested: FsModifsRequestedList,
-        activateAllModifications: boolean | null = null
-    ): GetModificationsOutput {
-        if (!this.fetchedModifications) {
-            this.log.warn('No modifications found in cache...');
-            const { desiredModifications } = this.extractDesiredModifications([], modificationsRequested, activateAllModifications);
-            return desiredModifications;
-        }
-        const response = this.fetchAllModifications({
-            activate: !!activateAllModifications,
-            loadFromCache: true
-        }) as DecisionApiResponseData;
-        return this.getModificationsPostProcess(response, modificationsRequested, activateAllModifications);
-    }
-
-    // deprecated
-    public setContext(context: FlagshipVisitorContext): void {
-        this.context = context;
-    }
-
     public updateContext(context: FlagshipVisitorContext): void {
-        this.setContext(flagshipSdkHelper.checkVisitorContext(context, this.log));
+        this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
     }
 
     public synchronizeModifications(activate = false): Promise<number> {

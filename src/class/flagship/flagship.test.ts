@@ -53,7 +53,7 @@ describe('FlagshipVisitor', () => {
     describe('newVisitor function', () => {
         it('should have .once("ready") triggered also when fetchNow=false', (done) => {
             const mockFn = jest.fn();
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: false });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: false });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.on('ready', () => {
                 try {
@@ -69,7 +69,7 @@ describe('FlagshipVisitor', () => {
         it('should have .on("saveCache") triggered when initializing with a fetchNow=true', (done) => {
             const mockFn = jest.fn();
             let modificationsWhichWillBeSavedInCache;
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.on('saveCache', (args) => {
                 try {
@@ -98,7 +98,7 @@ describe('FlagshipVisitor', () => {
         });
 
         it('should log fatal error when decision api failed during a fetchNow=true', (done) => {
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true });
             initSpyLogs(sdk);
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.once('ready', () => {
@@ -127,7 +127,7 @@ describe('FlagshipVisitor', () => {
         it('should have ability to return custom modifications with "saveCache" event', (done) => {
             const mockFn = jest.fn();
             const modificationsWhichWillBeSavedInCache = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns;
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.on('saveCache', (args) => {
                 try {
@@ -158,7 +158,7 @@ describe('FlagshipVisitor', () => {
         it('should return default modifications if user badly use "saveCache" event', (done) => {
             const mockFn = jest.fn();
             let modificationsWhichWillBeSavedInCache;
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.on('saveCache', (args) => {
                 try {
@@ -193,7 +193,7 @@ describe('FlagshipVisitor', () => {
                 status: 200,
                 statusText: 'OK'
             };
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             expect(visitorInstance.config).toMatchObject({ ...testConfig, fetchNow: true });
             visitorInstance.once('ready', () => {
@@ -204,7 +204,7 @@ describe('FlagshipVisitor', () => {
         });
 
         it('should create a Visitor with modifications already loaded and activated if config "activateNow=true"', (done) => {
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, activateNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true });
             visitorInstance.once('ready', () => {
@@ -244,7 +244,7 @@ describe('FlagshipVisitor', () => {
 
         it('should use correct endpoint when "flagshipApi" is set in config', (done) => {
             const mockEndpoint = 'https://decision-api.flagship.io/v999/';
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true, flagshipApi: mockEndpoint });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, activateNow: true, flagshipApi: mockEndpoint });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true, flagshipApi: mockEndpoint });
             visitorInstance.once('ready', () => {
@@ -285,7 +285,7 @@ describe('FlagshipVisitor', () => {
         it('should add "x-api-key" in modifications queries when "apiKey" is set in config', (done) => {
             const mockApiKey = 'toto';
             const endPoint = 'https://decision-api.flagship.io/v1/';
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, activateNow: true, apiKey: mockApiKey });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, activateNow: true, apiKey: mockApiKey });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true, apiKey: mockApiKey });
             visitorInstance.once('ready', () => {
@@ -328,7 +328,7 @@ describe('FlagshipVisitor', () => {
         });
 
         it('if happens, should report that "x-api-key" is missing when api v2 detected', (done) => {
-            sdk = flagshipSdk.initSdk(demoData.envId[0], {
+            sdk = flagshipSdk.start(demoData.envId[0], {
                 ...testConfig,
                 fetchNow: false,
                 flagshipApi: 'https://decision.flagship.io/v2/'
@@ -359,7 +359,7 @@ describe('FlagshipVisitor', () => {
         });
 
         it('should report error logs when a Visitor instance has bad context', (done) => {
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], {
                 nullKey: null,
                 undefinedKey: undefined,
@@ -390,7 +390,7 @@ describe('FlagshipVisitor', () => {
                 flagshipApi: undefined,
                 nodeEnv: 'production'
             };
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...emptyConfig });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...emptyConfig });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             expect(visitorInstance.config).toEqual({
                 activateNow: false,
@@ -412,7 +412,7 @@ describe('FlagshipVisitor', () => {
     });
     describe('bucketing', () => {
         it('should report an error if trying to start bucketing but decisionMode is not set to "Bucketing"', (done) => {
-            sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: false });
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: false });
             initSpyLogs(sdk);
             sdk.startBucketingPolling();
 
@@ -433,7 +433,7 @@ describe('FlagshipVisitor', () => {
     });
     it('should have setting "initialModifications" working correctly', (done) => {
         const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
-        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: false, initialModifications: defaultCacheData });
+        sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: false, initialModifications: defaultCacheData });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         visitorInstance.on('ready', () => {
             try {
@@ -464,7 +464,7 @@ describe('FlagshipVisitor', () => {
                 }
             }
         ];
-        sdk = flagshipSdk.initSdk(demoData.envId[0], {
+        sdk = flagshipSdk.start(demoData.envId[0], {
             ...testConfig,
             enableConsoleLogs: true,
             fetchNow: false,
@@ -502,7 +502,7 @@ describe('FlagshipVisitor', () => {
     });
     it('should fetch decision api if "initialModifications" and "fetchNow" are set', (done) => {
         const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
-        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...testConfig, fetchNow: true, initialModifications: defaultCacheData });
+        sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true, initialModifications: defaultCacheData });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         visitorInstance.on('ready', () => {
             try {

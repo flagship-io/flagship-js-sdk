@@ -83,9 +83,7 @@ export interface IFlagshipVisitor extends EventEmitter {
         }>
     ): void;
     getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
-    getModificationsCache(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
     getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;
-    setContext(context: FlagshipVisitorContext): void;
     updateContext(context: FlagshipVisitorContext): void;
     synchronizeModifications(activate?: boolean): Promise<number>;
     getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
@@ -109,6 +107,5 @@ export interface IFlagship {
 }
 
 export interface FlagshipNodeSdk {
-    initSdk(envId: string, config?: FlagshipSdkConfig): IFlagship;
     start(envId: string, config?: FlagshipSdkConfig): IFlagship;
 }

@@ -19,23 +19,23 @@ describe('Flagship initialization', () => {
         spyErrorLogs.mockRestore();
         spyInfoLogs.mockRestore();
     });
-    it('initSdk should return a Flagship instance', () => {
+    it('start should return a Flagship instance', () => {
         const sdk = flagship.start(randomUUID, testConfig);
         expect(sdk).toBeInstanceOf(Flagship);
     });
 
-    it('initSdk should take default config if none is set', () => {
+    it('start should take default config if none is set', () => {
         const sdk = flagship.start(randomUUID);
         expect(sdk.config).toMatchObject(defaultConfig);
     });
 
-    it('initSdk should consider custom config if exist and override default config', () => {
+    it('start should consider custom config if exist and override default config', () => {
         const customConfig = { ...testConfig, nodeEnv: 'debug' };
         const sdk = flagship.start(randomUUID, customConfig);
         expect(sdk.config).toMatchObject({ ...defaultConfig, ...customConfig });
     });
 
-    it('initSdk should log when a setting is not recognized except for React special settings', () => {
+    it('start should log when a setting is not recognized except for React special settings', () => {
         const customConfig = {
             ...testConfig,
             nodeEnv: 'debug',

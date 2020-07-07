@@ -28,7 +28,7 @@ const initSpyLogs = (vInstance): void => {
 
 describe('FlagshipVisitor', () => {
     beforeAll(() => {
-        sdk = flagshipSdk.initSdk(demoData.envId[0], testConfig);
+        sdk = flagshipSdk.start(demoData.envId[0], testConfig);
     });
     afterEach(() => {
         mockAxios.reset();

@@ -2,12 +2,26 @@
 
 ## ➡️ Version 2.0.0
 
+### Breaking changes ⚠️
+
+-   Following functions not available anymore:
+
+    -   setContext use [`updateContext`](README.md#updateContext) instead.
+    -   initSdk use [`start`](README.md#start) instead.
+    -   getModificationsCache use [`getModifications`](README.md#getModifications) instead.
+
 ### New features 🎉
+
+-   Can use `Decision API V2`, to do so, initialize the SDK like this:
+
+```javascript
+flagshipSdk.start('ENV_ID', { flagshipApi: 'https://decision.flagship.io/v2/', apiKey: 'YOUR_API_KEY' /*, other settings...*/ });
+```
 
 -   New mode `Bucketing` when initializing SDK:
 
 ```javascript
-flagshipSdk.initSdk('ENV_ID', { decisionMode: 'Bucketing', pollingInterval: 5 });
+flagshipSdk.start('ENV_ID', { decisionMode: 'Bucketing', pollingInterval: 5 /*, other settings...*/ });
 ```
 
 -   New option `simpleMode` for function `getAllModifications`:
