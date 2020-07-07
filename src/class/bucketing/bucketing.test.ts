@@ -172,6 +172,13 @@ describe('Bucketing used from visitor instance', () => {
         mockAxios.reset();
     });
 
+    it('should validate status below 400', () => {
+        expect(Bucketing.validateStatus(399)).toEqual(true);
+        expect(Bucketing.validateStatus(201)).toEqual(true);
+        expect(Bucketing.validateStatus(101)).toEqual(true);
+        expect(Bucketing.validateStatus(400)).toEqual(false);
+        expect(Bucketing.validateStatus(500)).toEqual(false);
+    });
     it('should have correct behavior when there is an error during bucketing + activate', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false });
@@ -228,6 +235,46 @@ describe('Bucketing used from visitor instance', () => {
         } catch (error) {
             done.fail(error);
         }
+    });
+
+    it('should report an error if apiMode is "Bucketing" and it failed during first call', (done) => {
+        sdk = flagshipSdk.initSdk(demoData.envId[0], bucketingConfig);
+        const sdkLogs = initSpyLogs(sdk);
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        initSpyLogs(visitorInstance);
+        mockAxios.mockError('Error api bucket');
+        visitorInstance.on('ready', () => {
+            try {
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - bucketing failed with error "Error api bucket"');
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications: "null"');
+
+                expect(sdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(sdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(sdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(sdkLogs.spyFatalLogs).toHaveBeenCalledTimes(1);
+                expect(sdkLogs.spyInfoLogs).toHaveBeenCalledTimes(2);
+
+                expect(sdkLogs.spyFatalLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'new visitor (id="test-perf") bucket API failed during initialization with error "Error api bucket"'
+                );
+                expect(sdkLogs.spyInfoLogs).toHaveBeenNthCalledWith(1, 'Creating new visitor (id="test-perf")');
+                expect(sdkLogs.spyInfoLogs).toHaveBeenNthCalledWith(
+                    2,
+                    'new visitor (id="test-perf") calling bucketing API for initialization (waiting to be ready...)'
+                );
+
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
     });
 
     it('should have correct behavior for bucketing cache api handling', (done) => {

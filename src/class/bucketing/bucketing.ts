@@ -52,14 +52,16 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         });
     }
 
+    private static validateStatus(status): boolean {
+        return status < 400; // Resolve only if the status code is less than 400
+    }
+
     public callApi(): Promise<BucketingApiResponse | void> {
         const axiosConfig = {
             headers: {
                 'If-Modified-Since': this.lastModifiedDate !== null ? this.lastModifiedDate : ''
             },
-            validateStatus(status): boolean {
-                return status < 400; // Resolve only if the status code is less than 400
-            }
+            validateStatus: Bucketing.validateStatus
         };
         const url = internalConfig.bucketingEndpoint.replace('@ENV_ID@', this.envId);
         return Axios.get(url, axiosConfig)
