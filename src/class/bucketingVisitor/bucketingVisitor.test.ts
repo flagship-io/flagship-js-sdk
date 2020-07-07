@@ -640,6 +640,35 @@ describe('BucketingVisitor - murmur algorithm', () => {
         done();
     });
 
+    it('should works with a campaign containing a 100% allocation variation', (done) => {
+        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], demoData.visitor.cleanContext, bucketingConfig);
+
+        expect(bucketInstance.data).toEqual(null);
+        expect(bucketInstance.computedData).toEqual(null);
+
+        initSpyLogs(bucketInstance);
+        bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
+        const result = bucketInstance.computeMurmurAlgorithm(
+            demoData.bucketing.oneCampaignWith100PercentAllocation.campaigns[0].variationGroups[0].variations
+        ); // private function
+
+        expect(result).toEqual({
+            allocation: 100,
+            id: 'bqtvkps9h7j02m34fj4g',
+            modifications: { type: 'JSON', value: { Buttoncolor: 'Blue' } }
+        });
+
+        expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="79"');
+
+        done();
+    });
+
     it('should be SDK ISO (visitorId="toto")', (done) => {
         bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], demoData.visitor.cleanContext, bucketingConfig);
         initSpyLogs(bucketInstance);

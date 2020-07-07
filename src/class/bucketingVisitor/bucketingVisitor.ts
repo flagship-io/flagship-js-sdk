@@ -82,7 +82,8 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         this.log.debug(`computeMurmurAlgorithm - murmur returned value="${murmurAllocation}"`);
 
         const variationTrafficCheck = variations.reduce((sum, v) => {
-            const nextSum = v.allocation + sum;
+            const variationAllocation = v.allocation || 0;
+            const nextSum = variationAllocation + sum;
             if (murmurAllocation < nextSum) {
                 assignedVariation = v;
             }
