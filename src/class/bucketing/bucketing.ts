@@ -56,6 +56,9 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         const axiosConfig = {
             headers: {
                 'If-Modified-Since': this.lastModifiedDate !== null ? this.lastModifiedDate : ''
+            },
+            validateStatus(status): boolean {
+                return status < 400; // Resolve only if the status code is less than 400
             }
         };
         const url = internalConfig.bucketingEndpoint.replace('@ENV_ID@', this.envId);

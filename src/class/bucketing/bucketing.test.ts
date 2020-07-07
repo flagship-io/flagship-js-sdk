@@ -149,8 +149,11 @@ const initSpyLogs = (bInstance) => {
     };
 };
 
-const expectedRequestHeaderFirstCall = { headers: { 'If-Modified-Since': '' } };
-const expectedRequestHeaderNotFirstCall = { headers: { 'If-Modified-Since': 'Wed, 18 Mar 2020 23:29:16 GMT' } };
+const expectedRequestHeaderFirstCall = { headers: { 'If-Modified-Since': '' }, validateStatus: expect.any(Function) };
+const expectedRequestHeaderNotFirstCall = {
+    headers: { 'If-Modified-Since': 'Wed, 18 Mar 2020 23:29:16 GMT' },
+    validateStatus: expect.any(Function)
+};
 
 describe('Bucketing used from visitor instance', () => {
     beforeEach(() => {
