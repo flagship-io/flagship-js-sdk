@@ -85,8 +85,11 @@ class Flagship implements IFlagship {
     public startBucketingPolling(): void {
         if (this.bucket !== null && !this.bucket.isPollingRunning) {
             this.bucket.startPolling();
-            this.bucket.on('launched', () => {
-                this.eventEmitter.emit('bucketPollingSuccess', (this.bucket as IFlagshipBucketing).data as BucketingApiResponse);
+            this.bucket.on('launched', ({ status }) => {
+                this.eventEmitter.emit('bucketPollingSuccess', {
+                    status,
+                    payload: (this.bucket as IFlagshipBucketing).data as BucketingApiResponse
+                });
             });
             this.bucket.on('error', (error: Error) => {
                 this.eventEmitter.emit('bucketPollingFailed', error);

@@ -66,9 +66,15 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         if (this.config.decisionMode === 'Bucketing') {
             this.bucket = new BucketingVisitor(this.envId, this.id, this.context, this.config, bucket && bucket.data);
-            sdkListener.on('bucketPollingSuccess', (data: BucketingApiResponse) => {
-                this.log.debug('bucketing polling detected.');
-                (this.bucket as IFlagshipBucketingVisitor).updateCache(data);
+            sdkListener.on('bucketPollingSuccess', ({ payload: data, status }: { payload: BucketingApiResponse; status: number }) => {
+                if (status === 304) {
+                    // do nothing
+                } else if (status === 200) {
+                    this.log.debug('bucketing polling with fresh data detected.');
+                    (this.bucket as IFlagshipBucketingVisitor).updateCache(data);
+                } else {
+                    this.log.error(`unexpected status (="${status}") received. This polling will be ignored.`);
+                }
             });
         }
     }
@@ -591,7 +597,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     );
                 } else {
                     this.log.info('fetchAllModifications - no data in current bucket, waiting for bucket to start...');
-                    this.sdkListener.once('bucketPollingSuccess', (data) => {
+                    this.sdkListener.once('bucketPollingSuccess', ({ payload: data }) => {
                         (this.bucket as IFlagshipBucketingVisitor).updateCache(data);
                         transformedBucketingData = {
                             ...transformedBucketingData,

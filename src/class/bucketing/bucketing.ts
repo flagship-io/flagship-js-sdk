@@ -31,7 +31,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         this.lastModifiedDate = null;
 
         // init listeners
-        this.on('launched', () => {
+        this.on('launched', (/* {status} */) => {
             if (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval) === 'ok' && this.isPollingRunning) {
                 this.log.debug(`startPolling - polling finished successfully. Next polling in ${this.config.pollingInterval} minute(s)`);
                 setTimeout(() => {
@@ -66,20 +66,18 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
             .then(({ data: bucketingData, status, ...other }: AxiosResponse<BucketingApiResponse>) => {
                 if (bucketingData.panic) {
                     this.log.warn('Panic mode detected, running SDK in safe mode...');
+                } else if (status === 304) {
+                    this.log.info(`callApi - current bucketing up to date (api status=304)`);
                 } else {
                     if (!other.headers['last-modified']) {
                         this.log.warn(`callApi - http GET request (url="${url}") did not return attribute "last-modified"`);
                     } else {
                         this.lastModifiedDate = other.headers['last-modified'];
                     }
-                    if (status === 304) {
-                        this.log.info(`callApi - current bucketing up to date (api status=304)`);
-                    } else {
-                        this.log.info(`callApi - current bucketing updated`);
-                        this.data = { ...bucketingData };
-                    }
+                    this.log.info(`callApi - current bucketing updated`);
+                    this.data = { ...bucketingData };
                 }
-                this.emit('launched');
+                this.emit('launched', { status });
                 return bucketingData;
             })
             .catch((response: Error) => {

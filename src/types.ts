@@ -60,7 +60,7 @@ export interface IFlagshipBucketing extends EventEmitter {
     lastModifiedDate: string | null;
     callApi(): Promise<BucketingApiResponse | void>;
     startPolling(): void;
-    on(event: 'launched', listener: () => void): this;
+    on(event: 'launched', listener: ({ status: number }) => void): this;
     on(event: 'error', listener: (args: Error) => void): this;
 }
 

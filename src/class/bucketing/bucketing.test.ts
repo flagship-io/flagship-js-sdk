@@ -30,9 +30,14 @@ const demoPollingInterval = 0.022;
 let bucketingApiMockResponse: BucketingApiResponse;
 let bucketingEventMockResponse: HttpResponse;
 
-const bucketingApiMockOtherResponse: { status: number; headers: { 'last-modified': string } } = {
-    status: 204,
+const bucketingApiMockOtherResponse200: { status: number; headers: { 'last-modified': string } } = {
+    status: 200,
     headers: { 'last-modified': 'Wed, 18 Mar 2020 23:29:16 GMT' }
+};
+
+const bucketingApiMockOtherResponse304: { status: number; headers: {} } = {
+    status: 304,
+    headers: {} // NOTE: 'last-modified' does not exist on 304
 };
 
 const waitBeforeContinue = (condition, sleep): Promise<void> => {
@@ -231,7 +236,7 @@ describe('Bucketing used from visitor instance', () => {
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
-        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
         visitorInstance.on('ready', () => {
             try {
                 initSpyLogs(visitorInstance);
@@ -262,7 +267,7 @@ describe('Bucketing used from visitor instance', () => {
                             visitorId: 'test-perf'
                         }
                     });
-                    expect(spyDebugLogs).toHaveBeenCalledTimes(5);
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(4);
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'fetchAllModifications - bucket start detected');
                     expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                     expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -270,7 +275,7 @@ describe('Bucketing used from visitor instance', () => {
                     expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                     done();
                 });
-                sdk.eventEmitter.emit('bucketPollingSuccess', {});
+                sdk.eventEmitter.emit('bucketPollingSuccess', { payload: {}, status: 304 });
             } catch (error) {
                 done.fail(error);
             }
@@ -307,7 +312,41 @@ describe('Bucketing used from visitor instance', () => {
                 done.fail(error);
             }
         });
-        sdk.eventEmitter.emit('bucketPollingSuccess', { ...bucketingApiMockResponse });
+        sdk.eventEmitter.emit('bucketPollingSuccess', { payload: { ...bucketingApiMockResponse }, status: 200 });
+    });
+
+    it('should warn when receiving unexpected polling status code', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.initSdk(demoData.envId[0], { ...bucketingConfig, fetchNow: false });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        initSpyLogs(visitorInstance);
+        expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
+        expect(visitorInstance.fetchedModifications).toEqual(null);
+        visitorInstance.synchronizeModifications().then(() => {
+            try {
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'unexpected status (="999") received. This polling will be ignored.');
+                expect(spyInfoLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'fetchAllModifications - no data in current bucket, waiting for bucket to start...'
+                );
+
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - bucket start detected');
+
+                expect(visitorInstance.fetchedModifications[0].id === demoData.bucketing.classical.campaigns[0].id).toEqual(true);
+                expect(visitorInstance.fetchedModifications[1].id === demoData.bucketing.classical.campaigns[1].id).toEqual(true);
+                expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+        sdk.eventEmitter.emit('bucketPollingSuccess', { payload: { ...bucketingApiMockResponse }, status: 999 });
     });
 
     it('should consider new visitor context when sync modifs and bucketing already init', (done) => {
@@ -318,7 +357,7 @@ describe('Bucketing used from visitor instance', () => {
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
         expect(sdk.bucket instanceof Bucketing).toEqual(true);
 
-        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
 
         expect(mockAxios.get).toHaveBeenNthCalledWith(
             1,
@@ -364,7 +403,7 @@ describe('Bucketing used from visitor instance', () => {
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
         expect(sdk.bucket instanceof Bucketing).toEqual(true);
 
-        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
 
         expect(mockAxios.get).toHaveBeenNthCalledWith(
             1,
@@ -421,7 +460,7 @@ describe('Bucketing used from visitor instance', () => {
             done.fail('not supposed to be here');
         });
 
-        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
 
         expect(mockAxios.get).toHaveBeenNthCalledWith(
             1,
@@ -455,7 +494,7 @@ describe('Bucketing used from visitor instance', () => {
             done.fail('not supposed to be here');
         });
 
-        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
         mockAxios.mockResponse();
         mockAxios.mockResponse();
         mockAxios.mockResponse();
@@ -649,8 +688,8 @@ describe('Bucketing - polling', () => {
         });
 
         mockPollingRequest(done, () => pollingLoop, [
-            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse },
-            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }
+            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 },
+            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }
         ]);
     });
 
@@ -690,8 +729,8 @@ describe('Bucketing - polling', () => {
         });
 
         mockPollingRequest(done, () => pollingLoop, [
-            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse },
-            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }
+            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 },
+            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }
         ]);
     }, 20000); // adjust timeout to 20 sec since the test takes about 13 sec
 
@@ -783,8 +822,8 @@ describe('Bucketing - polling', () => {
                     expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
                     expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
 
-                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling detected.');
-                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(2, 'bucketing polling detected.');
+                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling with fresh data detected.');
+                    expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(2, 'bucketing polling with fresh data detected.');
 
                     expect(spyDebugLogs).toHaveBeenCalledTimes(5);
                     expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -819,8 +858,8 @@ describe('Bucketing - polling', () => {
                 expect(sdk.bucket.isPollingRunning).toEqual(false);
                 sdk.startBucketingPolling(); // manually start polling
                 mockPollingRequest(done, () => pollingLoop, [
-                    { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse },
-                    { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }
+                    { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 },
+                    { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }
                 ]);
             } catch (error) {
                 done.fail(error);
@@ -912,7 +951,7 @@ describe('Bucketing - polling', () => {
     //             expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
     //             expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
 
-    //             expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling detected.');
+    //             expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling with fresh data detected.');
 
     //             expect(spyDebugLogs).toHaveBeenCalledTimes(4);
     //             expect(spyErrorLogs).toHaveBeenCalledTimes(1);
@@ -981,7 +1020,7 @@ describe('Bucketing - polling', () => {
                 expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
 
-                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling detected.');
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling with fresh data detected.');
 
                 expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(1);
@@ -1009,7 +1048,7 @@ describe('Bucketing - polling', () => {
                 expect(visitorInstance.fetchedModifications).toEqual(null);
                 expect(sdk.bucket.isPollingRunning).toEqual(false);
                 sdk.startBucketingPolling(); // manually start polling
-                mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }]);
+                mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }]);
             } catch (error) {
                 done.fail(error);
             }
@@ -1039,7 +1078,7 @@ describe('Bucketing - polling', () => {
                 expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
 
-                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling detected.');
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling with fresh data detected.');
 
                 expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(1);
@@ -1067,7 +1106,7 @@ describe('Bucketing - polling', () => {
                 expect(visitorInstance.fetchedModifications).toEqual(null);
                 expect(sdk.bucket.isPollingRunning).toEqual(false);
                 sdk.startBucketingPolling(); // manually start polling
-                mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }]);
+                mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }]);
             } catch (error) {
                 done.fail(error);
             }
@@ -1097,7 +1136,7 @@ describe('Bucketing - polling', () => {
                 expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
 
-                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling detected.');
+                expect(spyVisitorLogs.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling with fresh data detected.');
 
                 expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(1);
@@ -1125,7 +1164,7 @@ describe('Bucketing - polling', () => {
                 expect(visitorInstance.fetchedModifications).toEqual(null);
                 expect(sdk.bucket.isPollingRunning).toEqual(false);
                 sdk.startBucketingPolling(); // manually start polling
-                mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse }]);
+                mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }]);
             } catch (error) {
                 done.fail(error);
             }
@@ -1188,7 +1227,7 @@ describe('Bucketing - callApi', () => {
         });
 
         bucketInstance.callApi();
-        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse, headers: {} });
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200, headers: {} });
     });
 
     it('should works with "classical" bucket api response', (done) => {
@@ -1228,7 +1267,7 @@ describe('Bucketing - callApi', () => {
         });
 
         bucketInstance.callApi();
-        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
     });
 
     it('should handle status=304', (done) => {
@@ -1268,7 +1307,7 @@ describe('Bucketing - callApi', () => {
             done.fail('not supposed to be here');
         });
 
-        mockAxios.mockResponse({ data: {}, ...bucketingApiMockOtherResponse, status: 304 });
+        mockAxios.mockResponse({ data: {}, ...bucketingApiMockOtherResponse304 });
     });
 
     it('should detect when bucket api response return panic mode', (done) => {
@@ -1300,7 +1339,7 @@ describe('Bucketing - callApi', () => {
         });
 
         bucketInstance.callApi();
-        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse });
+        mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
     });
     it('should log an error when bucketing api fail', (done) => {
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig);
