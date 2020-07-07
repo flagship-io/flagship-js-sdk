@@ -64,10 +64,10 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                 if (bucketingData.panic) {
                     this.log.warn('Panic mode detected, running SDK in safe mode...');
                 } else {
-                    if (!other.headers['Last-Modified']) {
-                        this.log.warn(`callApi - http GET request (url="${url}") did not return attribute "Last-Modified"`);
+                    if (!other.headers['last-modified']) {
+                        this.log.warn(`callApi - http GET request (url="${url}") did not return attribute "last-modified"`);
                     } else {
-                        this.lastModifiedDate = other.headers['Last-Modified'];
+                        this.lastModifiedDate = other.headers['last-modified'];
                     }
                     if (status === 304) {
                         this.log.info(`callApi - current bucketing up to date (api status=304)`);

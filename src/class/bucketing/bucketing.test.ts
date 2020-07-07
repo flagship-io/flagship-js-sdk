@@ -30,9 +30,9 @@ const demoPollingInterval = 0.022;
 let bucketingApiMockResponse: BucketingApiResponse;
 let bucketingEventMockResponse: HttpResponse;
 
-const bucketingApiMockOtherResponse: { status: number; headers: { 'Last-Modified': string } } = {
+const bucketingApiMockOtherResponse: { status: number; headers: { 'last-modified': string } } = {
     status: 204,
-    headers: { 'Last-Modified': 'Wed, 18 Mar 2020 23:29:16 GMT' }
+    headers: { 'last-modified': 'Wed, 18 Mar 2020 23:29:16 GMT' }
 };
 
 const waitBeforeContinue = (condition, sleep): Promise<void> => {
@@ -1144,7 +1144,7 @@ describe('Bucketing - callApi', () => {
         mockAxios.reset();
     });
 
-    it('should report some logs when bucket api do not return "Last-modified" attribute', (done) => {
+    it('should report some logs when bucket api do not return "last-modified" attribute', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig);
 
@@ -1169,7 +1169,7 @@ describe('Bucketing - callApi', () => {
                 expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
                 expect(spyWarnLogs).toHaveBeenNthCalledWith(
                     1,
-                    'callApi - http GET request (url="https://cdn.flagship.io/bn1ab7m56qolupi5sa0g/bucketing.json") did not return attribute "Last-Modified"'
+                    'callApi - http GET request (url="https://cdn.flagship.io/bn1ab7m56qolupi5sa0g/bucketing.json") did not return attribute "last-modified"'
                 );
 
                 expect(bucketInstance.data).toEqual(bucketingApiMockResponse);
