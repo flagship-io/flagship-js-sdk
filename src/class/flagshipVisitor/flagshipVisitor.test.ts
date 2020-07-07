@@ -778,6 +778,29 @@ describe('FlagshipVisitor', () => {
                 { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
             );
         });
+        it('should have correct response for simple mode', (done) => {
+            const responseObj = {
+                data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
+                status: 200,
+                statusText: 'OK'
+            };
+            const spyFetchAll = jest.spyOn(visitorInstance, 'fetchAllModifications');
+            visitorInstance.getAllModifications(false, { simpleMode: true }).then((response) => {
+                try {
+                    expect(response).toEqual({ psp: 'dalenys', algorithmVersion: 'new', hello: 'world' });
+                    expect(spyFetchAll).toHaveBeenCalled();
+                } catch (error) {
+                    done.fail(error);
+                }
+                done();
+            });
+            mockAxios.mockResponse(responseObj);
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                1,
+                `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+            );
+        });
     });
 
     describe('ActivateModifications function', () => {

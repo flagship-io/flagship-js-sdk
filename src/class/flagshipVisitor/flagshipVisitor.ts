@@ -21,7 +21,8 @@ import {
     GetModificationsOutput,
     HitShape,
     ItemHit,
-    TransactionHit
+    TransactionHit,
+    DecisionApiSimpleResponse
 } from './types';
 
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
@@ -442,8 +443,27 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         return this.fetchAllModifications({ activate, campaignCustomID: campaignId }) as Promise<DecisionApiResponse>;
     }
 
-    public getAllModifications(activate = false, options = { force: false }): Promise<DecisionApiResponse> {
-        return this.fetchAllModifications({ activate, force: options.force }) as Promise<DecisionApiResponse>;
+    public getAllModifications(
+        activate = false,
+        options = { force: false, simpleMode: false }
+    ): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
+        return new Promise((resolve, reject) => {
+            (this.fetchAllModifications({ activate, force: options.force }) as Promise<DecisionApiResponse>)
+                .then((response: DecisionApiResponse) => {
+                    if (options.simpleMode) {
+                        const { detailsModifications } = FlagshipVisitor.analyseModifications(response.data.campaigns);
+                        resolve(
+                            Object.keys(detailsModifications).reduce(
+                                (reducer, key) => ({ ...reducer, [key]: detailsModifications[key].value[0] }),
+                                {}
+                            )
+                        );
+                    } else {
+                        resolve(response);
+                    }
+                })
+                .catch((error) => reject(error));
+        });
     }
 
     private fetchAllModificationsPostProcess(

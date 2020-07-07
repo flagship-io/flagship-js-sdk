@@ -9,7 +9,8 @@ import {
     GetModificationsOutput,
     DecisionApiCampaign,
     GetModificationInfoOutput,
-    DecisionApiResponseData
+    DecisionApiResponseData,
+    DecisionApiSimpleResponse
 } from './class/flagshipVisitor/types';
 import { BucketingApiResponse } from './class/bucketing/types';
 
@@ -88,7 +89,10 @@ export interface IFlagshipVisitor extends EventEmitter {
     updateContext(context: FlagshipVisitorContext): void;
     synchronizeModifications(activate?: boolean): Promise<number>;
     getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
-    getAllModifications(activate?: boolean, options?: { force?: boolean }): Promise<DecisionApiResponse>;
+    getAllModifications(
+        activate?: boolean,
+        options?: { force?: boolean; simpleMode?: boolean }
+    ): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
     sendHit(hitData: HitShape): Promise<void>;
     sendHits(hitsArray: Array<HitShape>): Promise<void>;
     on(event: 'ready', listener: () => void): this;
