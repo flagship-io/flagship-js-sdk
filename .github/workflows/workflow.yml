@@ -6,9 +6,9 @@ name: Code coverage
 # events but only for the master branch
 on:
   push:
-    branches: [ master, bucketing ]
+    branches: [master, bucketing]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -19,15 +19,15 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    - uses: actions/checkout@master
-    - name: Install modules
+      - uses: actions/checkout@master
+      - name: Install modules
         run: npm i
-    - name: Run tests
+      - name: Run tests
         run: npm run test:coverage
-    - uses: codecov/codecov-action@v1
-      with:
-        #token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-        file: ./coverage/clover.xml # optional
-        flags: unittests # optional
-        name: codecov-flagship-sdk-coverage # optional
-        fail_ci_if_error: true # optional (default = false)
+      - uses: codecov/codecov-action@v1
+        with:
+          #token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          file: ./coverage/clover.xml # optional
+          flags: unittests # optional
+          name: codecov-flagship-sdk-coverage # optional
+          fail_ci_if_error: true # optional (default = false)
