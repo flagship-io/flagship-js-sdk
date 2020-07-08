@@ -6,7 +6,12 @@
 
 <h3 align="center">Bring your features to life</h3>
 
-[![coverage](https://img.shields.io/badge/coverage-100%25-green)]()
+[![codecov](https://codecov.io/gh/abtasty/flagship-js-sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/abtasty/flagship-js-sdk)
+
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
+
 [![Apache2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 **Visit [https://developers.flagship.io/](https://developers.flagship.io/) to get started with Flagship.**
@@ -31,7 +36,18 @@ How to use the SDK in practice ☕ :
 
 ## Contributors
 
--   Emilien Domenge-Heritier [@Emidomenge](https://github.com/Emidomenge)
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://www.domenge.fr/"><img src="https://avatars0.githubusercontent.com/u/15636263?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Emilien Domenge</b></sub></a><br /><a href="https://github.com/abtasty/flagship-js-sdk/commits?author=Emidomenge" title="Code">💻</a> <a href="https://github.com/abtasty/flagship-js-sdk/commits?author=Emidomenge" title="Documentation">📖</a> <a href="#example-Emidomenge" title="Examples">💡</a> <a href="#maintenance-Emidomenge" title="Maintenance">🚧</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Licence
 
