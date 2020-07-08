@@ -28,6 +28,8 @@
         "update:react-app": "cd ./examples/react-app && npm install @flagship.io/js-sdk@latest --save && cd ../../",
         "update:api-server": "cd ./examples/api-server && npm install @flagship.io/js-sdk@latest --save && cd ../../",
         "update:fsLog": "npm install @flagship.io/js-sdk-logs@latest --save",
+        "contributors:add": "all-contributors add",
+        "contributors:generate": "all-contributors generate",
         "stats:dev": "rm -rf dist && webpack --env=stats",
         "stats:prod": "webpack --profile --json --env=prod > stats.json && webpack-bundle-analyzer ./stats.json",
         "build": "rm -rf dist && webpack --env=prod && ./cleanDts.sh"
@@ -67,6 +69,7 @@
         "@types/node": "^12.12.7",
         "@typescript-eslint/eslint-plugin": "^2.8.0",
         "@typescript-eslint/parser": "^2.8.0",
+        "all-contributors-cli": "^6.16.1",
         "babel-jest": "^24.9.0",
         "babel-loader": "^8.0.6",
         "dts-bundle-generator": "^4.3.0",
