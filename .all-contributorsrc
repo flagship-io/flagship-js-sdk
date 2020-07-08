@@ -21,6 +21,16 @@
         "example",
         "maintenance"
       ]
+    },
+    {
+      "login": "guillaumejacquart",
+      "name": "Guillaume Jacquart",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/5268752?v=4",
+      "profile": "https://github.com/guillaumejacquart",
+      "contributions": [
+        "bug",
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7
