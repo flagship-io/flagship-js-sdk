@@ -6,16 +6,8 @@ When contributing to this repository, please first discuss the change you wish t
 
 1. Ensure you're able to do a build.
 
-    Dev build:
-
     ```
-    flagship-js-sdk$ npm run build:dev
-    ```
-
-    Prod build:
-
-    ```
-    flagship-js-sdk$ npm run build:prod
+    flagship-js-sdk$ npm run build
     ```
 
 2. Ensure you're able to pass unit test.
