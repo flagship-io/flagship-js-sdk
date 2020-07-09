@@ -432,12 +432,17 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     public getAllModifications(
         activate = false,
-        options = { force: false, simpleMode: false }
+        options: { force?: boolean; simpleMode?: boolean } = {}
     ): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
+        const defaultOptions = {
+            force: false,
+            simpleMode: false
+        };
+        const optionsToConsider = { ...defaultOptions, ...options };
         return new Promise((resolve, reject) => {
-            (this.fetchAllModifications({ activate, force: options.force }) as Promise<DecisionApiResponse>)
+            (this.fetchAllModifications({ activate, force: optionsToConsider.force }) as Promise<DecisionApiResponse>)
                 .then((response: DecisionApiResponse) => {
-                    if (options.simpleMode) {
+                    if (optionsToConsider.simpleMode) {
                         const { detailsModifications } = FlagshipVisitor.analyseModifications(response.data.campaigns);
                         resolve(
                             Object.keys(detailsModifications).reduce(
