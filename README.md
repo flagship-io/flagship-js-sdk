@@ -6,6 +6,8 @@
 
 <h3 align="center">Bring your features to life</h3>
 
+<div style='display: flex; justify-content: space-around;'>
+
 [![codecov](https://codecov.io/gh/abtasty/flagship-js-sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/abtasty/flagship-js-sdk)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
@@ -16,9 +18,13 @@
 
 [![Apache2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-**Visit [https://developers.flagship.io/](https://developers.flagship.io/) to get started with Flagship.**
+[![GitHub release](https://img.shields.io/github/v/release/abtasty/flagship-react-sdk.svg)](https://github.com/abtasty/flagship-react-sdk/releases)
+
+</div>
 
 ## Docs
+
+**Visit [https://developers.flagship.io/](https://developers.flagship.io/) to get started with Flagship.**
 
 -   [Installation & Getting Started](https://developers.flagship.io/js/v2.x.x/#getting-started)
 -   [SDK Settings](https://developers.flagship.io/js/v2.x.x/#sdk-settings)
@@ -30,11 +36,35 @@
 
 ## Examples
 
-How to use the SDK in practice ☕ :
+Following demos illustrate how the SDK is used in practice ☕
 
--   With React: [Readme](examples/react-app/README.md)
-    -   [Online demo](https://abtasty.github.io/flagship-js-sdk/)
--   With Express: [Readme](examples/api-server/README.md)
+-   With Express JS:
+
+<div style="display: flex; justify-content: space-around; font-size: 24px">
+
+[Readme 📖](examples/api-server/README.md)
+
+</div>
+
+-   With React, inside react component:
+
+<div style="display: flex; justify-content: space-around; font-size: 24px">
+
+[Readme 📖](examples/react-app/README.md)
+
+[Live Demo 🕹](https://abtasty.github.io/flagship-js-sdk/)
+
+</div>
+
+-   With React, using cookies:
+
+<div style="display: flex; justify-content: space-around; font-size: 24px">
+
+[Readme 📖](https://github.com/abtasty/flagship-react-sdk/tree/master/examples/react-ecommerce-demo)
+
+[Live Demo 🕹](https://react-ecommerce-demo.internal.flagship.io/)
+
+</div>
 
 ## Contributors
 
