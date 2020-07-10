@@ -1079,7 +1079,7 @@ describe('Bucketing - polling', () => {
                 expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
                 expect(spyErrorLogs).toHaveBeenNthCalledWith(
                     1,
-                    `startPolling - The "pollingInterval" setting is below the limit (${internalConfig.pollingIntervalMinValue}minute(s). The setting will be ignored and the bucketing api will be called only once for initialization.)`
+                    `startPolling - The "pollingInterval" setting is below the limit (${internalConfig.pollingIntervalMinValue} minute). The setting will be ignored and the bucketing api will be called only once for initialization.`
                 );
 
                 expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
