@@ -73,6 +73,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 } else if (status === 200) {
                     this.log.debug('bucketing polling with fresh data detected.');
                     (this.bucket as IFlagshipBucketingVisitor).updateCache(data);
+                    // NOTE: saveModificationsInCache MUST be done only when synchronizing !
                 } else {
                     this.log.error(`unexpected status (="${status}") received. This polling will be ignored.`);
                 }

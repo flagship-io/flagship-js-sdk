@@ -84,7 +84,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         const variationTrafficCheck = variations.reduce((sum, v) => {
             const variationAllocation = v.allocation || 0;
             const nextSum = variationAllocation + sum;
-            if (murmurAllocation < nextSum) {
+            if (assignedVariation === null && murmurAllocation < nextSum) {
                 assignedVariation = v;
             }
             return nextSum;

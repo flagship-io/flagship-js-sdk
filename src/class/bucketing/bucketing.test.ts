@@ -890,7 +890,7 @@ describe('Bucketing - polling', () => {
                         'startPolling - polling finished successfully. Next polling in 0.022 minute(s)'
                     );
                     expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
-
+                    expect(visitorInstance.fetchedModifications).toEqual(null);
                     expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
 
                     done();
@@ -973,7 +973,7 @@ describe('Bucketing - polling', () => {
         });
     });
 
-    // TODO: waiting to solve https://github.com/knee-cola/jest-mock-axios/issues/55 because conflist with mock ERROR
+    // TODO: waiting to solve https://github.com/knee-cola/jest-mock-axios/issues/55 because conflict with mock ERROR
     // it('should keep the last valid data when api bucketing fail during polling', (done) => {
     //     bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
     //     sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: demoPollingInterval });

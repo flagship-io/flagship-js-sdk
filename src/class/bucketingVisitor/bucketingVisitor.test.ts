@@ -614,7 +614,7 @@ describe('BucketingVisitor - murmur algorithm', () => {
     });
 
     it('should works with "classical" scenario', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[1], demoData.visitor.cleanContext, bucketingConfig);
 
         expect(bucketInstance.data).toEqual(null);
         expect(bucketInstance.computedData).toEqual(null);
@@ -625,8 +625,9 @@ describe('BucketingVisitor - murmur algorithm', () => {
 
         expect(result).toEqual({
             allocation: 50,
-            id: 'bptggipaqi903f3haq2g',
-            modifications: { type: 'JSON', value: { testCache: 'value' } }
+            reference: true,
+            id: 'bptggipaqi903f3haq20',
+            modifications: { type: 'JSON', value: { testCache: null } }
         });
 
         expect(spyDebugLogs).toHaveBeenCalledTimes(1);
@@ -635,7 +636,7 @@ describe('BucketingVisitor - murmur algorithm', () => {
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
-        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="79"');
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="21"');
 
         done();
     });
