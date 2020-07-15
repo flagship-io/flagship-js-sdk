@@ -127,7 +127,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             (output, { key }) => [...output, { key, defaultValue: '', activate: true }],
             [] as FsModifsRequestedList
         );
-
         if (this.fetchedModifications) {
             const { detailsModifications } = this.extractDesiredModifications(this.fetchedModifications, modificationsRequested);
             this.triggerActivateIfNeeded(detailsModifications as DecisionApiResponseDataFullComputed);
@@ -152,7 +151,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             return true;
         };
 
-        Object.entries(detailsModifications || internalModifications).forEach(([key, value]) => {
+        Object.entries(detailsModifications || internalModifications).forEach(async ([key, value]) => {
             const activationRequested = (!!value.isActivateNeeded as boolean) || activateAll;
             const isAlreadyActivatedValue = isAlreadyActivated({
                 vgId: value.variationGroupId[0],
@@ -166,12 +165,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     );
                 } else {
                     campaignsActivated.push(value.campaignId[0]);
+                    this.modificationsInternalStatus[key].activated.variationId.unshift(value.variationId[0]);
+                    this.modificationsInternalStatus[key].activated.variationGroupId.unshift(value.variationGroupId[0]);
                     this.activateCampaign(value.variationId[0], value.variationGroupId[0], {
                         success: `Modification key "${key}" successfully activate.`,
                         fail: `Trigger activate of modification key "${key}" failed.`
-                    }).then(() => {
-                        this.modificationsInternalStatus[key].activated.variationId.unshift(value.variationId[0]);
-                        this.modificationsInternalStatus[key].activated.variationGroupId.unshift(value.variationGroupId[0]);
+                    }).catch(() => {
+                        this.modificationsInternalStatus[key].activated.variationId.shift();
+                        this.modificationsInternalStatus[key].activated.variationGroupId.shift();
                     });
                 }
             }
@@ -214,7 +215,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         if (detailsModifications) {
             requestedActivateKeys = Object.entries(detailsModifications).filter(([, keyInfo]) => keyInfo.isActivateNeeded === true);
         } else if (activateAll) {
-            requestedActivateKeys = Object.keys(this.modificationsInternalStatus).map((key) => key);
+            requestedActivateKeys = Object.entries(this.modificationsInternalStatus);
         } else {
             return output;
         }
@@ -614,11 +615,15 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         const callback = (campaigns: DecisionApiCampaign[] | null = data): void => {
             haveBeenCalled = true;
-            this.log.debug(
-                `saveModificationsInCache - saving in cache modifications returned by the callback: ${
-                    Array.isArray(campaigns) ? JSON.stringify(campaigns) : campaigns
-                }`
-            );
+            if (previousFM !== campaigns) {
+                // log only when there is a change
+                this.log.debug(
+                    `saveModificationsInCache - saving in cache modifications returned by the callback: ${
+                        Array.isArray(campaigns) ? JSON.stringify(campaigns) : campaigns
+                    }`
+                );
+            }
+
             save(campaigns);
         };
 

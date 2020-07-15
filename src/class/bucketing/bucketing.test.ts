@@ -505,8 +505,8 @@ describe('Bucketing used from visitor instance', () => {
         sdk.eventEmitter.on('bucketPollingSuccess', () => {
             called += 1;
         });
-        sdk.eventEmitter.on('bucketPollingFailed', () => {
-            done.fail('not supposed to be here');
+        sdk.eventEmitter.on('bucketPollingFailed', (e) => {
+            done.fail(`not supposed to be here: ${e.stack}`);
         });
 
         mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
@@ -539,8 +539,8 @@ describe('Bucketing used from visitor instance', () => {
         sdk.eventEmitter.on('bucketPollingSuccess', () => {
             called += 1;
         });
-        sdk.eventEmitter.on('bucketPollingFailed', () => {
-            done.fail('not supposed to be here');
+        sdk.eventEmitter.on('bucketPollingFailed', (e) => {
+            done.fail(`not supposed to be here ${e.stack}`);
         });
 
         mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
@@ -566,6 +566,8 @@ describe('Bucketing used from visitor instance', () => {
                 // expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 // expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                 const activateUrl = 'https://decision-api.flagship.io/v1/activate';
+
+                expect(mockAxios.post).toHaveBeenCalledTimes(4);
 
                 expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`, {
                     data: {
@@ -595,18 +597,6 @@ describe('Bucketing used from visitor instance', () => {
                     vaid: 'bq4sf09oet0006cfihf0',
                     vid: 'test-perf'
                 });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(5, activateUrl, {
-                    caid: 'bptggipaqi903f3haq1g',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    vaid: 'bptggipaqi903f3haq2g',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(6, activateUrl, {
-                    caid: 'bq4sf09oet0006cfihe0',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    vaid: 'bq4sf09oet0006cfihf0',
-                    vid: 'test-perf'
-                });
 
                 done();
             } catch (error) {
@@ -621,8 +611,8 @@ describe('Bucketing used from visitor instance', () => {
         sdk.eventEmitter.on('bucketPollingSuccess', () => {
             done.fail('not supposed to be here');
         });
-        sdk.eventEmitter.on('bucketPollingFailed', () => {
-            done.fail('not supposed to be here');
+        sdk.eventEmitter.on('bucketPollingFailed', (e) => {
+            done.fail(`not supposed to be here: ${e.stack}`);
         });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         expect(visitorInstance.bucket.data).toEqual(null);
@@ -1272,7 +1262,7 @@ describe('Bucketing - callApi', () => {
         });
 
         bucketInstance.on('error', () => {
-            done.fail('not supposed to be here');
+            done.fail(`not supposed to be here: ${e.stack}`);
         });
 
         bucketInstance.callApi();
