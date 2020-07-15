@@ -604,7 +604,7 @@ describe('FlagshipVisitor', () => {
             expect(spyFatalLogs).toHaveBeenCalledTimes(1);
             expect(spyFatalLogs).toHaveBeenNthCalledWith(
                 1,
-                'Trigger activate of modification key "algorithmVersion" failed. failed with error "server crashed"'
+                'Trigger activate of modification key(s) "algorithmVersion" failed. failed with error "server crashed"'
             );
             expect(spyErrorLogs).toHaveBeenCalledTimes(0);
             expect(spyInfoLogs).toHaveBeenCalledTimes(0);
@@ -613,7 +613,7 @@ describe('FlagshipVisitor', () => {
             //     2,
             //     'checkCampaignsActivatedMultipleTimes: Error this.fetchedModifications is empty'
             // );
-            expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'Modification key "psp" successfully activate. with status code "200"');
+            expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'Modification key(s) "psp" successfully activate. with status code "200"');
             expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
             expect(mockAxios.post).toHaveBeenCalledTimes(2);
@@ -1595,28 +1595,35 @@ describe('FlagshipVisitor', () => {
                 done.fail(error);
             }
         });
-        it('should checkCampaignsActivatedMultipleTimes log an error if two campaigns have same id', (done) => {
+        it('should checkCampaignsActivatedMultipleTimes log an error if two campaigns have same id but should not affect activate for those two campaigns', (done) => {
             responseObject.data = demoData.decisionApi.badResponse.twoCampaignsWithSameId;
             visitorInstance.saveModificationsInCache(responseObject.data.campaigns); // Mock a previous fetch
 
             const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default);
             try {
-                expect(mockAxios.post).toHaveBeenCalledTimes(1);
+                expect(mockAxios.post).toHaveBeenCalledTimes(2);
                 expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
                     vaid: 'blntcamqmdvg04g371hg',
                     cid: 'bn1ab7m56qolupi5sa0g',
                     caid: 'blntcamqmdvg04g371h0',
                     vid: 'test-perf'
                 });
+
+                expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
+                    vaid: 'bmjdprsjan0g01uq2ctg',
+                    cid: 'bn1ab7m56qolupi5sa0g',
+                    caid: 'bmjdprsjan0g01uq2csg',
+                    vid: 'test-perf'
+                });
                 expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(1);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(6);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(5);
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - loadFromCache enabled');
 
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    6,
+                    5,
                     'extractModificationIndirectKeysFromCampaign - detected more than one campaign with same id "bmjdprsjan0g01uq2crg"'
                 );
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -1645,7 +1652,7 @@ describe('FlagshipVisitor', () => {
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(3);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(5);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
 
@@ -1662,10 +1669,7 @@ describe('FlagshipVisitor', () => {
                     'Unable to activate modification "testUnexistingKey" because it does not exist on any existing campaign...'
                 );
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - loadFromCache enabled');
-                expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    5,
-                    'Skip trigger activate of "algorithmVersion" because the corresponding campaign already been triggered with another modification'
-                );
+
                 expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
                 expect(cacheResponse).toMatchObject({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
                 done();

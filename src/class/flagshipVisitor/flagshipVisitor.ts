@@ -2,6 +2,7 @@ import { FsLogger } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
 import { EventEmitter } from 'events';
 
+import { stringify } from 'querystring';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import { FlagshipSdkConfig, IFlagshipBucketing, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../types';
@@ -136,7 +137,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     private triggerActivateIfNeeded(detailsModifications: DecisionApiResponseDataFullComputed = null, activateAll = false): void {
         const campaignsActivated: Array<string> = [];
         const internalModifications = this.modificationsInternalStatus;
-
+        const activateBooks: { vId: string; vgId: string; campaignId: string; keys: string[] }[] = [];
         const isAlreadyActivated = (data: { vId: string; vgId: string; archived: ActivatedArchived }): boolean => {
             if (data.archived.variationGroupId.length === 0 && data.archived.variationId.length === 0) {
                 return false;
@@ -159,23 +160,45 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 archived: internalModifications[key].activated
             });
             if (activationRequested && !isAlreadyActivatedValue) {
-                if (campaignsActivated.includes(value.campaignId[0])) {
-                    this.log.debug(
-                        `Skip trigger activate of "${key}" because the corresponding campaign already been triggered with another modification`
-                    );
-                } else {
-                    campaignsActivated.push(value.campaignId[0]);
-                    this.modificationsInternalStatus[key].activated.variationId.unshift(value.variationId[0]);
-                    this.modificationsInternalStatus[key].activated.variationGroupId.unshift(value.variationGroupId[0]);
-                    this.activateCampaign(value.variationId[0], value.variationGroupId[0], {
-                        success: `Modification key "${key}" successfully activate.`,
-                        fail: `Trigger activate of modification key "${key}" failed.`
-                    }).catch(() => {
-                        this.modificationsInternalStatus[key].activated.variationId.shift();
-                        this.modificationsInternalStatus[key].activated.variationGroupId.shift();
+                let alreadyExist = false;
+                activateBooks.forEach(({ vId, vgId }, index) => {
+                    if (vId === value.variationId[0] && vgId === value.variationGroupId[0]) {
+                        activateBooks[index].keys.push(key);
+                        alreadyExist = true;
+                    }
+                });
+
+                if (!alreadyExist) {
+                    activateBooks.push({
+                        vgId: value.variationGroupId[0],
+                        vId: value.variationId[0],
+                        campaignId: value.campaignId[0],
+                        keys: [key]
                     });
                 }
             }
+        });
+
+        const noteKey = ({ keys, vgId, vId }, shouldRemove = false) => {
+            keys.forEach((key) => {
+                if (shouldRemove) {
+                    this.modificationsInternalStatus[key].activated.variationId.shift();
+                    this.modificationsInternalStatus[key].activated.variationGroupId.shift();
+                } else {
+                    this.modificationsInternalStatus[key].activated.variationId.unshift(vId);
+                    this.modificationsInternalStatus[key].activated.variationGroupId.unshift(vgId);
+                }
+            });
+        };
+        activateBooks.forEach(({ vId, vgId, keys, campaignId }) => {
+            campaignsActivated.push(campaignId);
+            noteKey({ vId, vgId, keys });
+            this.activateCampaign(vId, vgId, {
+                success: `Modification key(s) "${keys.toString()}" successfully activate.`,
+                fail: `Trigger activate of modification key(s) "${keys.toString()}" failed.`
+            }).catch(() => {
+                noteKey({ vId, vgId, keys }, true);
+            });
         });
 
         // Logs unexpected behavior:
