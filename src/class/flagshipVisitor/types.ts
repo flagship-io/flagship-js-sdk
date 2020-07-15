@@ -69,7 +69,22 @@ export type DecisionApiResponseDataFullComputed = {
         variationGroupId: Array<string>;
         isRequested: boolean;
         isActivateNeeded: boolean;
-        hasBeenActivated: boolean;
+    };
+};
+
+export type ActivatedArchived = {
+    variationId: Array<string>;
+    variationGroupId: Array<string>;
+};
+
+export type ModificationsInternalStatus = {
+    [key: string]: {
+        value: Array<string>;
+        type: Array<string>;
+        campaignId: Array<string>;
+        variationId: Array<string>;
+        variationGroupId: Array<string>;
+        activated: ActivatedArchived;
     };
 };
 

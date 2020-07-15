@@ -169,7 +169,7 @@ describe('FlagshipVisitor', () => {
                 statusText: 'OK'
             };
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-            visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns); // Mock a previous fetch
             visitorInstance.synchronizeModifications().then((response) => {
                 try {
                     expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
@@ -508,7 +508,7 @@ describe('FlagshipVisitor', () => {
                 statusText: 'OK'
             };
             spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
-            visitorInstance.fetchedModifications = responseObj.data.campaigns; // Mock a already fetch
+            visitorInstance.saveModificationsInCache(responseObj.data.campaigns); // Mock a already fetch
             visitorInstance.fetchAllModifications().then(({ data }) => {
                 try {
                     expect(data.campaigns).toMatchObject(visitorInstance.fetchedModifications);
@@ -531,7 +531,7 @@ describe('FlagshipVisitor', () => {
                 statusText: 'OK'
             };
             spyInfoLogs = jest.spyOn(visitorInstance.log, 'info');
-            visitorInstance.fetchedModifications = responseObj.data.campaigns; // Mock a already fetch
+            visitorInstance.saveModificationsInCache(responseObj.data.campaigns); // Mock a already fetch
             visitorInstance.fetchAllModifications({ activate: true }).then(({ data }) => {
                 try {
                     expect(data.campaigns).toMatchObject(visitorInstance.fetchedModifications);
@@ -587,6 +587,12 @@ describe('FlagshipVisitor', () => {
         it('should logs an error when the api failed', () => {
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             initSpyLogs(visitorInstance);
+            const responseObj = {
+                data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
+                status: 200,
+                statusText: 'OK'
+            };
+            visitorInstance.saveModificationsInCache(responseObj.data.campaigns); // Mock a already fetch
             visitorInstance.triggerActivateIfNeeded(
                 demoData.flagshipVisitor.getModifications.detailsModifications.oneModifInMoreThanOneCampaign
             );
@@ -627,6 +633,7 @@ describe('FlagshipVisitor', () => {
 
         it('should not trigger twice activate for a modification which is in more than one campaign (1st use case)', () => {
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            visitorInstance.saveModificationsInCache(demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns);
             visitorInstance.triggerActivateIfNeeded(
                 demoData.flagshipVisitor.getModifications.detailsModifications.oneModifInMoreThanOneCampaign
             );
@@ -648,6 +655,7 @@ describe('FlagshipVisitor', () => {
 
         it('should not trigger twice activate for a modification which is in more than one campaign (2nd use case)', () => {
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            visitorInstance.saveModificationsInCache(demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns);
             visitorInstance.triggerActivateIfNeeded(
                 demoData.flagshipVisitor.getModifications.detailsModifications.manyModifInManyCampaigns
             );
@@ -875,7 +883,7 @@ describe('FlagshipVisitor', () => {
             };
         });
         it('should warn if requested key does not match any campaign', (done) => {
-            visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(responseObject.data.campaigns);
             visitorInstance.activateModifications([...demoData.flagshipVisitor.activateModifications.args.basic, { key: 'xoxo' }]);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(2);
@@ -912,8 +920,9 @@ describe('FlagshipVisitor', () => {
             }
         });
         it('should not activate all campaigns matching requesting key when there is a campaign conflict + notify with logs', (done) => {
-            visitorInstance.fetchedModifications =
-                demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(
+                demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns
+            ); // Mock a previous fetch
             visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.basic);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(2);
@@ -956,8 +965,9 @@ describe('FlagshipVisitor', () => {
             }
         });
         it('should not activate all campaigns matching requesting key when there is a campaign conflict', (done) => {
-            visitorInstance.fetchedModifications =
-                demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(
+                demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns
+            ); // Mock a previous fetch
             visitorInstance.activateModifications([{ key: 'toto' }]);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(1);
@@ -987,8 +997,9 @@ describe('FlagshipVisitor', () => {
             }
         });
         it('should not activate all campaigns matching requesting key when there is a campaign conflict + notify with logs (part 2)', (done) => {
-            visitorInstance.fetchedModifications =
-                demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(
+                demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns
+            ); // Mock a previous fetch
             visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.all);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(3);
@@ -1046,8 +1057,9 @@ describe('FlagshipVisitor', () => {
             }
         });
         it('should correctly handle conflicts due to further other requested keys', () => {
-            visitorInstance.fetchedModifications =
-                demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(
+                demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns
+            ); // Mock a previous fetch
             visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.over9000);
             expect(mockAxios.post).toHaveBeenCalledTimes(4);
             expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
@@ -1127,8 +1139,9 @@ describe('FlagshipVisitor', () => {
             );
         });
         it('should not activate all campaigns matching requesting key when there is a campaign conflict + notify with logs (part 3)', (done) => {
-            visitorInstance.fetchedModifications =
-                demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(
+                demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns
+            ); // Mock a previous fetch
             visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.basic);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(2);
@@ -1179,8 +1192,9 @@ describe('FlagshipVisitor', () => {
             }
         });
         it('should not activate all campaigns matching requesting key when there is a campaign conflict (part 2)', (done) => {
-            visitorInstance.fetchedModifications =
-                demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(
+                demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns
+            ); // Mock a previous fetch
             visitorInstance.activateModifications([{ key: 'toto' }]);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(1);
@@ -1210,7 +1224,7 @@ describe('FlagshipVisitor', () => {
             }
         });
         it('should get corresponding campaigns exactly same as getModifications function And then should activate them', (done) => {
-            visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(responseObject.data.campaigns); // Mock a previous fetch
             visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.basic);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(2);
@@ -1543,7 +1557,7 @@ describe('FlagshipVisitor', () => {
         });
         it('should not activate a nonexisting key + return default value', (done) => {
             responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
-            visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(responseObject.data.campaigns); // Mock a previous fetch
             const cacheResponse = visitorInstance.getModifications(
                 demoData.flagshipVisitor.getModifications.args.requestOneUnexistingKeyWithActivate
             );
@@ -1568,7 +1582,7 @@ describe('FlagshipVisitor', () => {
         });
         it('should not use promise when fetching modifications', (done) => {
             responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
-            visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(responseObject.data.campaigns); // Mock a previous fetch
             const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.noActivate);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(0);
@@ -1586,7 +1600,7 @@ describe('FlagshipVisitor', () => {
         });
         it('should checkCampaignsActivatedMultipleTimes log an error if two campaigns have same id', (done) => {
             responseObject.data = demoData.decisionApi.badResponse.twoCampaignsWithSameId;
-            visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(responseObject.data.campaigns); // Mock a previous fetch
 
             const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default);
             try {
@@ -1618,7 +1632,7 @@ describe('FlagshipVisitor', () => {
         });
         it('should not activate two different campaign if two requested keys are in same campaign', (done) => {
             responseObject.data = demoData.decisionApi.normalResponse.manyModifInManyCampaigns;
-            visitorInstance.fetchedModifications = responseObject.data.campaigns; // Mock a previous fetch
+            visitorInstance.saveModificationsInCache(responseObject.data.campaigns); // Mock a previous fetch
 
             const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default);
             try {
@@ -1700,7 +1714,7 @@ describe('FlagshipVisitor', () => {
             }
         });
         it('should return empty object if cache not null but empty (+ undefined requested modifs) (+ full activate requested)', (done) => {
-            visitorInstance.fetchedModifications = [];
+            visitorInstance.saveModificationsInCache([]);
             const cacheResponse = visitorInstance.getModifications(undefined, true);
             try {
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
@@ -1720,7 +1734,7 @@ describe('FlagshipVisitor', () => {
             }
         });
         it('should return empty object if no modificationsRequested specified', (done) => {
-            visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns;
+            visitorInstance.saveModificationsInCache(demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns);
             const cacheResponse = visitorInstance.getModifications();
             try {
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);

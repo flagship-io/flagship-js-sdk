@@ -1,10 +1,10 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
 import { EventEmitter } from 'events';
-import { IFlagshipBucketing, FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../types';
 
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
+import { FlagshipSdkConfig, IFlagshipBucketing, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../types';
 import { BucketingApiResponse } from '../bucketing/types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
@@ -14,6 +14,7 @@ import {
     DecisionApiResponseData,
     DecisionApiResponseDataFullComputed,
     DecisionApiResponseDataSimpleComputed,
+    DecisionApiSimpleResponse,
     EventHit,
     FlagshipVisitorContext,
     FsModifsRequestedList,
@@ -21,8 +22,9 @@ import {
     GetModificationsOutput,
     HitShape,
     ItemHit,
+    ModificationsInternalStatus,
     TransactionHit,
-    DecisionApiSimpleResponse
+    ActivatedArchived
 } from './types';
 
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
@@ -44,7 +46,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     sdkListener: EventEmitter;
 
-    modificationsDetails: DecisionApiResponseDataFullComputed | null;
+    modificationsInternalStatus: ModificationsInternalStatus | null;
 
     constructor(
         envId: string,
@@ -69,7 +71,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             this.saveModificationsInCache(config.initialModifications);
         } else {
             this.fetchedModifications = null;
-            this.modificationsDetails = null;
+            this.modificationsInternalStatus = null;
         }
 
         if (this.config.decisionMode === 'Bucketing') {
@@ -120,7 +122,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         });
     }
 
-    // TODO: consider args "variationId" & "variationGroupId" and unit test them
     public activateModifications(modifications: Array<{ key: string; variationId?: string; variationGroupId?: string }>): void {
         const modificationsRequested: FsModifsRequestedList = modifications.reduce(
             (output, { key }) => [...output, { key, defaultValue: '', activate: true }],
@@ -133,10 +134,32 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
     }
 
-    private triggerActivateIfNeeded(detailsModifications: DecisionApiResponseDataFullComputed): void {
+    private triggerActivateIfNeeded(detailsModifications: DecisionApiResponseDataFullComputed = null, activateAll = false): void {
         const campaignsActivated: Array<string> = [];
-        Object.entries(detailsModifications).forEach(([key, value]) => {
-            if (value.isActivateNeeded) {
+        const internalModifications = this.modificationsInternalStatus;
+
+        const isAlreadyActivated = (data: { vId: string; vgId: string; archived: ActivatedArchived }): boolean => {
+            if (data.archived.variationGroupId.length === 0 && data.archived.variationId.length === 0) {
+                return false;
+            }
+            if (data.archived.variationGroupId[0] !== data.vgId || data.archived.variationId[0] !== data.vId) {
+                this.log.debug(
+                    `triggerActivateIfNeeded - detecting a new variation (id="${data.vId}") (variationGroupId="${data.vgId}") which activates the same key as another older variation`
+                );
+                return false;
+            }
+            this.log.debug('triggerActivateIfNeeded - variation already activated');
+            return true;
+        };
+
+        Object.entries(detailsModifications || internalModifications).forEach(([key, value]) => {
+            const activationRequested = (!!value.isActivateNeeded as boolean) || activateAll;
+            const isAlreadyActivatedValue = isAlreadyActivated({
+                vgId: value.variationGroupId[0],
+                vId: value.variationId[0],
+                archived: internalModifications[key].activated
+            });
+            if (activationRequested && !isAlreadyActivatedValue) {
                 if (campaignsActivated.includes(value.campaignId[0])) {
                     this.log.debug(
                         `Skip trigger activate of "${key}" because the corresponding campaign already been triggered with another modification`
@@ -146,6 +169,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     this.activateCampaign(value.variationId[0], value.variationGroupId[0], {
                         success: `Modification key "${key}" successfully activate.`,
                         fail: `Trigger activate of modification key "${key}" failed.`
+                    }).then(() => {
+                        this.modificationsInternalStatus[key].activated.variationId.unshift(value.variationId[0]);
+                        this.modificationsInternalStatus[key].activated.variationGroupId.unshift(value.variationGroupId[0]);
                     });
                 }
             }
@@ -153,7 +179,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         // Logs unexpected behavior:
         const { activateKey, activateCampaign }: checkCampaignsActivatedMultipleTimesOutput = this.checkCampaignsActivatedMultipleTimes(
-            detailsModifications as DecisionApiResponseDataFullComputed
+            detailsModifications as DecisionApiResponseDataFullComputed,
+            activateAll
         );
         Object.entries(activateKey).forEach(([key, count]) => {
             if (count > 1) {
@@ -178,10 +205,20 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     private checkCampaignsActivatedMultipleTimes(
-        detailsModifications: DecisionApiResponseDataFullComputed
+        detailsModifications: DecisionApiResponseDataFullComputed = null,
+        activateAll = false
     ): checkCampaignsActivatedMultipleTimesOutput {
         const output: checkCampaignsActivatedMultipleTimesOutput = { activateCampaign: {}, activateKey: {} };
-        const requestedActivateKeys = Object.entries(detailsModifications).filter(([, keyInfo]) => keyInfo.isActivateNeeded === true);
+        let requestedActivateKeys;
+
+        if (detailsModifications) {
+            requestedActivateKeys = Object.entries(detailsModifications).filter(([, keyInfo]) => keyInfo.isActivateNeeded === true);
+        } else if (activateAll) {
+            requestedActivateKeys = Object.keys(this.modificationsInternalStatus).map((key) => key);
+        } else {
+            return output;
+        }
+
         const extractModificationIndirectKeysFromCampaign = (campaignId: string, directKey: string): Array<string> => {
             if (this.fetchedModifications) {
                 const campaignDataArray: Array<DecisionApiCampaign> = this.fetchedModifications.filter(
@@ -239,6 +276,43 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
         this.log.debug('checkCampaignsActivatedMultipleTimes: Error this.fetchedModifications is empty');
         return output;
+    }
+
+    private getModificationsInternalStatus(): ModificationsInternalStatus {
+        const { detailsModifications } = FlagshipVisitor.analyseModifications(this.fetchedModifications);
+        const previousInternalStatus: ModificationsInternalStatus = this.modificationsInternalStatus;
+        return Object.keys(detailsModifications).reduce((reducer, key) => {
+            const { value, type, campaignId, variationGroupId, variationId } = detailsModifications[key];
+            if (previousInternalStatus && previousInternalStatus[key]) {
+                // update existing
+                return {
+                    ...reducer,
+                    [key]: {
+                        ...previousInternalStatus[key], // erase everything except "hasBeenActivated" in case of a new campaign impact the value
+                        value,
+                        type,
+                        campaignId,
+                        variationId,
+                        variationGroupId
+                    }
+                };
+            }
+            return {
+                // or create new
+                ...reducer,
+                [key]: {
+                    value,
+                    type,
+                    campaignId,
+                    variationId,
+                    variationGroupId,
+                    activated: {
+                        variationId: [],
+                        variationGroupId: []
+                    }
+                }
+            };
+        }, {});
     }
 
     private static analyseModifications(
@@ -486,7 +560,13 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         // PART 1: Compute the data (if needed)
         if (responseData && responseData.campaigns) {
             if (campaignCustomID) {
+                // request data from ONE specific campaign
                 filteredCampaigns = responseData.campaigns.filter((item) => item.id === campaignCustomID);
+                const { detailsModifications /* , mergedModifications */ } = FlagshipVisitor.analyseModifications(
+                    filteredCampaigns,
+                    !!activate
+                );
+                analysedModifications = detailsModifications;
                 output = {
                     ...reshapeResponse,
                     data: {
@@ -515,12 +595,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
 
         // PART 2: Handle activate (if needed)
-        if (activate) {
-            if (filteredCampaigns.length > 0) {
-                this.activateCampaign(filteredCampaigns[0].variation.id, filteredCampaigns[0].variationGroupId);
-            } else {
-                this.triggerActivateIfNeeded(analysedModifications);
-            }
+        if (this.fetchedModifications) {
+            this.triggerActivateIfNeeded(analysedModifications);
         }
 
         // PART 3: Return the data
@@ -533,7 +609,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         const save = (dataToSave: DecisionApiCampaign[] = null): void => {
             this.fetchedModifications = flagshipSdkHelper.validateDecisionApiData(dataToSave, this.log);
-            // this.modificationsDetails =  // TODO:
+            this.modificationsInternalStatus = this.fetchedModifications === null ? null : this.getModificationsInternalStatus();
         };
 
         const callback = (campaigns: DecisionApiCampaign[] | null = data): void => {
@@ -632,11 +708,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                         this.saveModificationsInCache(transformedBucketingData.campaigns);
                         this.log.debug('fetchAllModifications - bucket start detected');
                         if (activate) {
-                            const { detailsModifications } = FlagshipVisitor.analyseModifications(transformedBucketingData.campaigns, true);
                             this.log.debug(
-                                `fetchAllModifications - activateNow enabled with bucketing mode. ${detailsModifications.length} campaign(s) will be activated.`
+                                `fetchAllModifications - activateNow enabled with bucketing mode. ${this.modificationsInternalStatus.length} campaign(s) will be activated.`
                             );
-                            this.triggerActivateIfNeeded(detailsModifications);
+                            this.triggerActivateIfNeeded(undefined, true);
                         }
                         resolve(
                             this.fetchAllModificationsPostProcess(transformedBucketingData, {
