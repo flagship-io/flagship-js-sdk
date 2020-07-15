@@ -215,7 +215,7 @@ describe('Bucketing used from visitor instance', () => {
         try {
             visitorInstance.synchronizeModifications(true).catch((err) => {
                 expect(err).toEqual('bucketing server crash');
-                expect(spyInfoLogs).toHaveBeenCalledTimes(2);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(3);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(1);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -338,7 +338,7 @@ describe('Bucketing used from visitor instance', () => {
         expect(visitorInstance.fetchedModifications).toEqual(null);
         visitorInstance.synchronizeModifications().then(() => {
             try {
-                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(1);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -371,7 +371,7 @@ describe('Bucketing used from visitor instance', () => {
         expect(visitorInstance.fetchedModifications).toEqual(null);
         visitorInstance.synchronizeModifications().then(() => {
             try {
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(1);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -419,7 +419,7 @@ describe('Bucketing used from visitor instance', () => {
             visitorInstance.synchronizeModifications().then(() => {
                 expect(mockAxios.get).toHaveBeenCalledTimes(1);
 
-                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -468,13 +468,15 @@ describe('Bucketing used from visitor instance', () => {
             visitorInstance.synchronizeModifications().then(() => {
                 expect(mockAxios.get).toHaveBeenCalledTimes(1);
 
-                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications: "[]"');
+
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications: "[]"');
 
                 expect(visitorInstance.fetchedModifications).toEqual([]);
                 expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);

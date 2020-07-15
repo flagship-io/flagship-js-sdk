@@ -44,6 +44,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     sdkListener: EventEmitter;
 
+    modificationsDetails: DecisionApiResponseDataFullComputed | null;
+
     constructor(
         envId: string,
         config: FlagshipSdkConfig,
@@ -61,9 +63,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         this.isAllModificationsFetched = false;
         this.bucket = null;
         this.sdkListener = sdkListener;
-        this.fetchedModifications = config.initialModifications
-            ? flagshipSdkHelper.validateDecisionApiData(config.initialModifications, this.log)
-            : null;
+
+        // initialize "fetchedModifications" and "modificationsDetails"
+        if (config.initialModifications) {
+            this.saveModificationsInCache(config.initialModifications);
+        } else {
+            this.fetchedModifications = null;
+            this.modificationsDetails = null;
+        }
 
         if (this.config.decisionMode === 'Bucketing') {
             this.bucket = new BucketingVisitor(this.envId, this.id, this.context, this.config, bucket && bucket.data);
@@ -397,7 +404,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     resolve(polishOutput(campaigns.filter((cpgn) => cpgn.id === detailsModifications[key].campaignId[0])[0]));
                 })
                 .catch((error: Error) => {
-                    this.fetchedModifications = null;
+                    this.saveModificationsInCache(null);
                     reject(error);
                 });
         });
@@ -417,11 +424,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 .then((response: DecisionApiResponse) => {
                     const castResponse = response as DecisionApiResponse;
                     const output = flagshipSdkHelper.checkDecisionApiResponseFormat(castResponse, this.log);
-                    this.fetchedModifications = (output && output.campaigns) || null;
+                    this.saveModificationsInCache((output && output.campaigns) || null);
                     resolve(castResponse.status || 200);
                 })
                 .catch((error: Error) => {
-                    this.fetchedModifications = null;
+                    this.saveModificationsInCache(null);
                     reject(error);
                 });
         });
@@ -522,7 +529,12 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     private saveModificationsInCache(data: DecisionApiCampaign[] | null): void {
         let haveBeenCalled = false;
-        const previousFetchedModifications = this.fetchedModifications;
+        const previousFM = this.fetchedModifications;
+
+        const save = (dataToSave: DecisionApiCampaign[] = null): void => {
+            this.fetchedModifications = flagshipSdkHelper.validateDecisionApiData(dataToSave, this.log);
+            // this.modificationsDetails =  // TODO:
+        };
 
         const callback = (campaigns: DecisionApiCampaign[] | null = data): void => {
             haveBeenCalled = true;
@@ -531,9 +543,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     Array.isArray(campaigns) ? JSON.stringify(campaigns) : campaigns
                 }`
             );
-            this.fetchedModifications = campaigns || null;
+            save(campaigns);
         };
 
+        // emit 'saveCache' with a callback if modifications need to be override
         this.emit('saveCache', {
             saveInCacheModifications: callback,
             modifications: {
@@ -544,10 +557,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         // if callback not used, do default behavior
         if (!haveBeenCalled) {
-            if (data === null && previousFetchedModifications && this.config.decisionMode === 'Bucketing') {
+            if (data === null && previousFM && this.config.decisionMode === 'Bucketing') {
                 this.log.info('saveModificationsInCache - keeping previous cache since bucketing did not return data');
             } else {
-                this.fetchedModifications = data || null; // default behavior
+                save(data);
                 this.log.debug(
                     `saveModificationsInCache - saving in cache those modifications: "${
                         this.fetchedModifications ? JSON.stringify(this.fetchedModifications) : 'null'

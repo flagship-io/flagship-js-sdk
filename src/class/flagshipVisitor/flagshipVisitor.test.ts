@@ -17,6 +17,8 @@ let spyErrorLogs;
 let spyFatalLogs;
 let spyInfoLogs;
 let spyDebugLogs;
+let defaultDecisionApiResponse: DecisionApiResponseData;
+let defaultActivateModificationResponse;
 
 const initSpyLogs = (vInstance): void => {
     spyFatalLogs = jest.spyOn(vInstance.log, 'fatal');
@@ -37,6 +39,57 @@ describe('FlagshipVisitor', () => {
     it('should create a Visitor instance with clean context', () => {
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         expect(visitorInstance).toBeInstanceOf(FlagshipVisitor);
+    });
+
+    describe('Activate cache management', () => {
+        beforeEach(() => {
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            defaultDecisionApiResponse = {
+                data: demoData.decisionApi.normalResponse.oneCampaignWithFurtherModifs,
+                status: 200,
+                statusText: 'OK'
+            };
+            defaultActivateModificationResponse = {
+                data: demoData.flagshipVisitor.activateModifications.fetchedModifications.basic,
+                status: 200,
+                statusText: 'OK'
+            };
+            initSpyLogs(visitorInstance);
+        });
+        it('should not call activate twice same modification if already activated once', (done) => {
+            visitorInstance
+                .getAllModifications(false, { simpleMode: true })
+                .then((data) => {
+                    expect(data).toBeDefined();
+                    const str = JSON.stringify(visitorInstance.fetchedModifications);
+                    expect(str.includes('modif1')).toEqual(true);
+                    expect(str.includes('modif2')).toEqual(true);
+                    expect(str.includes('modif3')).toEqual(true);
+                    expect(str.includes('value1')).toEqual(true);
+                    expect(str.includes('value2')).toEqual(true);
+                    expect(str.includes('value3')).toEqual(true);
+
+                    visitorInstance.activateModifications([
+                        {
+                            key: 'modif1'
+                        }
+                    ]);
+                    mockAxios.mockResponse(defaultDecisionApiResponse);
+                    expect(mockAxios.post).toHaveBeenCalledTimes(2);
+
+                    visitorInstance.activateModifications([
+                        {
+                            key: 'modif1'
+                        }
+                    ]);
+                    mockAxios.mockResponse(defaultDecisionApiResponse);
+                    expect(mockAxios.post).toHaveBeenCalledTimes(2);
+                    done();
+                })
+                .catch((e) => done.fail(e));
+
+            mockAxios.mockResponse(defaultDecisionApiResponse);
+        });
     });
 
     describe('ActivateCampaign function', () => {

@@ -69,6 +69,7 @@ export type DecisionApiResponseDataFullComputed = {
         variationGroupId: Array<string>;
         isRequested: boolean;
         isActivateNeeded: boolean;
+        hasBeenActivated: boolean;
     };
 };
 
