@@ -91,6 +91,152 @@ describe('FlagshipVisitor', () => {
 
             mockAxios.mockResponse(defaultDecisionApiResponse);
         });
+        it('should not activate if detailsModifications is not defined and the activateAll is false', async (done) => {
+            visitorInstance.saveModificationsInCache(demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns); // Mock a previous fetch
+            const output = visitorInstance.checkCampaignsActivatedMultipleTimes(); // simulate nothing
+
+            expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+            expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+            expect(output).toEqual({ activateCampaign: {}, activateKey: {} });
+
+            done();
+        });
+        it('should not activate if detailsModifications is not defined and the activateAll is false + fetched is null', async (done) => {
+            visitorInstance.saveModificationsInCache(demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns); // Mock a previous fetch
+            visitorInstance.fetchedModifications = null;
+            const output = visitorInstance.checkCampaignsActivatedMultipleTimes(); // simulate nothing
+
+            expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+            expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+            expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                2,
+                'checkCampaignsActivatedMultipleTimes: Error "this.fetchedModifications" or/and "this.modificationsInternalStatus" is empty'
+            );
+
+            expect(output).toEqual({ activateCampaign: {}, activateKey: {} });
+
+            done();
+        });
+        it('should not activate if detailsModifications is not defined and the activateAll is false + internalStatus is null', async (done) => {
+            visitorInstance.saveModificationsInCache(demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns); // Mock a previous fetch
+            visitorInstance.modificationsInternalStatus = null;
+            const output = visitorInstance.checkCampaignsActivatedMultipleTimes(); // simulate nothing
+
+            expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+            expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+            expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                2,
+                'checkCampaignsActivatedMultipleTimes: Error "this.fetchedModifications" or/and "this.modificationsInternalStatus" is empty'
+            );
+
+            expect(output).toEqual({ activateCampaign: {}, activateKey: {} });
+
+            done();
+        });
+
+        it('should not activate if there is no fetched data in cache + activateAll is true', async (done) => {
+            const output = visitorInstance.checkCampaignsActivatedMultipleTimes(undefined, true);
+
+            expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+            expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+            expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                1,
+                'checkCampaignsActivatedMultipleTimes: Error "this.fetchedModifications" or/and "this.modificationsInternalStatus" is empty'
+            );
+
+            expect(output).toEqual({ activateCampaign: {}, activateKey: {} });
+
+            done();
+        });
+        it('should triggerActivateIfNeeded display error logs if fetchedModifications is null + activateAll is true', async (done) => {
+            try {
+                visitorInstance.triggerActivateIfNeeded(undefined, true);
+
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'checkCampaignsActivatedMultipleTimes: Error "this.fetchedModifications" or/and "this.modificationsInternalStatus" is empty'
+                );
+
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+        it('should triggerActivateIfNeeded not consider the activate in cache if the API failed', async (done) => {
+            try {
+                visitorInstance.saveModificationsInCache(demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns); // Mock a previous fetch
+
+                expect(
+                    Object.keys(visitorInstance.modificationsInternalStatus).filter(
+                        (key) => visitorInstance.modificationsInternalStatus[key].activated.variationId.length > 0
+                    ).length
+                ).toEqual(0);
+
+                visitorInstance.triggerActivateIfNeeded(undefined, true);
+
+                mockAxios.mockError('fail');
+                mockAxios.mockError('fail');
+                mockAxios.mockError('fail');
+
+                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(2);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(3);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+                // expect(spyDebugLogs).toHaveBeenNthCalledWith(2, ''); // saveModificationsInCache notification + activate notif
+                // expect(spyWarnLogs).toHaveBeenNthCalledWith(2, ''); // activate 2 times because of key conflict in campaigns
+
+                expect(spyFatalLogs).toHaveBeenNthCalledWith(
+                    1,
+                    'Trigger activate of modification key(s) "psp" failed. failed with error "fail"'
+                );
+
+                expect(spyFatalLogs).toHaveBeenNthCalledWith(
+                    2,
+                    'Trigger activate of modification key(s) "algorithmVersion" failed. failed with error "fail"'
+                );
+                expect(spyFatalLogs).toHaveBeenNthCalledWith(
+                    3,
+                    'Trigger activate of modification key(s) "hello" failed. failed with error "fail"'
+                );
+
+                // wait a bit async side effect
+                setTimeout(() => {
+                    expect(
+                        Object.keys(visitorInstance.modificationsInternalStatus).filter(
+                            (key) => visitorInstance.modificationsInternalStatus[key].activated.variationId.length > 0
+                        ).length
+                    ).toEqual(0);
+
+                    done();
+                }, 100);
+            } catch (error) {
+                done.fail(error);
+            }
+        });
     });
 
     describe('ActivateCampaign function', () => {
@@ -115,14 +261,14 @@ describe('FlagshipVisitor', () => {
         });
         it('should report error when Api Decision Activate fails', (done) => {
             initSpyLogs(visitorInstance);
-            visitorInstance.activateCampaign('123456789', '987654321').then((data) => {
+            visitorInstance.activateCampaign('123456789', '987654321').catch((error) => {
                 expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
                     vid: visitorInstance.id,
                     cid: visitorInstance.envId,
                     vaid: '123456789',
                     caid: '987654321'
                 });
-                expect(data).toEqual('server crashed');
+                expect(error).toEqual('server crashed');
                 expect(spyDebugLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);

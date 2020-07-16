@@ -2,7 +2,6 @@ import { FsLogger } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
 import { EventEmitter } from 'events';
 
-import { stringify } from 'querystring';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import { FlagshipSdkConfig, IFlagshipBucketing, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../types';
@@ -96,7 +95,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         variationGroupId: string,
         customLogs?: { success: string; fail: string }
     ): Promise<{ status: number } | Error> {
-        return new Promise<{ status: number } | Error>((resolve) => {
+        return new Promise<{ status: number } | Error>((resolve, reject) => {
             flagshipSdkHelper
                 .postFlagshipApi(this.config, this.log, `${this.config.flagshipApi}activate`, {
                     vid: this.id,
@@ -118,7 +117,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                         failLog = `${customLogs.fail} failed with error "${error}"`;
                     }
                     this.log.fatal(failLog);
-                    resolve(error);
+                    reject(error);
                 });
         });
     }
@@ -151,6 +150,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             this.log.debug('triggerActivateIfNeeded - variation already activated');
             return true;
         };
+
+        if (!this.isVisitorCacheExist()) {
+            return;
+        }
 
         Object.entries(detailsModifications || internalModifications).forEach(async ([key, value]) => {
             const activationRequested = (!!value.isActivateNeeded as boolean) || activateAll;
@@ -228,12 +231,27 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         // END of logs
     }
 
+    private isVisitorCacheExist(): boolean {
+        if (!this.fetchedModifications || !this.modificationsInternalStatus) {
+            this.log.debug(
+                'checkCampaignsActivatedMultipleTimes: Error "this.fetchedModifications" or/and "this.modificationsInternalStatus" is empty'
+            );
+            return false;
+        }
+
+        return true;
+    }
+
     private checkCampaignsActivatedMultipleTimes(
         detailsModifications: DecisionApiResponseDataFullComputed = null,
         activateAll = false
     ): checkCampaignsActivatedMultipleTimesOutput {
         const output: checkCampaignsActivatedMultipleTimesOutput = { activateCampaign: {}, activateKey: {} };
         let requestedActivateKeys;
+
+        if (!this.isVisitorCacheExist()) {
+            return output;
+        }
 
         if (detailsModifications) {
             requestedActivateKeys = Object.entries(detailsModifications).filter(([, keyInfo]) => keyInfo.isActivateNeeded === true);
@@ -258,47 +276,41 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             return [];
         };
 
-        if (this.fetchedModifications) {
-            requestedActivateKeys.forEach(([key, keyInfos]) => {
-                if (output.activateCampaign[keyInfos.campaignId[0]]) {
-                    output.activateCampaign[keyInfos.campaignId[0]].directActivate.push(key);
-                } else {
-                    output.activateCampaign[keyInfos.campaignId[0]] = {
-                        directActivate: [key],
-                        indirectActivate: extractModificationIndirectKeysFromCampaign(keyInfos.campaignId[0], key)
-                    };
+        requestedActivateKeys.forEach(([key, keyInfos]) => {
+            if (output.activateCampaign[keyInfos.campaignId[0]]) {
+                output.activateCampaign[keyInfos.campaignId[0]].directActivate.push(key);
+            } else {
+                output.activateCampaign[keyInfos.campaignId[0]] = {
+                    directActivate: [key],
+                    indirectActivate: extractModificationIndirectKeysFromCampaign(keyInfos.campaignId[0], key)
+                };
+            }
+        });
+
+        // then, clean indirect key which are also in direct
+        Object.keys(output.activateCampaign).forEach((campaignId) => {
+            Object.values(output.activateCampaign[campaignId].directActivate).forEach((directKey) => {
+                if (output.activateCampaign[campaignId].indirectActivate.includes(directKey)) {
+                    output.activateCampaign[campaignId].indirectActivate.splice(
+                        output.activateCampaign[campaignId].indirectActivate.indexOf(directKey),
+                        1
+                    );
                 }
             });
+        });
 
-            // then, clean indirect key which are also in direct
-            Object.keys(output.activateCampaign).forEach((campaignId) => {
-                Object.values(output.activateCampaign[campaignId].directActivate).forEach((directKey) => {
-                    if (output.activateCampaign[campaignId].indirectActivate.includes(directKey)) {
-                        output.activateCampaign[campaignId].indirectActivate.splice(
-                            output.activateCampaign[campaignId].indirectActivate.indexOf(directKey),
-                            1
-                        );
-                    }
-                });
-            });
+        // then, fill "keyActivate"
+        const extractNbTimesActivateCallForKey = (key: string): number =>
+            Object.values(output.activateCampaign).reduce(
+                (count, { directActivate, indirectActivate }) =>
+                    count + indirectActivate.filter((item) => item === key).length + directActivate.filter((item) => item === key).length,
+                0
+            );
+        requestedActivateKeys.forEach(([key]) => {
+            output.activateKey[key] = extractNbTimesActivateCallForKey(key);
+        });
 
-            // then, fill "keyActivate"
-            const extractNbTimesActivateCallForKey = (key: string): number =>
-                Object.values(output.activateCampaign).reduce(
-                    (count, { directActivate, indirectActivate }) =>
-                        count +
-                        indirectActivate.filter((item) => item === key).length +
-                        directActivate.filter((item) => item === key).length,
-                    0
-                );
-            requestedActivateKeys.forEach(([key]) => {
-                output.activateKey[key] = extractNbTimesActivateCallForKey(key);
-            });
-
-            // done
-            return output;
-        }
-        this.log.debug('checkCampaignsActivatedMultipleTimes: Error this.fetchedModifications is empty');
+        // done
         return output;
     }
 
