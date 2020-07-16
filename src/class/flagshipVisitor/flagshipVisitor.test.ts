@@ -40,7 +40,39 @@ describe('FlagshipVisitor', () => {
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         expect(visitorInstance).toBeInstanceOf(FlagshipVisitor);
     });
+    describe('Modifications cache management', () => {
+        beforeEach(() => {
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            defaultDecisionApiResponse = {
+                data: demoData.decisionApi.normalResponse.oneCampaignWithFurtherModifs,
+                status: 200,
+                statusText: 'OK'
+            };
+            defaultActivateModificationResponse = {
+                data: demoData.flagshipVisitor.activateModifications.fetchedModifications.basic,
+                status: 200,
+                statusText: 'OK'
+            };
+            initSpyLogs(visitorInstance);
+        });
+        it('should alert when trying to save in cache an invalid payload', async (done) => {
+            visitorInstance.saveModificationsInCache({}); // Mock a previous fetch
 
+            expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+            expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+            expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+            expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications: "null"');
+            expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                1,
+                'validateDecisionApiData - received unexpected decision api data of type "object"'
+            );
+
+            done();
+        });
+    });
     describe('Activate cache management', () => {
         beforeEach(() => {
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
@@ -233,6 +265,69 @@ describe('FlagshipVisitor', () => {
 
                     done();
                 }, 100);
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+        it('should triggerActivateIfNeeded not consider the activate in cache if the API failed', async (done) => {
+            try {
+                visitorInstance.saveModificationsInCache(demoData.decisionApi.normalResponse.oneCampaignOneModif.campaigns); // Mock a previous fetch
+
+                expect(
+                    Object.keys(visitorInstance.modificationsInternalStatus).filter(
+                        (key) => visitorInstance.modificationsInternalStatus[key].activated.variationId.length > 0
+                    ).length
+                ).toEqual(0);
+
+                visitorInstance.triggerActivateIfNeeded(undefined, true);
+
+                mockAxios.mockResponse(defaultActivateModificationResponse);
+
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                    2,
+                    'Modification key(s) "modif1" successfully activate. with status code "200"'
+                );
+
+                expect(
+                    Object.keys(visitorInstance.modificationsInternalStatus).filter(
+                        (key) => visitorInstance.modificationsInternalStatus[key].activated.variationId.length > 0
+                    ).length
+                ).toEqual(1);
+
+                // simulate an update on the campaign
+                visitorInstance.saveModificationsInCache(demoData.decisionApi.normalResponse.oneCampaignOneModifWithAnUpdate.campaigns); // Mock a previous fetch
+                visitorInstance.triggerActivateIfNeeded(undefined, true);
+
+                mockAxios.mockResponse(defaultActivateModificationResponse);
+
+                expect(spyDebugLogs).toHaveBeenCalledTimes(5);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                    4,
+                    'triggerActivateIfNeeded - detecting a new variation (id="blntcamqmdvg04g777hg") (variationGroupId="blntcamqmdvg04g777h0") which activates the same key as another older variation'
+                );
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                    5,
+                    'Modification key(s) "modif1" successfully activate. with status code "200"'
+                );
+
+                expect(
+                    Object.keys(visitorInstance.modificationsInternalStatus).filter(
+                        (key) => visitorInstance.modificationsInternalStatus[key].activated.variationId.length > 1
+                    ).length
+                ).toEqual(1);
+
+                done();
             } catch (error) {
                 done.fail(error);
             }
@@ -715,7 +810,7 @@ describe('FlagshipVisitor', () => {
         });
     });
 
-    describe('updateContext funcion', () => {
+    describe('updateContext function', () => {
         it('should update current visitor context', () => {
             const newContext = {
                 pos: 'fl',
@@ -1432,6 +1527,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toBeCalledTimes(1);
         });
     });
+
     describe('SendHits function', () => {
         beforeEach(() => {
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
