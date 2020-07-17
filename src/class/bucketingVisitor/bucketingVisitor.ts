@@ -1,7 +1,7 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-import * as murmurhash from 'murmurhash';
+import * as murmurhash from 'react-native-murmurhash';
+import { MurmurV3, FlagshipSdkConfig, IFlagshipBucketingVisitor } from '../../types';
 import { FlagshipVisitorContext, DecisionApiCampaign, DecisionApiResponseData } from '../flagshipVisitor/types';
-
 import {
     BucketingVariation,
     BucketingApiResponse,
@@ -10,7 +10,6 @@ import {
     BucketingTypes,
     BucketingCampaign
 } from '../bucketing/types';
-import { FlagshipSdkConfig, IFlagshipBucketingVisitor } from '../../types';
 
 import loggerHelper from '../../lib/loggerHelper';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
@@ -28,6 +27,8 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
 
     visitorId: string;
 
+    murmurhashV3: MurmurV3;
+
     visitorContext: FlagshipVisitorContext;
 
     constructor(
@@ -44,6 +45,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         this.envId = envId;
         this.data = bucketingData || null;
         this.computedData = bucketingData ? { visitorId: this.visitorId, campaigns: this.getEligibleCampaigns() } : null;
+        this.murmurhashV3 = murmurhash.v3;
     }
 
     static transformIntoDecisionApiPayload(
@@ -78,7 +80,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
     private computeMurmurAlgorithm(variations: BucketingVariation[]): BucketingVariation | null {
         let assignedVariation: BucketingVariation | null = null;
         // generates a v3 hash
-        const murmurAllocation = murmurhash.v3(this.visitorId) % 100; // 2nd argument is set to 0 by default
+        const murmurAllocation = this.murmurhashV3(this.visitorId) % 100; // 2nd argument is set to 0 by default
         this.log.debug(`computeMurmurAlgorithm - murmur returned value="${murmurAllocation}"`);
 
         const variationTrafficCheck = variations.reduce((sum, v) => {
