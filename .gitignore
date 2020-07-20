@@ -13,3 +13,6 @@ stats.json
 coverage/
 
 IMPROVEMENTS.md
+
+.vscode
+.idea
