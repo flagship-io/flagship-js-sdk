@@ -30,16 +30,20 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
 
     visitorContext: FlagshipVisitorContext;
 
+    variationGroupId: string;
+
     constructor(
         envId: string,
         visitorId: string,
         visitorContext: FlagshipVisitorContext,
         config: FlagshipSdkConfig,
+        variationGroupId: string,
         bucketingData?: BucketingApiResponse | null
     ) {
         this.config = config;
         this.visitorId = visitorId;
         this.visitorContext = visitorContext;
+        this.variationGroupId = variationGroupId;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - Bucketing (visitorId=${this.visitorId})`);
         this.envId = envId;
         this.data = bucketingData || null;
@@ -75,10 +79,10 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         this.visitorContext = flagshipSdkHelper.checkVisitorContext(newContext, this.log);
     }
 
-    private computeMurmurAlgorithm(variations: BucketingVariation[]): BucketingVariation | null {
+    private computeMurmurAlgorithm(variations: BucketingVariation[], variationGroupId: string): BucketingVariation | null {
         let assignedVariation: BucketingVariation | null = null;
         // generates a v3 hash
-        const murmurAllocation = murmurhash.v3(this.visitorId) % 100; // 2nd argument is set to 0 by default
+        const murmurAllocation = murmurhash.v3(this.visitorId + variationGroupId) % 100; // 2nd argument is set to 0 by default
         this.log.debug(`computeMurmurAlgorithm - murmur returned value="${murmurAllocation}"`);
 
         const variationTrafficCheck = variations.reduce((sum, v) => {
@@ -422,7 +426,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                     ...campaign,
                     variationGroups: campaign.variationGroups.filter((varGroup) => varGroup.id === matchingVgId)
                 }; // = campaign with only the desired variation group
-                const variationToAffectToVisitor = this.computeMurmurAlgorithm(cleanCampaign.variationGroups[0].variations);
+                const variationToAffectToVisitor = this.computeMurmurAlgorithm(cleanCampaign.variationGroups[0].variations, matchingVgId);
                 if (variationToAffectToVisitor !== null) {
                     result.push(BucketingVisitor.transformIntoDecisionApiPayload(variationToAffectToVisitor, campaign, matchingVgId));
                 } else {
