@@ -14,6 +14,8 @@ import {
 } from './class/flagshipVisitor/types';
 import { BucketingApiResponse } from './class/bucketing/types';
 
+export type MurmurV3 = (value: string, seed?: number) => number;
+
 export type FlagshipSdkConfig = {
     fetchNow?: boolean;
     pollingInterval?: number | null;
@@ -24,6 +26,7 @@ export type FlagshipSdkConfig = {
     flagshipApi?: string;
     apiKey?: string | null;
     initialModifications?: DecisionApiCampaign[] | null;
+    murmurhashV3?: MurmurV3 | null;
 };
 
 export type FlagshipSdkInternalConfig = {
