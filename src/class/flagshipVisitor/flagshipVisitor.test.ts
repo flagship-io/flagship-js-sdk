@@ -106,7 +106,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
         it('should always call Decision API even if "fetchedModifications" already set before', (done) => {
@@ -130,7 +130,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
         it('should always init "fetchedModifications" to "null" if decision API failed', (done) => {
@@ -156,7 +156,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
         it('should always init "fetchedModifications" attribute when decision API succeed (even with no modifs)', (done) => {
@@ -180,7 +180,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
         it('should always NOT init "fetchedModifications" attribute when decision API succeed and has a weird answer', (done) => {
@@ -210,7 +210,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
     });
@@ -248,6 +248,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, {
                 context: demoData.visitor.cleanContext,
                 trigger_hit: false,
+                exposeAllKeys: true,
                 visitor_id: demoData.visitor.id[0]
             });
             expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
@@ -407,7 +408,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: true, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
 
@@ -444,7 +445,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: true, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
 
@@ -635,7 +636,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
         it('should return empty array if no match', (done) => {
@@ -660,7 +661,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
     });
@@ -696,7 +697,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
         it('should return all info of first modification if key match FURTHER campaigns', (done) => {
@@ -725,7 +726,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
         it('should return null if key does not match any campaigns', (done) => {
@@ -746,7 +747,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
     });
@@ -775,7 +776,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
         it('should have correct response for simple mode', (done) => {
@@ -798,7 +799,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
         });
     });

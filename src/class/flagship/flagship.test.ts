@@ -237,7 +237,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: true, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
             );
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
@@ -276,6 +276,7 @@ describe('FlagshipVisitor', () => {
             mockAxios.mockResponse(responseObj);
             expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${mockEndpoint}${demoData.envId[0]}/campaigns?mode=normal`, {
                 context: demoData.visitor.cleanContext,
+                exposeAllKeys: true,
                 trigger_hit: true,
                 visitor_id: demoData.visitor.id[0]
             });
@@ -320,6 +321,7 @@ describe('FlagshipVisitor', () => {
             mockAxios.mockResponse(responseObj);
             expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${endPoint}${demoData.envId[0]}/campaigns?mode=normal`, {
                 context: demoData.visitor.cleanContext,
+                exposeAllKeys: true,
                 trigger_hit: true,
                 visitor_id: demoData.visitor.id[0],
                 'x-api-key': 'toto'

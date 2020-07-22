@@ -651,6 +651,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     .postFlagshipApi(this.config, this.log, url, {
                         visitor_id: this.id,
                         trigger_hit: activate, // TODO: to unit test
+                        // sendContextEvent: false, // NOTE: not set because endpoint "/events" is called only with bucketing mode
+                        exposeAllKeys: true, // hardcoded
                         context: this.context
                     })
                     .then((response: DecisionApiResponse) => {
