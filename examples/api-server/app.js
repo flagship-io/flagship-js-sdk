@@ -8,6 +8,10 @@ var itemsRouter = require('./routes/items');
 var checkoutRouter = require('./routes/checkout');
 var fsVisitorRouter = require('./routes/fsVisitor');
 
+if (process.pid) {
+    console.log('This process is your pid ' + process.pid);
+}
+
 var app = express();
 
 app.use(logger('dev'));

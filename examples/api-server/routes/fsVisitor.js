@@ -61,4 +61,9 @@ router.get('/get', function (req, res, next) {
     }
 });
 
+router.get('/empty', function (req, res, next) {
+    req.app.set('visitorList', []);
+    res.sendStatus(200);
+});
+
 module.exports = router;
