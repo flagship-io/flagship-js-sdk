@@ -19,7 +19,7 @@
     "scripts": {
         "test": "jest --verbose",
         "test:coverage": "jest --coverage",
-        "test:badges": "npm run test:coverage && jest-coverage-badges",
+        "test:badges": "npm run test:coverage && jest-coverage-badges && cp ./coverage/badge-lines.svg ./badges/ && cp ./coverage/badge-functions.svg ./badges/",
         "test:react-sample": "cd ./examples/react-app && npm test",
         "eslint": "eslint --version && eslint --quiet .ts,.js",
         "release": "np",
