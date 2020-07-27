@@ -20,7 +20,7 @@
     }
   ],
   "dependencies": {
-    "@flagship.io/js-sdk": "fs-js-sdk-06e8c964-73ca-4844-9973-9191a7b48abe.tgz",
+    "@flagship.io/js-sdk": "^2.0.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
