@@ -20,7 +20,7 @@
 
 [![Apache2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-[![GitHub release](https://img.shields.io/github/v/release/abtasty/flagship-react-sdk.svg)](https://github.com/abtasty/flagship-react-sdk/releases)
+[![GitHub release](https://img.shields.io/github/v/release/abtasty/flagship-js-sdk.svg)](https://github.com/abtasty/flagship-js-sdk/releases)
 
 </div>
 
