@@ -347,11 +347,16 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
 
         mockAxios.mockResponse(bucketingEventMockResponse);
 
-        expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${bucketInstance.config.flagshipApi}${bucketInstance.envId}/events`, {
-            data: { ...bucketInstance.visitorContext },
-            type: 'CONTEXT',
-            visitor_id: bucketInstance.visitorId
-        });
+        expect(mockAxios.post).toHaveBeenNthCalledWith(
+            1,
+            `${bucketInstance.config.flagshipApi}${bucketInstance.envId}/events`,
+            {
+                data: { ...bucketInstance.visitorContext },
+                type: 'CONTEXT',
+                visitor_id: bucketInstance.visitorId
+            },
+            {}
+        );
 
         expect(result).toEqual([
             {

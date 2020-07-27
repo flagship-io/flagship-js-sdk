@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.0.1
+
+### Bug fixes 🐛
+
+-   Hot fix with `decisionMode="API"` not working correctly due to bad implementation of `exposeAllKeys=true`.
+
 ## ➡️ Version 2.0.0
 
 ### Breaking changes ⚠️

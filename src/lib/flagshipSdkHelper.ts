@@ -15,14 +15,20 @@ const checkRequiredSettingsForApiV2 = (config: FlagshipSdkConfig, log: FsLogger)
 };
 
 const flagshipSdkHelper = {
-    postFlagshipApi: (config: FlagshipSdkConfig, log: FsLogger, endpoint: string, params: { [key: string]: any }): Promise<any> => {
+    postFlagshipApi: (
+        config: FlagshipSdkConfig,
+        log: FsLogger,
+        endpoint: string,
+        params: { [key: string]: any },
+        queryParams: any = {}
+    ): Promise<any> => {
         const additionalParams: { [key: string]: string } = {};
         checkRequiredSettingsForApiV2(config, log);
         if (config.apiKey) {
             additionalParams['x-api-key'] = config.apiKey;
         }
         const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
-        return axios.post(url, { ...params, ...additionalParams });
+        return axios.post(url, { ...params, ...additionalParams }, queryParams);
     },
     checkPollingIntervalValue: (pollingIntervalValue: any): 'ok' | 'underLimit' | 'notSupported' => {
         const valueType = typeof pollingIntervalValue;
