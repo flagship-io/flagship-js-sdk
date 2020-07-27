@@ -347,22 +347,32 @@ describe('FlagshipVisitor', () => {
             };
             visitorInstance.activateCampaign('123456789', '987654321');
             mockAxios.mockResponse(responseObj);
-            expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                vid: visitorInstance.id,
-                cid: visitorInstance.envId,
-                vaid: '123456789',
-                caid: '987654321'
-            });
-        });
-        it('should report error when Api Decision Activate fails', (done) => {
-            initSpyLogs(visitorInstance);
-            visitorInstance.activateCampaign('123456789', '987654321').catch((error) => {
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                1,
+                'https://decision-api.flagship.io/v1/activate',
+                {
                     vid: visitorInstance.id,
                     cid: visitorInstance.envId,
                     vaid: '123456789',
                     caid: '987654321'
-                });
+                },
+                {}
+            );
+        });
+        it('should report error when Api Decision Activate fails', (done) => {
+            initSpyLogs(visitorInstance);
+            visitorInstance.activateCampaign('123456789', '987654321').catch((error) => {
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vid: visitorInstance.id,
+                        cid: visitorInstance.envId,
+                        vaid: '123456789',
+                        caid: '987654321'
+                    },
+                    {}
+                );
                 expect(error).toEqual('server crashed');
                 expect(spyDebugLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
@@ -401,7 +411,8 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
         it('should always call Decision API even if "fetchedModifications" already set before', (done) => {
@@ -425,7 +436,8 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
         it('should always init "fetchedModifications" to "null" if decision API failed', (done) => {
@@ -451,7 +463,8 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
         it('should always init "fetchedModifications" attribute when decision API succeed (even with no modifs)', (done) => {
@@ -475,7 +488,8 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
         it('should always NOT init "fetchedModifications" attribute when decision API succeed and has a weird answer', (done) => {
@@ -505,7 +519,8 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
     });
@@ -540,12 +555,15 @@ describe('FlagshipVisitor', () => {
         });
         it('should return decision API response (mode=normal) when there is no optional argument set', () => {
             visitorInstance.fetchAllModifications();
-            expect(mockAxios.post).toHaveBeenCalledWith(`https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`, {
-                context: demoData.visitor.cleanContext,
-                trigger_hit: false,
-                exposeAllKeys: true,
-                visitor_id: demoData.visitor.id[0]
-            });
+            expect(mockAxios.post).toHaveBeenCalledWith(
+                `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
+                {
+                    context: demoData.visitor.cleanContext,
+                    trigger_hit: false,
+                    visitor_id: demoData.visitor.id[0]
+                },
+                { params: { exposeAllKeys: true } }
+            );
             expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
         });
 
@@ -703,7 +721,8 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: true, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
 
@@ -716,31 +735,47 @@ describe('FlagshipVisitor', () => {
             visitorInstance.fetchAllModifications({ activate: true }).then(({ data, status }) => {
                 expect(status).toBe(200);
                 expect(spyActivateCampaign).toHaveBeenCalledTimes(3);
-                expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: 'blntcamqmdvg04g371hg',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: 'blntcamqmdvg04g371h0',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: 'bmjdprsjan0g01uq2ctg',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: 'bmjdprsjan0g01uq2csg',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(4, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: 'bmjdprsjan0g01uq1ctg',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: 'bmjdprsjan0g01uq2ceg',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: 'blntcamqmdvg04g371hg',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: 'blntcamqmdvg04g371h0',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    3,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: 'bmjdprsjan0g01uq2ctg',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: 'bmjdprsjan0g01uq2csg',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    4,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: 'bmjdprsjan0g01uq1ctg',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: 'bmjdprsjan0g01uq2ceg',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
                 done();
             });
             mockAxios.mockResponse(responseObj);
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: true, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
 
@@ -781,24 +816,39 @@ describe('FlagshipVisitor', () => {
                     expect(spyInfoLogs).toHaveBeenCalledWith(
                         'fetchAllModifications - no calls to the Decision API because it has already been fetched before'
                     );
-                    expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                        vaid: 'blntcamqmdvg04g371hg',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: 'blntcamqmdvg04g371h0',
-                        vid: 'test-perf'
-                    });
-                    expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-                        vaid: 'bmjdprsjan0g01uq2ctg',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: 'bmjdprsjan0g01uq2csg',
-                        vid: 'test-perf'
-                    });
-                    expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
-                        vaid: 'bmjdprsjan0g01uq1ctg',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: 'bmjdprsjan0g01uq2ceg',
-                        vid: 'test-perf'
-                    });
+                    expect(mockAxios.post).toHaveBeenNthCalledWith(
+                        1,
+                        'https://decision-api.flagship.io/v1/activate',
+                        {
+                            vaid: 'blntcamqmdvg04g371hg',
+                            cid: 'bn1ab7m56qolupi5sa0g',
+                            caid: 'blntcamqmdvg04g371h0',
+                            vid: 'test-perf'
+                        },
+                        {}
+                    );
+                    expect(mockAxios.post).toHaveBeenNthCalledWith(
+                        2,
+                        'https://decision-api.flagship.io/v1/activate',
+                        {
+                            vaid: 'bmjdprsjan0g01uq2ctg',
+                            cid: 'bn1ab7m56qolupi5sa0g',
+                            caid: 'bmjdprsjan0g01uq2csg',
+                            vid: 'test-perf'
+                        },
+                        {}
+                    );
+                    expect(mockAxios.post).toHaveBeenNthCalledWith(
+                        3,
+                        'https://decision-api.flagship.io/v1/activate',
+                        {
+                            vaid: 'bmjdprsjan0g01uq1ctg',
+                            cid: 'bn1ab7m56qolupi5sa0g',
+                            caid: 'bmjdprsjan0g01uq2ceg',
+                            vid: 'test-perf'
+                        },
+                        {}
+                    );
                 } catch (error) {
                     done.fail(error);
                 }
@@ -860,18 +910,28 @@ describe('FlagshipVisitor', () => {
 
             expect(mockAxios.post).toHaveBeenCalledTimes(2);
 
-            expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                vaid: 'blntcamqmdvg04g371hg',
-                cid: demoData.envId[0],
-                caid: 'blntcamqmdvg04g371h0',
-                vid: demoData.visitor.id[0]
-            });
-            expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-                vaid: 'bmjdprsjan0g01uq2ctg',
-                cid: demoData.envId[0],
-                caid: 'bmjdprsjan0g01uq2csg',
-                vid: demoData.visitor.id[0]
-            });
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                1,
+                'https://decision-api.flagship.io/v1/activate',
+                {
+                    vaid: 'blntcamqmdvg04g371hg',
+                    cid: demoData.envId[0],
+                    caid: 'blntcamqmdvg04g371h0',
+                    vid: demoData.visitor.id[0]
+                },
+                {}
+            );
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                2,
+                'https://decision-api.flagship.io/v1/activate',
+                {
+                    vaid: 'bmjdprsjan0g01uq2ctg',
+                    cid: demoData.envId[0],
+                    caid: 'bmjdprsjan0g01uq2csg',
+                    vid: demoData.visitor.id[0]
+                },
+                {}
+            );
         });
 
         it('should not trigger twice activate for a modification which is in more than one campaign (1st use case)', () => {
@@ -882,18 +942,28 @@ describe('FlagshipVisitor', () => {
             );
             expect(mockAxios.post).toHaveBeenCalledTimes(2);
 
-            expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                vaid: 'blntcamqmdvg04g371hg',
-                cid: demoData.envId[0],
-                caid: 'blntcamqmdvg04g371h0',
-                vid: demoData.visitor.id[0]
-            });
-            expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-                vaid: 'bmjdprsjan0g01uq2ctg',
-                cid: demoData.envId[0],
-                caid: 'bmjdprsjan0g01uq2csg',
-                vid: demoData.visitor.id[0]
-            });
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                1,
+                'https://decision-api.flagship.io/v1/activate',
+                {
+                    vaid: 'blntcamqmdvg04g371hg',
+                    cid: demoData.envId[0],
+                    caid: 'blntcamqmdvg04g371h0',
+                    vid: demoData.visitor.id[0]
+                },
+                {}
+            );
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                2,
+                'https://decision-api.flagship.io/v1/activate',
+                {
+                    vaid: 'bmjdprsjan0g01uq2ctg',
+                    cid: demoData.envId[0],
+                    caid: 'bmjdprsjan0g01uq2csg',
+                    vid: demoData.visitor.id[0]
+                },
+                {}
+            );
         });
 
         it('should not trigger twice activate for a modification which is in more than one campaign (2nd use case)', () => {
@@ -904,12 +974,17 @@ describe('FlagshipVisitor', () => {
             );
             expect(mockAxios.post).toHaveBeenCalledTimes(1);
 
-            expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                vaid: 'blntcamqmdvg04g371hg',
-                cid: demoData.envId[0],
-                caid: 'blntcamqmdvg04g371h0',
-                vid: demoData.visitor.id[0]
-            });
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                1,
+                'https://decision-api.flagship.io/v1/activate',
+                {
+                    vaid: 'blntcamqmdvg04g371hg',
+                    cid: demoData.envId[0],
+                    caid: 'blntcamqmdvg04g371h0',
+                    vid: demoData.visitor.id[0]
+                },
+                {}
+            );
         });
     });
 
@@ -939,7 +1014,8 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
         it('should return empty array if no match', (done) => {
@@ -964,7 +1040,8 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
     });
@@ -1000,7 +1077,8 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
         it('should return all info of first modification if key match FURTHER campaigns', (done) => {
@@ -1029,7 +1107,8 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
         it('should return null if key does not match any campaigns', (done) => {
@@ -1050,7 +1129,12 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                {
+                    params: {
+                        exposeAllKeys: true
+                    }
+                }
             );
         });
     });
@@ -1079,7 +1163,10 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                {
+                    params: { exposeAllKeys: true }
+                }
             );
         });
         it('should have correct response for simple mode', (done) => {
@@ -1102,7 +1189,8 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, exposeAllKeys: true, visitor_id: demoData.visitor.id[0] }
+                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] },
+                { params: { exposeAllKeys: true } }
             );
         });
     });
@@ -1130,18 +1218,28 @@ describe('FlagshipVisitor', () => {
             visitorInstance.activateModifications([...demoData.flagshipVisitor.activateModifications.args.basic, { key: 'xoxo' }]);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(2);
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd8445a622037b1bc3b',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8cc00f72d5f3cb177',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd828feadeb6d9b8414',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8d4106bb1ae2b6455',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd8445a622037b1bc3b',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8cc00f72d5f3cb177',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd828feadeb6d9b8414',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8d4106bb1ae2b6455',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(responseObject.data.campaigns, [
                     { activate: true, defaultValue: '', key: 'toto' },
                     { activate: true, defaultValue: '', key: 'tata' },
@@ -1169,18 +1267,28 @@ describe('FlagshipVisitor', () => {
             visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.basic);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(2);
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd828feadeb6d9b8414',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8d4106bb1ae2b6455',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd89609296ae8430037',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8fcde4be7ffe5476f',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd828feadeb6d9b8414',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8d4106bb1ae2b6455',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd89609296ae8430037',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8fcde4be7ffe5476f',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
                     demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns,
                     [
@@ -1214,12 +1322,17 @@ describe('FlagshipVisitor', () => {
             visitorInstance.activateModifications([{ key: 'toto' }]);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(1);
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd828feadeb6d9b8414',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8d4106bb1ae2b6455',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd828feadeb6d9b8414',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8d4106bb1ae2b6455',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
                     demoData.flagshipVisitor.activateModifications.fetchedModifications.oneKeyConflict.campaigns,
                     [{ activate: true, defaultValue: '', key: 'toto' }]
@@ -1246,24 +1359,39 @@ describe('FlagshipVisitor', () => {
             visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.all);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(3);
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd8445a622037b1bc3b',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8cc00f72d5f3cb177',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd828feadeb6d9b8414',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8d4106bb1ae2b6455',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd89609296ae8430037',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8fcde4be7ffe5476f',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd8445a622037b1bc3b',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8cc00f72d5f3cb177',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd828feadeb6d9b8414',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8d4106bb1ae2b6455',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    3,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd89609296ae8430037',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8fcde4be7ffe5476f',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
                     demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns,
                     [
@@ -1305,30 +1433,50 @@ describe('FlagshipVisitor', () => {
             ); // Mock a previous fetch
             visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.over9000);
             expect(mockAxios.post).toHaveBeenCalledTimes(4);
-            expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                vaid: '5e26ccd8445a622037b1bc3b',
-                cid: 'bn1ab7m56qolupi5sa0g',
-                caid: '5e26ccd8cc00f72d5f3cb177',
-                vid: 'test-perf'
-            });
-            expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-                vaid: '5e26ccd828feadeb6d9b8414',
-                cid: 'bn1ab7m56qolupi5sa0g',
-                caid: '5e26ccd8d4106bb1ae2b6455',
-                vid: 'test-perf'
-            });
-            expect(mockAxios.post).toHaveBeenNthCalledWith(3, 'https://decision-api.flagship.io/v1/activate', {
-                vaid: '5e26ccd89609296ae8430037',
-                cid: 'bn1ab7m56qolupi5sa0g',
-                caid: '5e26ccd8fcde4be7ffe5476f',
-                vid: 'test-perf'
-            });
-            expect(mockAxios.post).toHaveBeenNthCalledWith(4, 'https://decision-api.flagship.io/v1/activate', {
-                vaid: '5e26ccd89609296ae8430137',
-                cid: 'bn1ab7m56qolupi5sa0g',
-                caid: '5e26ccd8fcde4be7ff55476f',
-                vid: 'test-perf'
-            });
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                1,
+                'https://decision-api.flagship.io/v1/activate',
+                {
+                    vaid: '5e26ccd8445a622037b1bc3b',
+                    cid: 'bn1ab7m56qolupi5sa0g',
+                    caid: '5e26ccd8cc00f72d5f3cb177',
+                    vid: 'test-perf'
+                },
+                {}
+            );
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                2,
+                'https://decision-api.flagship.io/v1/activate',
+                {
+                    vaid: '5e26ccd828feadeb6d9b8414',
+                    cid: 'bn1ab7m56qolupi5sa0g',
+                    caid: '5e26ccd8d4106bb1ae2b6455',
+                    vid: 'test-perf'
+                },
+                {}
+            );
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                3,
+                'https://decision-api.flagship.io/v1/activate',
+                {
+                    vaid: '5e26ccd89609296ae8430037',
+                    cid: 'bn1ab7m56qolupi5sa0g',
+                    caid: '5e26ccd8fcde4be7ffe5476f',
+                    vid: 'test-perf'
+                },
+                {}
+            );
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                4,
+                'https://decision-api.flagship.io/v1/activate',
+                {
+                    vaid: '5e26ccd89609296ae8430137',
+                    cid: 'bn1ab7m56qolupi5sa0g',
+                    caid: '5e26ccd8fcde4be7ff55476f',
+                    vid: 'test-perf'
+                },
+                {}
+            );
             expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
                 demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns,
                 [
@@ -1383,18 +1531,28 @@ describe('FlagshipVisitor', () => {
             visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.basic);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(2);
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd8445a622037b1bc3b',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8cc00f72d5f3cb177',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd89609296ae8430037',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8fcde4be7ffe5476f',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd8445a622037b1bc3b',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8cc00f72d5f3cb177',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd89609296ae8430037',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8fcde4be7ffe5476f',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
                     demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns,
                     [
@@ -1436,12 +1594,17 @@ describe('FlagshipVisitor', () => {
             visitorInstance.activateModifications([{ key: 'toto' }]);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(1);
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd8445a622037b1bc3b',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8cc00f72d5f3cb177',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd8445a622037b1bc3b',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8cc00f72d5f3cb177',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
                     demoData.flagshipVisitor.activateModifications.fetchedModifications.multipleKeyConflict.campaigns,
                     [{ activate: true, defaultValue: '', key: 'toto' }]
@@ -1466,18 +1629,28 @@ describe('FlagshipVisitor', () => {
             visitorInstance.activateModifications(demoData.flagshipVisitor.activateModifications.args.basic);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(2);
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd8445a622037b1bc3b',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8cc00f72d5f3cb177',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: '5e26ccd828feadeb6d9b8414',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8d4106bb1ae2b6455',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd8445a622037b1bc3b',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8cc00f72d5f3cb177',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: '5e26ccd828feadeb6d9b8414',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: '5e26ccd8d4106bb1ae2b6455',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(responseObject.data.campaigns, [
                     { activate: true, defaultValue: '', key: 'toto' },
                     { activate: true, defaultValue: '', key: 'tata' }
@@ -1845,19 +2018,29 @@ describe('FlagshipVisitor', () => {
             const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(2);
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: 'blntcamqmdvg04g371hg',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: 'blntcamqmdvg04g371h0',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: 'blntcamqmdvg04g371hg',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: 'blntcamqmdvg04g371h0',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
 
-                expect(mockAxios.post).toHaveBeenNthCalledWith(2, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: 'bmjdprsjan0g01uq2ctg',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: 'bmjdprsjan0g01uq2csg',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: 'bmjdprsjan0g01uq2ctg',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: 'bmjdprsjan0g01uq2csg',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
                 expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -1885,12 +2068,17 @@ describe('FlagshipVisitor', () => {
             const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.default);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(1);
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://decision-api.flagship.io/v1/activate', {
-                    vaid: 'blntcamqmdvg04g371hg',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: 'blntcamqmdvg04g371h0',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    'https://decision-api.flagship.io/v1/activate',
+                    {
+                        vaid: 'blntcamqmdvg04g371hg',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        caid: 'blntcamqmdvg04g371h0',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
                 expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);

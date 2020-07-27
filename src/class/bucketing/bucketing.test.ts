@@ -569,34 +569,54 @@ describe('Bucketing used from visitor instance', () => {
 
                 expect(mockAxios.post).toHaveBeenCalledTimes(4);
 
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`, {
-                    data: {
-                        ...visitorInstance.context
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`,
+                    {
+                        data: {
+                            ...visitorInstance.context
+                        },
+                        type: 'CONTEXT',
+                        visitor_id: visitorInstance.id
                     },
-                    type: 'CONTEXT',
-                    visitor_id: visitorInstance.id
-                });
+                    {}
+                );
 
-                expect(mockAxios.post).toHaveBeenNthCalledWith(2, `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`, {
-                    data: {
-                        ...visitorInstance.context
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`,
+                    {
+                        data: {
+                            ...visitorInstance.context
+                        },
+                        type: 'CONTEXT',
+                        visitor_id: visitorInstance.id
                     },
-                    type: 'CONTEXT',
-                    visitor_id: visitorInstance.id
-                });
+                    {}
+                );
 
-                expect(mockAxios.post).toHaveBeenNthCalledWith(3, activateUrl, {
-                    caid: 'bptggipaqi903f3haq1g',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    vaid: 'bptggipaqi903f3haq2g',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(4, activateUrl, {
-                    caid: 'bq4sf09oet0006cfihe0',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    vaid: 'bq4sf09oet0006cfihf0',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    3,
+                    activateUrl,
+                    {
+                        caid: 'bptggipaqi903f3haq1g',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        vaid: 'bptggipaqi903f3haq2g',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    4,
+                    activateUrl,
+                    {
+                        caid: 'bq4sf09oet0006cfihe0',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        vaid: 'bq4sf09oet0006cfihf0',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
 
                 done();
             } catch (error) {

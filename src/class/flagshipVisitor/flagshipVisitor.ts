@@ -776,13 +776,23 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 }
             } else {
                 flagshipSdkHelper
-                    .postFlagshipApi(this.config, this.log, url, {
-                        visitor_id: this.id,
-                        trigger_hit: activate, // TODO: to unit test
-                        // sendContextEvent: false, // NOTE: not set because endpoint "/events" is called only with bucketing mode
-                        exposeAllKeys: true, // hardcoded
-                        context: this.context
-                    })
+                    .postFlagshipApi(
+                        this.config,
+                        this.log,
+                        url,
+                        {
+                            visitor_id: this.id,
+                            trigger_hit: activate, // TODO: to unit test
+                            // sendContextEvent: false, // NOTE: not set because endpoint "/events" is called only with bucketing mode
+                            context: this.context
+                        },
+                        // query params:
+                        {
+                            params: {
+                                exposeAllKeys: true // hardcoded
+                            }
+                        }
+                    )
                     .then((response: DecisionApiResponse) => {
                         this.saveModificationsInCache(response.data.campaigns);
                         resolve(this.fetchAllModificationsPostProcess(response, { ...defaultArgs, ...args }) as DecisionApiResponse);
