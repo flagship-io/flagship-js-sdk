@@ -201,7 +201,7 @@ describe('Bucketing used from visitor instance', () => {
             try {
                 expect(visitorInstance.fetchedModifications).toEqual(null);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -233,7 +233,7 @@ describe('Bucketing used from visitor instance', () => {
             });
             sdk.eventEmitter.emit('bucketPollingFailed', 'bucketing server crash');
         } catch (error) {
-            done.fail(error);
+            done.fail(error.stack);
         }
     });
 
@@ -272,7 +272,7 @@ describe('Bucketing used from visitor instance', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -324,7 +324,7 @@ describe('Bucketing used from visitor instance', () => {
                 });
                 sdk.eventEmitter.emit('bucketPollingSuccess', { payload: {}, status: 304 });
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -356,7 +356,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
         sdk.eventEmitter.emit('bucketPollingSuccess', { payload: { ...bucketingApiMockResponse }, status: 200 });
@@ -390,7 +390,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
         sdk.eventEmitter.emit('bucketPollingSuccess', { payload: { ...bucketingApiMockResponse }, status: 999 });
@@ -437,7 +437,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(visitorInstance.fetchedModifications[1].id === demoData.bucketing.classical.campaigns[1].id).toEqual(true);
                 nextStep();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -490,7 +490,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(visitorInstance.fetchedModifications[1].id === demoData.bucketing.classical.campaigns[1].id).toEqual(true);
                 nextStep();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -524,7 +524,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(visitorInstance.fetchedModifications[1].id === demoData.bucketing.classical.campaigns[1].id).toEqual(true);
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -600,7 +600,7 @@ describe('Bucketing used from visitor instance', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -623,7 +623,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(mockAxios.get).not.toHaveBeenCalled();
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -721,7 +721,7 @@ describe('Bucketing - polling', () => {
 
                     done();
                 } catch (error) {
-                    done.fail(error);
+                    done.fail(error.stack);
                 }
             }
         });
@@ -762,7 +762,7 @@ describe('Bucketing - polling', () => {
 
                     done();
                 } catch (error) {
-                    done.fail(error);
+                    done.fail(error.stack);
                 }
             }
         });
@@ -828,7 +828,7 @@ describe('Bucketing - polling', () => {
 
                     done();
                 } catch (error) {
-                    done.fail(error);
+                    done.fail(error.stack);
                 }
             }
         });
@@ -887,7 +887,7 @@ describe('Bucketing - polling', () => {
 
                     done();
                 } catch (error) {
-                    done.fail(error);
+                    done.fail(error.stack);
                 }
             }
         });
@@ -901,7 +901,7 @@ describe('Bucketing - polling', () => {
                     { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }
                 ]);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -949,7 +949,7 @@ describe('Bucketing - polling', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -960,7 +960,7 @@ describe('Bucketing - polling', () => {
                 sdk.startBucketingPolling(); // manually start polling
                 mockPollingRequest(done, () => pollingLoop, ['server crashed']);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -1078,7 +1078,7 @@ describe('Bucketing - polling', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1089,7 +1089,7 @@ describe('Bucketing - polling', () => {
                 sdk.startBucketingPolling(); // manually start polling
                 mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }]);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -1136,7 +1136,7 @@ describe('Bucketing - polling', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1147,7 +1147,7 @@ describe('Bucketing - polling', () => {
                 sdk.startBucketingPolling(); // manually start polling
                 mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }]);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -1194,7 +1194,7 @@ describe('Bucketing - polling', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1205,7 +1205,7 @@ describe('Bucketing - polling', () => {
                 sdk.startBucketingPolling(); // manually start polling
                 mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }]);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -1257,7 +1257,7 @@ describe('Bucketing - callApi', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1297,7 +1297,7 @@ describe('Bucketing - callApi', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1338,7 +1338,7 @@ describe('Bucketing - callApi', () => {
                 expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing up to date (api status=304)');
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1369,7 +1369,7 @@ describe('Bucketing - callApi', () => {
                 expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'Panic mode detected, running SDK in safe mode...');
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1400,7 +1400,7 @@ describe('Bucketing - callApi', () => {
                 expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'An error occurred while fetching using bucketing...');
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
         bucketInstance.on('launched', () => {

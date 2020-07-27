@@ -8,7 +8,9 @@
 
 <div style='display: flex; justify-content: space-around;'>
 
-[![codecov](https://codecov.io/gh/abtasty/flagship-js-sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/abtasty/flagship-js-sdk)
+![flagship-js-sdk-coverage_lines](coverage/badge-lines.svg)
+
+![flagship-js-sdk-functions](coverage/badge-functions.svg)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 

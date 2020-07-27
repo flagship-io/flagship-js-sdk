@@ -10,6 +10,4 @@ stats.json
 
 *.tgz
 
-coverage/
-
 IMPROVEMENTS.md
