@@ -97,7 +97,7 @@ const flagshipSdkHelper = {
         }
         return response.data;
     },
-    validateDecisionApiData: (data: DecisionApiCampaign[], log: FsLogger): null | DecisionApiCampaign[] => {
+    validateDecisionApiData: (data: DecisionApiCampaign[] | null, log: FsLogger): null | DecisionApiCampaign[] => {
         const constraints = {
             id: {
                 presence: { message: 'is missing' },
@@ -121,6 +121,14 @@ const flagshipSdkHelper = {
         };
         const result: { [key: string]: any } = {};
         let errorMsg = 'Decision Api data does not have correct format:\n';
+
+        if (!data || !Array.isArray(data)) {
+            if (!Array.isArray(data) && data !== null) {
+                log.error(`validateDecisionApiData - received unexpected decision api data of type "${typeof data}"`);
+            }
+            return null;
+        }
+
         data.forEach((potentialCampaign, i) => {
             const output = validate(potentialCampaign, constraints);
             if (output) {

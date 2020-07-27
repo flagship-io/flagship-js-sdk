@@ -6,6 +6,11 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var itemsRouter = require('./routes/items');
 var checkoutRouter = require('./routes/checkout');
+var fsVisitorRouter = require('./routes/fsVisitor');
+
+if (process.pid) {
+    console.log('This process is your pid ' + process.pid);
+}
 
 var app = express();
 
@@ -18,5 +23,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/items', itemsRouter);
 app.use('/checkout', checkoutRouter);
+app.use('/fsVisitor', fsVisitorRouter);
+
+app.set('visitorList', []);
 
 module.exports = app;

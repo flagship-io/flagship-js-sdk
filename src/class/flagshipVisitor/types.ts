@@ -72,6 +72,22 @@ export type DecisionApiResponseDataFullComputed = {
     };
 };
 
+export type ActivatedArchived = {
+    variationId: Array<string>;
+    variationGroupId: Array<string>;
+};
+
+export type ModificationsInternalStatus = {
+    [key: string]: {
+        value: Array<string>;
+        type: Array<string>;
+        campaignId: Array<string>;
+        variationId: Array<string>;
+        variationGroupId: Array<string>;
+        activated: ActivatedArchived;
+    };
+};
+
 export type HitShape =
     | { type: 'Screen'; data: ScreenHit } // Deprecated type: 'Screen'
     | { type: 'ScreenView'; data: ScreenHit }
