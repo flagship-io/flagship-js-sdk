@@ -1,56 +1,95 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.0.0
+
+### Breaking changes ⚠️
+
+-   Following functions not available anymore:
+
+    -   `setContext` use [`updateContext`](README.md#updateContext) instead.
+    -   `initSdk` use [`start`](README.md#start) instead.
+    -   `getModificationsCache` use [`getModifications`](README.md#getModifications) instead.
+
+### New features 🎉
+
+-   Can use `Decision API V2`, to do so, initialize the SDK like this:
+
+```javascript
+flagshipSdk.start('ENV_ID', { flagshipApi: 'https://decision.flagship.io/v2/', apiKey: 'YOUR_API_KEY' /*, other settings...*/ });
+```
+
+-   New mode `Bucketing` when initializing SDK:
+
+```javascript
+flagshipSdk.start('ENV_ID', { decisionMode: 'Bucketing', pollingInterval: 5 /*, other settings...*/ });
+```
+
+-   New option `simpleMode` for function `getAllModifications`:
+
+```javascript
+visitorInstance.getAllModifications(false, { simpleMode: true }).then((response) => {
+    /*
+    "response" will have following shape:
+    {
+      modificationKey1: modificationValue1,
+      modificationKey2: modificationValue2,
+      modificationKeyN: modificationValueN,
+    }
+    */
+});
+```
+
 ## ➡️ Version 1.2.1
 
 ### Bug fixes 🐛
 
-- Minor log fix when sending hits.
+-   Minor log fix when sending hits.
 
 ## ➡️ Version 1.2.0
 
 ### Breaking changes ⚠️
 
-- When sending a hit "Item", the attribute `ic`(="item code") is now **required** (was optional before). If you do not specify it, the hit won't be send and an error log will be display.
+-   When sending a hit "Item", the attribute `ic`(="item code") is now **required** (was optional before). If you do not specify it, the hit won't be send and an error log will be display.
 
 ## ➡️ Version 1.1.2
 
 ### Bug fixes 🐛
 
-- Minor typescript fix
+-   Minor typescript fix
 
 ## ➡️ Version 1.1.1
 
 ### Bug fixes 🐛
 
-- Fix `config` issue when specifying empty values.
+-   Fix `config` issue when specifying empty values.
 
 ## ➡️ Version 1.1.0
 
 ### New features 🎉
 
-- Add [`getModificationInfo`](README.md#getModificationInfo) function.
+-   Add [`getModificationInfo`](README.md#getModificationInfo) function.
 
 ### Breaking changes ⚠️
 
-- Function removed:
+-   Function removed:
 
-  - createVisitor --> [use `newVisitor` instead](README.md#newVisitor)
+    -   createVisitor --> [use `newVisitor` instead](README.md#newVisitor)
 
 ## ➡️ Version 1.0.1
 
 ### Bug fixes 🐛
 
-- Fix `activate` http requests which had bad payload.
+-   Fix `activate` http requests which had bad payload.
 
 ## ➡️ Version 1.0.0
 
-- Release version.
+-   Release version.
 
 ## ➡️ Version 0.1.14
 
 ### Improvements
 
-- The SDK is now saving modifications in cache differently:
+-   The SDK is now saving modifications in cache differently:
 
 #### Shape after:
 
@@ -99,158 +138,158 @@ arrayOf(
 
 ### Improvements
 
-- New setting `initialModifications` available.
+-   New setting `initialModifications` available.
 
 ## ➡️ Version 0.1.12
 
 ### Improvements
 
-- New setting `apiKey` available.
+-   New setting `apiKey` available.
 
 ## ➡️ Version 0.1.11
 
 ### Improvements
 
-- Move some `info` logs as `debug` logs.
+-   Move some `info` logs as `debug` logs.
 
 ### Bug fixes 🐛
 
-- Add `events` as node module dependency.
+-   Add `events` as node module dependency.
 
 ## ➡️ Version 0.1.10
 
 ### Improvements
 
-- Improve debug logs when sending a hit.
+-   Improve debug logs when sending a hit.
 
 ## ➡️ Version 0.1.9
 
-- Jumped version.
+-   Jumped version.
 
 ## ➡️ Version 0.1.8
 
 ### Bug fixes 🐛
 
-- Minor typescript fix
+-   Minor typescript fix
 
 ## ➡️ Version 0.1.7
 
 ### Breaking changes ⚠️
 
-- New behavior for:
+-   New behavior for:
 
-  - getModifications, it will return modifications from cache and won't return a promise anymore.
+    -   getModifications, it will return modifications from cache and won't return a promise anymore.
 
-- Some functions name have changed. Both are supported for now but deprecated names will be deleted soon:
+-   Some functions name have changed. Both are supported for now but deprecated names will be deleted soon:
 
-  - setContext --> [`updateContext`](README.md#updateContext)
-  - newVisitor --> [`createVisitor`](README.md#createVisitor)
-  - initSdk --> [`start`](README.md#start)
-  - getModificationsCache --> Will be deleted soon, you can replace it with [`getModifications`](README.md#getModifications).
+    -   setContext --> [`updateContext`](README.md#updateContext)
+    -   newVisitor --> [`createVisitor`](README.md#createVisitor)
+    -   initSdk --> [`start`](README.md#start)
+    -   getModificationsCache --> Will be deleted soon, you can replace it with [`getModifications`](README.md#getModifications).
 
 ### New features 🎉
 
-- New function added:
+-   New function added:
 
-  - [`sendHit`](README.md#sendHit)
+    -   [`sendHit`](README.md#sendHit)
 
 ### Bug fixes 🐛
 
-- Typescript supports `saveCache` listener
+-   Typescript supports `saveCache` listener
 
 ## ➡️ Version 0.1.6
 
 ### New features 🎉
 
-- New listener for <i>FlagshipVisitor</i> class => `saveCache` ([click here](README.md#events-listener) to see the documentation)
+-   New listener for <i>FlagshipVisitor</i> class => `saveCache` ([click here](README.md#events-listener) to see the documentation)
 
 ## ➡️ Version 0.1.5
 
-- Build not minified.
-- `index.d.ts` without errors.
+-   Build not minified.
+-   `index.d.ts` without errors.
 
 ### Bug fixes 🐛
 
-- Minor fix
+-   Minor fix
 
 ## ➡️ Version 0.1.4
 
-- Jumped version.
+-   Jumped version.
 
 ## ➡️ Version 0.1.3
 
-- Jumped version.
+-   Jumped version.
 
 ## ➡️ Version 0.1.2
 
 ### Bug fixes 🐛
 
-- Fix issue depending on if you use the sdk in a node or browser environment.
+-   Fix issue depending on if you use the sdk in a node or browser environment.
 
 ## ➡️ Version 0.1.1
 
 ### Bug fixes 🐛
 
-- Fix handling flags defined with a falsy value instead or returning default flag value.
+-   Fix handling flags defined with a falsy value instead or returning default flag value.
 
 ## ➡️ Version 0.1.0
 
 ### New features 🎉
 
-- Documentation improved (developer friendly ++).
+-   Documentation improved (developer friendly ++).
 
 ### Bug fixes 🐛
 
-- Minor bug fixes
+-   Minor bug fixes
 
 ## ➡️ Version 0.0.8
 
 ### Breaking changes ⚠️
 
-- The following functions does not have any more `fetchMode` argument:
+-   The following functions does not have any more `fetchMode` argument:
 
-  - [`getModificationsForCampaign`](README.md#getModificationsForCampaign)
-  - [`getAllModifications`](README.md#getAllModifications)
+    -   [`getModificationsForCampaign`](README.md#getModificationsForCampaign)
+    -   [`getAllModifications`](README.md#getAllModifications)
 
-  As a result, they always return same output shape.
+    As a result, they always return same output shape.
 
-- The following functions returns now a **new** specific output shape:
+-   The following functions returns now a **new** specific output shape:
 
-  - [`getModificationsForCampaign`](README.md#getModificationsForCampaign)
-  - [`getAllModifications`](README.md#getAllModifications)
+    -   [`getModificationsForCampaign`](README.md#getModificationsForCampaign)
+    -   [`getAllModifications`](README.md#getAllModifications)
 
-  They now returns the following output shape:
+    They now returns the following output shape:
 
-  ```
-  {
-    data: {
-        visitorId: 'VISITOR_ID',
-        campaigns: [
-            {
-            id: 'CAMPAIGN_ID',
-            variationGroupId: 'VARIATION_GROUP_ID',
-            variation: {
-                id: 'VARIATION_ID',
-                modifications: {
-                type: 'FLAG',
-                value: {
-                    btnColor: '#fff',
-                },
-                },
-            },
-            },
-            // {...}
-        ]
+    ```
+    {
+      data: {
+          visitorId: 'VISITOR_ID',
+          campaigns: [
+              {
+              id: 'CAMPAIGN_ID',
+              variationGroupId: 'VARIATION_GROUP_ID',
+              variation: {
+                  id: 'VARIATION_ID',
+                  modifications: {
+                  type: 'FLAG',
+                  value: {
+                      btnColor: '#fff',
+                  },
+                  },
+              },
+              },
+              // {...}
+          ]
+      }
     }
-  }
-  ```
+    ```
 
 ### New features 🎉
 
-- New available function `getModificationsCache`.
+-   New available function `getModificationsCache`.
 
-  Basically, it allows you to get modifications without using promise after it has been saved in cache. More info [here 👈](README.md#getModificationsCache)
+    Basically, it allows you to get modifications without using promise after it has been saved in cache. More info [here 👈](README.md#getModificationsCache)
 
-- New available function `activateModifications`.
+-   New available function `activateModifications`.
 
-  It allows you to activate automatically the campaigns which are matching the modifications that you specify in arguments. More info [here 👈](README.md#activateModifications)
+    It allows you to activate automatically the campaigns which are matching the modifications that you specify in arguments. More info [here 👈](README.md#activateModifications)
