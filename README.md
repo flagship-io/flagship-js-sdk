@@ -8,9 +8,9 @@
 
 <div style='display: flex; justify-content: space-around;'>
 
-<img  src="./coverage/badge-lines.svg" height="20"  alt="flagship-js-sdk-coverage"  />
+![flagship-js-sdk-coverage_lines](coverage/badge-lines.svg)
 
-<img  src="./coverage/badge-functions.svg" height="20"  alt="flagship-js-sdk-coverage"  />
+![flagship-js-sdk-functions](coverage/badge-functions.svg)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
