@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.0.2
+
+### Bug fixes 🐛
+
+-   Fix timestamp displayed in logs.
+
 ## ➡️ Version 2.0.1
 
 ### Bug fixes 🐛
