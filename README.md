@@ -38,9 +38,11 @@
 
 ## Examples
 
-Following demos illustrate how the SDK is used in practice ☕
-
 -   With Express JS:
+
+<p align="center">
+<img src="./doc/nodeJSandExpress.png" alt="node js and express demo" width="600"/>
+</p>
 
 <div style="display: flex; justify-content: space-around; font-size: 24px">
 
@@ -49,6 +51,10 @@ Following demos illustrate how the SDK is used in practice ☕
 </div>
 
 -   With React, inside react component:
+
+<p align="center">
+<img src="./doc/react-with-sdk-js.gif" alt="react ecommerce demo with cookie" width="600"/>
+</p>
 
 <div style="display: flex; justify-content: space-around; font-size: 24px">
 
@@ -59,6 +65,10 @@ Following demos illustrate how the SDK is used in practice ☕
 </div>
 
 -   With React, using cookies:
+
+<p align="center">
+<img src="./doc/react-ecommerce-demo.gif" alt="react ecommerce demo with cookie" width="600"/>
+</p>
 
 <div style="display: flex; justify-content: space-around; font-size: 24px">
 
