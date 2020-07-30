@@ -2,6 +2,8 @@ node_modules
 
 dist/
 
+coverage
+
 test/flagshipNodeSdkLogs/
 
 src/assets/.DS_Store
@@ -9,7 +11,5 @@ src/assets/.DS_Store
 stats.json
 
 *.tgz
-
-coverage/
 
 IMPROVEMENTS.md

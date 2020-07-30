@@ -1,0 +1,37 @@
+{
+  "projectName": "flagship-js-sdk",
+  "projectOwner": "abtasty",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "gitmoji",
+  "contributors": [
+    {
+      "login": "Emidomenge",
+      "name": "Emilien Domenge",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/15636263?v=4",
+      "profile": "https://www.domenge.fr/",
+      "contributions": [
+        "code",
+        "doc",
+        "example",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "guillaumejacquart",
+      "name": "Guillaume Jacquart",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/5268752?v=4",
+      "profile": "https://github.com/guillaumejacquart",
+      "contributions": [
+        "bug",
+        "review"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
+}
