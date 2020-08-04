@@ -17,11 +17,14 @@ import startsWithOperator from './samples/oneCampaignOneVgOneTggWithAllPossibleT
 import murmurDefaultArgs from './murmur/arguments';
 import murmurLowTraffic from './murmur/badTraffic';
 import murmurBadTraffic from './murmur/badTraffic2';
+import murmurThreeVariations from "./murmur/threeVariations";
+import murmurFourVariations from "./murmur/fourVariations";
 import murmurExtremLowTraffic from './murmur/extremLowTraffic';
 import multipleCampaigns from './samples/multipleCampaigns';
 import badOperator from './samples/badOperator';
 import oneCampaignWithBadTraffic from './samples/badTraffic';
 import oneCampaignWith100PercentAllocation from './samples/oneCampaignWith100PercentAllocation';
+
 
 export default {
     functions: {
@@ -29,7 +32,9 @@ export default {
             defaultArgs: murmurDefaultArgs,
             lowTraffic: murmurLowTraffic,
             extremLowTraffic: murmurExtremLowTraffic,
-            badTraffic: murmurBadTraffic
+            badTraffic: murmurBadTraffic,
+            threeVariations: murmurThreeVariations,
+            fourVariations: murmurFourVariations
         }
     },
     oneCampaignWithBadTraffic,
