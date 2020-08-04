@@ -1,5 +1,5 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-import murmur from 'react-native-murmurhash';
+import {MurmurHashV3} from 'react-native-murmurhash';
 import { FlagshipSdkConfig, IFlagshipBucketingVisitor } from '../../types';
 import { FlagshipVisitorContext, DecisionApiCampaign, DecisionApiResponseData } from '../flagshipVisitor/types';
 import {
@@ -77,7 +77,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
     private computeMurmurAlgorithm(variations: BucketingVariation[]): BucketingVariation | null {
         let assignedVariation: BucketingVariation | null = null;
         // generates a v3 hash
-        const murmurAllocation = murmur.MurmurHashV3(this.visitorId, undefined) % 100; // 2nd argument is set to 0 by default
+        const murmurAllocation = MurmurHashV3(this.visitorId, undefined) % 100; // 2nd argument is set to 0 by default
         this.log.debug(`computeMurmurAlgorithm - murmur returned value="${murmurAllocation}"`);
 
         const variationTrafficCheck = variations.reduce((sum, v) => {
