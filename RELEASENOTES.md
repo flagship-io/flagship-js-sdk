@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.0.4
+
+### Bug fixes 🐛
+
+-   Fix an error where requests are incorrectly set in case of SDK is using API v1 and `apiKey` settings is defined.
+
 ## ➡️ Version 2.0.3
 
 ### Bug fixes 🐛
