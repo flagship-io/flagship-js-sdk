@@ -24,7 +24,8 @@ const flagshipSdkHelper = {
     ): Promise<any> => {
         const additionalParams: { [key: string]: string } = {};
         checkRequiredSettingsForApiV2(config, log);
-        if (config.apiKey) {
+        const isNotApiV1 = !config.flagshipApi.includes('/v1/')
+        if (config.apiKey && isNotApiV1) {
             additionalParams['x-api-key'] = config.apiKey;
         }
         const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
