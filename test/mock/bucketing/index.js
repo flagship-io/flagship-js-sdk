@@ -17,6 +17,8 @@ import startsWithOperator from './samples/oneCampaignOneVgOneTggWithAllPossibleT
 import murmurDefaultArgs from './murmur/arguments';
 import murmurLowTraffic from './murmur/badTraffic';
 import murmurBadTraffic from './murmur/badTraffic2';
+import murmurThreeVariations from './murmur/threeVariations';
+import murmurFourVariations from './murmur/fourVariations';
 import murmurExtremLowTraffic from './murmur/extremLowTraffic';
 import multipleCampaigns from './samples/multipleCampaigns';
 import badOperator from './samples/badOperator';
@@ -29,7 +31,71 @@ export default {
             defaultArgs: murmurDefaultArgs,
             lowTraffic: murmurLowTraffic,
             extremLowTraffic: murmurExtremLowTraffic,
-            badTraffic: murmurBadTraffic
+            badTraffic: murmurBadTraffic,
+            threeVariations: murmurThreeVariations,
+            fourVariations: murmurFourVariations,
+            allocation: {
+                '0': {
+                    visitorId: 'jzyplpoe6z3qx0fep',
+                    variationGroup: '8um'
+                },
+                '9': {
+                    visitorId: 'mayaa9tovat04vvc',
+                    variationGroup: 'jufp'
+                },
+                '17': {
+                    visitorId: 'vsc1rf8xs3bvu0rzs8b',
+                    variationGroup: '8'
+                },
+                '19': {
+                    visitorId: 'mjfhr65cz6ctku4',
+                    variationGroup: 'ylizk'
+                },
+                '24': {
+                    visitorId: 't786w88snxyg6bc',
+                    variationGroup: 'wlcfe'
+                },
+                '25': {
+                    visitorId: 'wiqyggevjlzquyp',
+                    variationGroup: 'gof9c'
+                },
+                '31': {
+                    visitorId: 'caktv2pfer82v3',
+                    variationGroup: 'qq4k19'
+                },
+                '39': {
+                    visitorId: '4knngzgojeuj851',
+                    variationGroup: 'c77ee'
+                },
+                '49': {
+                    visitorId: 'ksahzg4mupmdix',
+                    variationGroup: '6xzbz5'
+                },
+                '59': {
+                    visitorId: '8ggalmzqlggx1',
+                    variationGroup: 'vgatasd'
+                },
+                '68': {
+                    visitorId: 'l7jaucjpddjdwdbfgg7',
+                    variationGroup: '8'
+                },
+                '69': {
+                    visitorId: '9e8h0i1l3l9hfmb',
+                    variationGroup: 'bmdz9'
+                },
+                '79': {
+                    visitorId: 'ceua2wiqtqsmkue',
+                    variationGroup: '7q34t'
+                },
+                '89': {
+                    visitorId: '392vsut4cnt3lptc58p',
+                    variationGroup: '9'
+                },
+                '99': {
+                    visitorId: 'vfrgk91ebwf',
+                    variationGroup: 'ktkzyb7z2'
+                }
+            }
         }
     },
     oneCampaignWithBadTraffic,

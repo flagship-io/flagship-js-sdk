@@ -74,10 +74,10 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         this.visitorContext = flagshipSdkHelper.checkVisitorContext(newContext, this.log);
     }
 
-    private computeMurmurAlgorithm(variations: BucketingVariation[]): BucketingVariation | null {
+    private computeMurmurAlgorithm(variations: BucketingVariation[], variationGroupId: string): BucketingVariation | null {
         let assignedVariation: BucketingVariation | null = null;
         // generates a v3 hash
-        const murmurAllocation = MurmurHashV3(this.visitorId, undefined) % 100; // 2nd argument is set to 0 by default
+        const murmurAllocation = MurmurHashV3(this.visitorId + variationGroupId, undefined) % 100; // 2nd argument is set to 0 by default
         this.log.debug(`computeMurmurAlgorithm - murmur returned value="${murmurAllocation}"`);
 
         const variationTrafficCheck = variations.reduce((sum, v) => {
@@ -421,7 +421,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                     ...campaign,
                     variationGroups: campaign.variationGroups.filter((varGroup) => varGroup.id === matchingVgId)
                 }; // = campaign with only the desired variation group
-                const variationToAffectToVisitor = this.computeMurmurAlgorithm(cleanCampaign.variationGroups[0].variations);
+                const variationToAffectToVisitor = this.computeMurmurAlgorithm(cleanCampaign.variationGroups[0].variations, matchingVgId);
                 if (variationToAffectToVisitor !== null) {
                     result.push(BucketingVisitor.transformIntoDecisionApiPayload(variationToAffectToVisitor, campaign, matchingVgId));
                 } else {
