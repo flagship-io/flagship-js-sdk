@@ -49,14 +49,14 @@ const initSpyLogs = (bInstance) => {
 
 const generateUuid = () => {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r && 0x3 || 0x8);
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r && 0x3) || 0x8;
         return v.toString(16);
     });
 };
 
 const calculateDiffPercentage = (originalNumber, newNumber) => {
-    return Number(Math.abs(((originalNumber-newNumber)/((originalNumber+newNumber)/2)) * 100).toFixed(2));
+    return Number(Math.abs(((originalNumber - newNumber) / ((originalNumber + newNumber) / 2)) * 100).toFixed(2));
 };
 
 const expectedRequestHeaderFirstCall = { headers: { 'If-Modified-Since': '' } };
@@ -352,7 +352,7 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
     it('should expect correct behavior for "classic" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         bucketingEventMockResponse = { status: 204, data: {} };
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.bucketing.functions.murmur.allocation[89].visitorId, demoData.visitor.cleanContext, bucketingConfig);
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
@@ -373,7 +373,7 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
         expect(result).toEqual([
             {
                 id: 'bptggipaqi903f3haq0g',
-                variationGroupId: 'bptggipaqi903f3haq1g',
+                variationGroupId: '8',
                 variation: {
                     id: 'bptggipaqi903f3haq2g',
                     modifications: {
@@ -386,7 +386,7 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
             },
             {
                 id: 'bq4sf09oet0006cfihd0',
-                variationGroupId: 'bq4sf09oet0006cfihe0',
+                variationGroupId: demoData.bucketing.functions.murmur.allocation[89].variationGroup,
                 variation: {
                     id: 'bq4sf09oet0006cfihf0',
                     modifications: {
@@ -548,11 +548,11 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
 
     it('should expect correct behavior for "fs_users" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.fs_users as BucketingApiResponse;
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], {}, bucketingConfig);
+        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], {}, bucketingConfig);
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
-        expect(Array.isArray(result) && result.length === 1).toEqual(true);
+        expect(Array.isArray(result) && result.length).toEqual(1);
 
         expect(spyDebugLogs).toHaveBeenCalledTimes(2);
         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -565,12 +565,11 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
 
     it('should expect correct behavior for "bad murmur allocation" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.oneCampaignWithBadTraffic as BucketingApiResponse;
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], {}, bucketingConfig);
+        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], {}, bucketingConfig);
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
         expect(result).toEqual([]);
-
         expect(spyDebugLogs).toHaveBeenCalledTimes(3);
         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
         expect(spyFatalLogs).toHaveBeenCalledTimes(1);
@@ -579,7 +578,7 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
         expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'Bucketing - campaign (id="bptggipaqi903f3haq0g") is matching visitor context');
-        expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'computeMurmurAlgorithm - murmur returned value="96"');
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'computeMurmurAlgorithm - murmur returned value="62"');
         expect(spyDebugLogs).toHaveBeenNthCalledWith(
             3,
             'computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="bptggipaqi903f3haq0g") using murmur for visitor (id="test-perf"). This visitor will be untracked.'
@@ -634,43 +633,45 @@ describe('BucketingVisitor - murmur algorithm', () => {
         let variationOne = 0;
         let result;
         let i;
+        const randomVariationGroupId = `kjfiezjfez${Math.floor(Math.random() * 100)}`;
 
-        for (i = 0; i < 10000; i+=1) {
+        for (i = 0; i < 10000; i += 1) {
             bucketInstance = new BucketingVisitor(demoData.envId[0], generateUuid(), demoData.visitor.cleanContext, bucketingConfig);
-            result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.defaultArgs);
+            result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.defaultArgs, randomVariationGroupId);
             if (result.id !== 'bptggipaqi903f3haq2g') {
-                variationOne +=1;
+                variationOne += 1;
             }
         }
 
         const difference = calculateDiffPercentage(5000, variationOne);
 
-        if(difference > 1.2) {
-            done.fail();
+        if (difference > 1.2) {
+            done.fail(`${difference} > 1.2`);
         }
 
         done();
     });
 
-    it ('should return about 33/33/34 scenario with 10 000 visitors', (done) => {
+    it('should return about 33/33/34 scenario with 10 000 visitors', (done) => {
         let variationOne = 0;
         let variationTwo = 0;
-        let variationThree = 0
+        let variationThree = 0;
         let result;
         let i;
+        const randomVariationGroupId = `kjfiezjfez${Math.floor(Math.random() * 100)}`;
 
-        for (i = 0; i < 10000; i+=1) {
+        for (i = 0; i < 10000; i += 1) {
             bucketInstance = new BucketingVisitor(demoData.envId[0], generateUuid(), demoData.visitor.cleanContext, bucketingConfig);
-            result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.threeVariations);
+            result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.threeVariations, randomVariationGroupId);
             switch (result.id) {
                 case 'bptggipaqi903f3haq20':
-                    variationOne +=1;
+                    variationOne += 1;
                     break;
                 case 'bptggipaqi903f3haq2g':
-                    variationTwo +=1;
+                    variationTwo += 1;
                     break;
-                default :
-                    variationThree +=1;
+                default:
+                    variationThree += 1;
                     break;
             }
         }
@@ -680,7 +681,7 @@ describe('BucketingVisitor - murmur algorithm', () => {
         const varThreeDiff = calculateDiffPercentage(3400, variationThree);
 
         if (varOneDiff > 1 || varTwoDiff > 1 || varThreeDiff > 1) {
-            done.fail();
+            done.fail(`${varOneDiff} > 0.8 || ${varTwoDiff} > 0.8 || ${varThreeDiff} > 0.8`);
         }
 
         done();
@@ -692,20 +693,21 @@ describe('BucketingVisitor - murmur algorithm', () => {
         let variationThree = 0;
         let result;
         let i;
+        const randomVariationGroupId = `kjfiezjfez${Math.floor(Math.random() * 100)}`;
 
-        for (i = 0; i < 10000; i+=1) {
+        for (i = 0; i < 10000; i += 1) {
             bucketInstance = new BucketingVisitor(demoData.envId[0], generateUuid(), demoData.visitor.cleanContext, bucketingConfig);
-            result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.fourVariations);
+            result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.fourVariations, randomVariationGroupId);
 
             switch (result.id) {
-                case 'bptggipaqi903f3haq20' :
-                    variationOne +=1;
+                case 'bptggipaqi903f3haq20':
+                    variationOne += 1;
                     break;
-                case 'bptggipaqi903f3haq2g' :
-                    variationTwo +=1;
+                case 'bptggipaqi903f3haq2g':
+                    variationTwo += 1;
                     break;
-                case 'bptggipaqi903f3haq2p' :
-                    variationThree +=1;
+                case 'bptggipaqi903f3haq2p':
+                    variationThree += 1;
                     break;
                 default:
                     break;
@@ -715,23 +717,31 @@ describe('BucketingVisitor - murmur algorithm', () => {
         const varOneDiff = calculateDiffPercentage(2500, variationOne);
         const varTwoDiff = calculateDiffPercentage(2500, variationTwo);
         const varThreeDiff = calculateDiffPercentage(2500, variationThree);
-        
-        if(varOneDiff > 0.8 || varTwoDiff > 0.8 || varThreeDiff > 0.8) {
-            done.fail();
+
+        if (varOneDiff > 0.8 || varTwoDiff > 0.8 || varThreeDiff > 0.8) {
+            done.fail(`${varOneDiff} > 0.8 || ${varTwoDiff} > 0.8 || ${varThreeDiff} > 0.8`);
         }
 
         done();
     });
 
     it('should works with "classical" scenario', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.bucketing.functions.murmur.allocation[24].visitorId,
+            demoData.visitor.cleanContext,
+            bucketingConfig
+        );
 
         expect(bucketInstance.data).toEqual(null);
         expect(bucketInstance.computedData).toEqual(null);
 
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
-        const result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.defaultArgs); // private function
+        const result = bucketInstance.computeMurmurAlgorithm(
+            demoData.bucketing.functions.murmur.defaultArgs,
+            demoData.bucketing.functions.murmur.allocation[24].variationGroup
+        ); // private function
 
         expect(result).toEqual({
             allocation: 50,
@@ -746,13 +756,18 @@ describe('BucketingVisitor - murmur algorithm', () => {
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
-        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="21"');
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="24"');
 
         done();
     });
 
     it('should works with a campaign containing a 100% allocation variation', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.bucketing.functions.murmur.allocation[79].visitorId,
+            demoData.visitor.cleanContext,
+            bucketingConfig
+        );
 
         expect(bucketInstance.data).toEqual(null);
         expect(bucketInstance.computedData).toEqual(null);
@@ -760,7 +775,8 @@ describe('BucketingVisitor - murmur algorithm', () => {
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
         const result = bucketInstance.computeMurmurAlgorithm(
-            demoData.bucketing.oneCampaignWith100PercentAllocation.campaigns[0].variationGroups[0].variations
+            demoData.bucketing.oneCampaignWith100PercentAllocation.campaigns[0].variationGroups[0].variations,
+            demoData.bucketing.functions.murmur.allocation[79].variationGroup
         ); // private function
 
         expect(result).toEqual({
@@ -781,10 +797,18 @@ describe('BucketingVisitor - murmur algorithm', () => {
     });
 
     it('should be SDK ISO (visitorId="toto")', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.bucketing.functions.murmur.allocation[79].visitorId,
+            demoData.visitor.cleanContext,
+            bucketingConfig
+        );
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
-        const result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.defaultArgs); // private function
+        const result = bucketInstance.computeMurmurAlgorithm(
+            demoData.bucketing.functions.murmur.defaultArgs,
+            demoData.bucketing.functions.murmur.allocation[79].variationGroup
+        ); // private function
 
         expect(result).toEqual({
             allocation: 50,
@@ -799,10 +823,18 @@ describe('BucketingVisitor - murmur algorithm', () => {
     });
 
     it('should return a variation if visitor is in the traffic allocation according murmur hash and traffic allocation below 100', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.bucketing.functions.murmur.allocation[79].visitorId,
+            demoData.visitor.cleanContext,
+            bucketingConfig
+        );
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
-        const result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.lowTraffic); // private function
+        const result = bucketInstance.computeMurmurAlgorithm(
+            demoData.bucketing.functions.murmur.lowTraffic,
+            demoData.bucketing.functions.murmur.allocation[79].variationGroup
+        ); // private function
 
         expect(result).toEqual({
             allocation: 30,
@@ -823,10 +855,18 @@ describe('BucketingVisitor - murmur algorithm', () => {
     });
 
     it('should return null and print a log if visitor is NOT in the traffic allocation according murmur hash and traffic allocation below 100', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.bucketing.functions.murmur.allocation[99].visitorId,
+            demoData.visitor.cleanContext,
+            bucketingConfig
+        );
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
-        const result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.extremLowTraffic); // private function
+        const result = bucketInstance.computeMurmurAlgorithm(
+            demoData.bucketing.functions.murmur.extremLowTraffic,
+            demoData.bucketing.functions.murmur.allocation[99].variationGroup
+        ); // private function
 
         expect(result).toEqual(null);
 
@@ -836,7 +876,7 @@ describe('BucketingVisitor - murmur algorithm', () => {
         expect(spyInfoLogs).toHaveBeenCalledTimes(1);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
-        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="96"');
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="99"');
         expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'computeMurmurAlgorithm - the total variation traffic allocation is equal to "14"');
         expect(spyInfoLogs).toHaveBeenNthCalledWith(
             1,
@@ -847,10 +887,18 @@ describe('BucketingVisitor - murmur algorithm', () => {
     });
 
     it('should return null and print an error log if traffic allocation is greater than 100', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.bucketing.functions.murmur.allocation[31].visitorId,
+            demoData.visitor.cleanContext,
+            bucketingConfig
+        );
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
-        const result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.badTraffic); // private function
+        const result = bucketInstance.computeMurmurAlgorithm(
+            demoData.bucketing.functions.murmur.badTraffic,
+            demoData.bucketing.functions.murmur.allocation[31].variationGroup
+        ); // private function
 
         expect(result).toEqual(null);
 
@@ -860,7 +908,7 @@ describe('BucketingVisitor - murmur algorithm', () => {
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
-        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="96"');
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="31"');
         expect(spyFatalLogs).toHaveBeenNthCalledWith(
             1,
             'computeMurmurAlgorithm - the total variation traffic allocation is equal to "105" instead of being equal to "100"'
@@ -868,5 +916,4 @@ describe('BucketingVisitor - murmur algorithm', () => {
 
         done();
     });
-
 });

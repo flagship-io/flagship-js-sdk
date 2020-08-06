@@ -5,7 +5,7 @@ export default {
             type: 'ab',
             variationGroups: [
                 {
-                    id: 'bptggipaqi903f3haq1g',
+                    id: 'ktkzyb7z2',
                     targeting: {
                         targetingGroups: [
                             {

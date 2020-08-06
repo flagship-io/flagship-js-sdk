@@ -5,7 +5,7 @@ export default {
             type: 'ab',
             variationGroups: [
                 {
-                    id: 'bptggipaqi903f3haq1g',
+                    id: '8',
                     targeting: {
                         targetingGroups: [
                             {
@@ -50,7 +50,7 @@ export default {
             type: 'ab',
             variationGroups: [
                 {
-                    id: 'bq4sf09oet0006cfihe0',
+                    id: '9',
                     targeting: {
                         targetingGroups: [
                             {

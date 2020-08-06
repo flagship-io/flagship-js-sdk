@@ -280,7 +280,7 @@ describe('Bucketing used from visitor instance', () => {
     it('should have correct behavior for bucketing cache api handling', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.start(demoData.envId[0], bucketingConfig);
-        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        visitorInstance = sdk.newVisitor(demoData.bucketing.functions.murmur.allocation[89].visitorId, demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
         mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
@@ -297,7 +297,7 @@ describe('Bucketing used from visitor instance', () => {
                                         id: 'bptggipaqi903f3haq2g',
                                         modifications: { type: 'JSON', value: { testCache: 'value' } }
                                     },
-                                    variationGroupId: 'bptggipaqi903f3haq1g'
+                                    variationGroupId: '8'
                                 },
                                 {
                                     id: 'bq4sf09oet0006cfihd0',
@@ -308,10 +308,10 @@ describe('Bucketing used from visitor instance', () => {
                                             value: { 'btn-color': 'green', 'btn-text': 'Buy now with discount !', 'txt-color': '#A3A3A3' }
                                         }
                                     },
-                                    variationGroupId: 'bq4sf09oet0006cfihe0'
+                                    variationGroupId: demoData.bucketing.functions.murmur.allocation[89].variationGroup
                                 }
                             ],
-                            visitorId: 'test-perf'
+                            visitorId: demoData.bucketing.functions.murmur.allocation[89].visitorId
                         }
                     });
                     expect(spyDebugLogs).toHaveBeenCalledTimes(4);
@@ -532,7 +532,7 @@ describe('Bucketing used from visitor instance', () => {
     it('should trigger bucketing behavior when creating new visitor with config having "bucketing" in decision mode + fetchNow=true + activate=true', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, activateNow: true });
-        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        visitorInstance = sdk.newVisitor(demoData.bucketing.functions.murmur.allocation[68].visitorId, demoData.visitor.cleanContext);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
         expect(sdk.bucket instanceof Bucketing).toEqual(true);
         let called = 0;
@@ -577,7 +577,7 @@ describe('Bucketing used from visitor instance', () => {
                             ...visitorInstance.context
                         },
                         type: 'CONTEXT',
-                        visitor_id: visitorInstance.id
+                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
                     },
                     {}
                 );
@@ -590,7 +590,7 @@ describe('Bucketing used from visitor instance', () => {
                             ...visitorInstance.context
                         },
                         type: 'CONTEXT',
-                        visitor_id: visitorInstance.id
+                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
                     },
                     {}
                 );
@@ -599,10 +599,10 @@ describe('Bucketing used from visitor instance', () => {
                     3,
                     activateUrl,
                     {
-                        caid: 'bptggipaqi903f3haq1g',
+                        caid: demoData.bucketing.functions.murmur.allocation[68].variationGroup,
                         cid: 'bn1ab7m56qolupi5sa0g',
                         vaid: 'bptggipaqi903f3haq2g',
-                        vid: 'test-perf'
+                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId
                     },
                     {}
                 );
@@ -610,10 +610,10 @@ describe('Bucketing used from visitor instance', () => {
                     4,
                     activateUrl,
                     {
-                        caid: 'bq4sf09oet0006cfihe0',
+                        caid: '9',
                         cid: 'bn1ab7m56qolupi5sa0g',
-                        vaid: 'bq4sf09oet0006cfihf0',
-                        vid: 'test-perf'
+                        vaid: 'bq4sf09oet0006cfiheg',
+                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId
                     },
                     {}
                 );
