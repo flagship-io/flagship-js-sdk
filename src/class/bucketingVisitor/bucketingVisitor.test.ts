@@ -55,8 +55,33 @@ const generateUuid = () => {
     });
 };
 
-const calculateDiffPercentage = (originalNumber, newNumber) => {
-    return Number(Math.abs(((originalNumber - newNumber) / ((originalNumber + newNumber) / 2)) * 100).toFixed(2));
+const murmurAllocationCheck = (variations, acceptedRange, nbVisitor) => {
+    const randomVariationGroupId = `kjfiezjfez${Math.floor(Math.random() * 100)}`;
+    const nbAllocation = variations.length;
+    const variationAllocationResult = new Array(nbAllocation).fill(0);
+    for (let i = 0; i < nbVisitor; i += 1) {
+        bucketInstance = new BucketingVisitor(demoData.envId[0], generateUuid(), demoData.visitor.cleanContext, bucketingConfig);
+        const { id } = bucketInstance.computeMurmurAlgorithm(variations, randomVariationGroupId);
+        const vIndex = variations.findIndex((el) => el.id === id);
+        variationAllocationResult[vIndex] += 1;
+    }
+
+    const calculateDiffPercentage = (currentAllocation) => {
+        return Number((((nbVisitor / nbAllocation - currentAllocation) / nbVisitor) * 100).toFixed(2));
+    };
+    const variationRangeResult = variationAllocationResult.map((allocation) => calculateDiffPercentage(allocation));
+    const checkCondition = (v) => (v < 0 ? -1 * v < acceptedRange : v < acceptedRange);
+    return {
+        isTestOk: variationRangeResult.filter((v) => checkCondition(v)).length > 0,
+        debug: `
+        variationAllocationResult:
+        ${variationAllocationResult.map((v, index) => `v${index}=${v}`).join(' ')}
+        variationRangeResult:
+        ${variationRangeResult.map((v, index) => `v${index}=${v}`).join(' ')}
+        result:
+        ${variationRangeResult.map((v, index) => `v${index}=${checkCondition(v)}`).join(' ')}
+        `
+    };
 };
 
 const expectedRequestHeaderFirstCall = { headers: { 'If-Modified-Since': '' } };
@@ -352,7 +377,12 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
     it('should expect correct behavior for "classic" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         bucketingEventMockResponse = { status: 204, data: {} };
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.bucketing.functions.murmur.allocation[89].visitorId, demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.bucketing.functions.murmur.allocation[89].visitorId,
+            demoData.visitor.cleanContext,
+            bucketingConfig
+        );
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
@@ -630,98 +660,32 @@ describe('BucketingVisitor - murmur algorithm', () => {
     });
 
     it('should return about 50/50 scenario with 10 000 visitors', (done) => {
-        let variationOne = 0;
-        let result;
-        let i;
-        const randomVariationGroupId = `kjfiezjfez${Math.floor(Math.random() * 100)}`;
-
-        for (i = 0; i < 10000; i += 1) {
-            bucketInstance = new BucketingVisitor(demoData.envId[0], generateUuid(), demoData.visitor.cleanContext, bucketingConfig);
-            result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.defaultArgs, randomVariationGroupId);
-            if (result.id !== 'bptggipaqi903f3haq2g') {
-                variationOne += 1;
-            }
+        const nbVisitor = 10000;
+        const acceptedRange = 0.8; // percent
+        const output = murmurAllocationCheck(demoData.bucketing.functions.murmur.defaultArgs, acceptedRange, nbVisitor);
+        if (!output.isTestOk) {
+            done.fail(output.debug);
         }
-
-        const difference = calculateDiffPercentage(5000, variationOne);
-
-        if (difference > 1.2) {
-            done.fail(`${difference} > 1.2`);
-        }
-
         done();
     });
 
     it('should return about 33/33/34 scenario with 10 000 visitors', (done) => {
-        let variationOne = 0;
-        let variationTwo = 0;
-        let variationThree = 0;
-        let result;
-        let i;
-        const randomVariationGroupId = `kjfiezjfez${Math.floor(Math.random() * 100)}`;
-
-        for (i = 0; i < 10000; i += 1) {
-            bucketInstance = new BucketingVisitor(demoData.envId[0], generateUuid(), demoData.visitor.cleanContext, bucketingConfig);
-            result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.threeVariations, randomVariationGroupId);
-            switch (result.id) {
-                case 'bptggipaqi903f3haq20':
-                    variationOne += 1;
-                    break;
-                case 'bptggipaqi903f3haq2g':
-                    variationTwo += 1;
-                    break;
-                default:
-                    variationThree += 1;
-                    break;
-            }
+        const nbVisitor = 10000;
+        const acceptedRange = 0.8; // percent
+        const output = murmurAllocationCheck(demoData.bucketing.functions.murmur.threeVariations, acceptedRange, nbVisitor);
+        if (!output.isTestOk) {
+            done.fail(output.debug);
         }
-
-        const varOneDiff = calculateDiffPercentage(3300, variationOne);
-        const varTwoDiff = calculateDiffPercentage(3300, variationTwo);
-        const varThreeDiff = calculateDiffPercentage(3400, variationThree);
-
-        if (varOneDiff > 1 || varTwoDiff > 1 || varThreeDiff > 1) {
-            done.fail(`${varOneDiff} > 0.8 || ${varTwoDiff} > 0.8 || ${varThreeDiff} > 0.8`);
-        }
-
         done();
     });
 
     it('should return about 25/25/25/25 scenario with 10 000 visitors', (done) => {
-        let variationOne = 0;
-        let variationTwo = 0;
-        let variationThree = 0;
-        let result;
-        let i;
-        const randomVariationGroupId = `kjfiezjfez${Math.floor(Math.random() * 100)}`;
-
-        for (i = 0; i < 10000; i += 1) {
-            bucketInstance = new BucketingVisitor(demoData.envId[0], generateUuid(), demoData.visitor.cleanContext, bucketingConfig);
-            result = bucketInstance.computeMurmurAlgorithm(demoData.bucketing.functions.murmur.fourVariations, randomVariationGroupId);
-
-            switch (result.id) {
-                case 'bptggipaqi903f3haq20':
-                    variationOne += 1;
-                    break;
-                case 'bptggipaqi903f3haq2g':
-                    variationTwo += 1;
-                    break;
-                case 'bptggipaqi903f3haq2p':
-                    variationThree += 1;
-                    break;
-                default:
-                    break;
-            }
+        const nbVisitor = 10000;
+        const acceptedRange = 0.8; // percent
+        const output = murmurAllocationCheck(demoData.bucketing.functions.murmur.fourVariations, acceptedRange, nbVisitor);
+        if (!output.isTestOk) {
+            done.fail(output.debug);
         }
-
-        const varOneDiff = calculateDiffPercentage(2500, variationOne);
-        const varTwoDiff = calculateDiffPercentage(2500, variationTwo);
-        const varThreeDiff = calculateDiffPercentage(2500, variationThree);
-
-        if (varOneDiff > 0.8 || varTwoDiff > 0.8 || varThreeDiff > 0.8) {
-            done.fail(`${varOneDiff} > 0.8 || ${varTwoDiff} > 0.8 || ${varThreeDiff} > 0.8`);
-        }
-
         done();
     });
 
