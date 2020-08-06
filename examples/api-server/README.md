@@ -205,7 +205,13 @@ curl -d "nbVisitor=3" -X POST http://localhost:3000/fsVisitor/create
 Search for a visitor with its id.
 
 ```
-curl -X GET http://localhost:3000/get\?id\=VISITOR_ID
+curl -X GET http://localhost:3000/getInfo\?id\=VISITOR_ID
+```
+
+Search for modifications assigned to a specific visitor.
+
+```
+curl -X GET http://localhost:3000/getModifications\?id\=VISITOR_ID
 ```
 
 That's it ! 🎉

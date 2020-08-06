@@ -320,12 +320,12 @@ describe('FlagshipVisitor', () => {
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
 
-        it('should add "x-api-key" in modifications queries when "apiKey" is set in config', (done) => {
+        it('should add "x-api-key" in modifications queries when "apiKey" is set in config and api is not V1', (done) => {
             const mockApiKey = 'toto';
-            const endPoint = 'https://decision-api.flagship.io/v1/';
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, activateNow: true, apiKey: mockApiKey });
+            const endPoint = demoData.api.v2;
+            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, activateNow: true, apiKey: mockApiKey, flagshipApi: endPoint });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-            expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true, apiKey: mockApiKey });
+            expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true, apiKey: mockApiKey, flagshipApi: endPoint });
             visitorInstance.once('ready', () => {
                 try {
                     expect(visitorInstance.fetchedModifications).not.toBe(null);

@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var flagship = require('../services/flagship');
+const bodyParser = require('body-parser').json();
 
 const createUUID = function () {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -24,7 +25,7 @@ const createVisitor = function (req, nbVisitorLeftToCreate, finishCallback) {
 
         console.log('fsVisitor (id=' + visitorId + ') is ready');
 
-        if (nbVisitorLeftToCreate === 0) {
+        if (nbVisitorLeftToCreate - 1 === 0) {
             finishCallback(visitorList);
         } else {
             createVisitor(req, nbVisitorLeftToCreate - 1, finishCallback);
@@ -32,7 +33,7 @@ const createVisitor = function (req, nbVisitorLeftToCreate, finishCallback) {
     });
 };
 
-router.post('/create', function (req, res, next) {
+router.post('/create', bodyParser, function (req, res, next) {
     console.log('Got body:', req.body);
     if (req.body && req.body.nbVisitor) {
         createVisitor(req, req.body.nbVisitor, function (visitors) {
@@ -46,7 +47,7 @@ router.post('/create', function (req, res, next) {
     }
 });
 
-router.get('/get', function (req, res, next) {
+router.get('/getInfo', function (req, res, next) {
     const visitorId = req.query.id;
     if (visitorId) {
         var visitorList = req.app.get('visitorList');
@@ -55,6 +56,26 @@ router.get('/get', function (req, res, next) {
             res.sendStatus(404);
         } else {
             res.status(200).send(visitor[0]);
+        }
+    } else {
+        res.sendStatus(422);
+    }
+});
+
+router.get('/getModifications', function (req, res, next) {
+    const visitorId = req.query.id;
+    if (visitorId) {
+        var visitorList = req.app.get('visitorList');
+        var visitor = visitorList.filter((v) => v.id === visitorId);
+        if (visitor.length === 0) {
+            res.status(404).send('visitor not found');
+        } else {
+            visitor[0]
+                .getAllModifications()
+                .then((response) => {
+                    res.status(200).send(response.data.campaigns);
+                })
+                .catch((err) => res.status(400).send(err.stack));
         }
     } else {
         res.sendStatus(422);
