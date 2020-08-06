@@ -15,14 +15,21 @@ const checkRequiredSettingsForApiV2 = (config: FlagshipSdkConfig, log: FsLogger)
 };
 
 const flagshipSdkHelper = {
-    postFlagshipApi: (config: FlagshipSdkConfig, log: FsLogger, endpoint: string, params: { [key: string]: any }): Promise<any> => {
+    postFlagshipApi: (
+        config: FlagshipSdkConfig,
+        log: FsLogger,
+        endpoint: string,
+        params: { [key: string]: any },
+        queryParams: any = {}
+    ): Promise<any> => {
         const additionalParams: { [key: string]: string } = {};
         checkRequiredSettingsForApiV2(config, log);
-        if (config.apiKey) {
+        const isNotApiV1 = !config.flagshipApi.includes('/v1/')
+        if (config.apiKey && isNotApiV1) {
             additionalParams['x-api-key'] = config.apiKey;
         }
         const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
-        return axios.post(url, { ...params, ...additionalParams });
+        return axios.post(url, { ...params, ...additionalParams }, queryParams);
     },
     checkPollingIntervalValue: (pollingIntervalValue: any): 'ok' | 'underLimit' | 'notSupported' => {
         const valueType = typeof pollingIntervalValue;
@@ -97,7 +104,7 @@ const flagshipSdkHelper = {
         }
         return response.data;
     },
-    validateDecisionApiData: (data: DecisionApiCampaign[], log: FsLogger): null | DecisionApiCampaign[] => {
+    validateDecisionApiData: (data: DecisionApiCampaign[] | null, log: FsLogger): null | DecisionApiCampaign[] => {
         const constraints = {
             id: {
                 presence: { message: 'is missing' },
@@ -121,6 +128,14 @@ const flagshipSdkHelper = {
         };
         const result: { [key: string]: any } = {};
         let errorMsg = 'Decision Api data does not have correct format:\n';
+
+        if (!data || !Array.isArray(data)) {
+            if (!Array.isArray(data) && data !== null) {
+                log.error(`validateDecisionApiData - received unexpected decision api data of type "${typeof data}"`);
+            }
+            return null;
+        }
+
         data.forEach((potentialCampaign, i) => {
             const output = validate(potentialCampaign, constraints);
             if (output) {

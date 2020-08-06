@@ -8,7 +8,9 @@
 
 <div style='display: flex; justify-content: space-around;'>
 
-[![codecov](https://codecov.io/gh/abtasty/flagship-js-sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/abtasty/flagship-js-sdk)
+![flagship-js-sdk-coverage_lines](badges/badge-lines.svg)
+
+![flagship-js-sdk-functions](badges/badge-functions.svg)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
@@ -18,7 +20,7 @@
 
 [![Apache2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-[![GitHub release](https://img.shields.io/github/v/release/abtasty/flagship-react-sdk.svg)](https://github.com/abtasty/flagship-react-sdk/releases)
+[![GitHub release](https://img.shields.io/github/v/release/abtasty/flagship-js-sdk.svg)](https://github.com/abtasty/flagship-js-sdk/releases)
 
 </div>
 
@@ -36,9 +38,11 @@
 
 ## Examples
 
-Following demos illustrate how the SDK is used in practice ☕
-
 -   With Express JS:
+
+<p align="center">
+<img src="./doc/nodeJSandExpress.png" alt="node js and express demo" width="600"/>
+</p>
 
 <div style="display: flex; justify-content: space-around; font-size: 24px">
 
@@ -47,6 +51,10 @@ Following demos illustrate how the SDK is used in practice ☕
 </div>
 
 -   With React, inside react component:
+
+<p align="center">
+<img src="./doc/react-with-sdk-js.gif" alt="react ecommerce demo with cookie" width="600"/>
+</p>
 
 <div style="display: flex; justify-content: space-around; font-size: 24px">
 
@@ -57,6 +65,10 @@ Following demos illustrate how the SDK is used in practice ☕
 </div>
 
 -   With React, using cookies:
+
+<p align="center">
+<img src="./doc/react-ecommerce-demo.gif" alt="react ecommerce demo with cookie" width="600"/>
+</p>
 
 <div style="display: flex; justify-content: space-around; font-size: 24px">
 

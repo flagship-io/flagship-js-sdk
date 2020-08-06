@@ -201,7 +201,7 @@ describe('Bucketing used from visitor instance', () => {
             try {
                 expect(visitorInstance.fetchedModifications).toEqual(null);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -215,7 +215,7 @@ describe('Bucketing used from visitor instance', () => {
         try {
             visitorInstance.synchronizeModifications(true).catch((err) => {
                 expect(err).toEqual('bucketing server crash');
-                expect(spyInfoLogs).toHaveBeenCalledTimes(2);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(3);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(1);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -233,7 +233,7 @@ describe('Bucketing used from visitor instance', () => {
             });
             sdk.eventEmitter.emit('bucketPollingFailed', 'bucketing server crash');
         } catch (error) {
-            done.fail(error);
+            done.fail(error.stack);
         }
     });
 
@@ -272,7 +272,7 @@ describe('Bucketing used from visitor instance', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -324,7 +324,7 @@ describe('Bucketing used from visitor instance', () => {
                 });
                 sdk.eventEmitter.emit('bucketPollingSuccess', { payload: {}, status: 304 });
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -338,7 +338,7 @@ describe('Bucketing used from visitor instance', () => {
         expect(visitorInstance.fetchedModifications).toEqual(null);
         visitorInstance.synchronizeModifications().then(() => {
             try {
-                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(1);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -356,7 +356,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
         sdk.eventEmitter.emit('bucketPollingSuccess', { payload: { ...bucketingApiMockResponse }, status: 200 });
@@ -371,7 +371,7 @@ describe('Bucketing used from visitor instance', () => {
         expect(visitorInstance.fetchedModifications).toEqual(null);
         visitorInstance.synchronizeModifications().then(() => {
             try {
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(1);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -390,7 +390,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
         sdk.eventEmitter.emit('bucketPollingSuccess', { payload: { ...bucketingApiMockResponse }, status: 999 });
@@ -419,7 +419,7 @@ describe('Bucketing used from visitor instance', () => {
             visitorInstance.synchronizeModifications().then(() => {
                 expect(mockAxios.get).toHaveBeenCalledTimes(1);
 
-                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -437,7 +437,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(visitorInstance.fetchedModifications[1].id === demoData.bucketing.classical.campaigns[1].id).toEqual(true);
                 nextStep();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -468,13 +468,15 @@ describe('Bucketing used from visitor instance', () => {
             visitorInstance.synchronizeModifications().then(() => {
                 expect(mockAxios.get).toHaveBeenCalledTimes(1);
 
-                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications: "[]"');
+
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications: "[]"');
 
                 expect(visitorInstance.fetchedModifications).toEqual([]);
                 expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
@@ -488,7 +490,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(visitorInstance.fetchedModifications[1].id === demoData.bucketing.classical.campaigns[1].id).toEqual(true);
                 nextStep();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -503,8 +505,8 @@ describe('Bucketing used from visitor instance', () => {
         sdk.eventEmitter.on('bucketPollingSuccess', () => {
             called += 1;
         });
-        sdk.eventEmitter.on('bucketPollingFailed', () => {
-            done.fail('not supposed to be here');
+        sdk.eventEmitter.on('bucketPollingFailed', (e) => {
+            done.fail(`not supposed to be here: ${e.stack}`);
         });
 
         mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
@@ -522,7 +524,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(visitorInstance.fetchedModifications[1].id === demoData.bucketing.classical.campaigns[1].id).toEqual(true);
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -537,8 +539,8 @@ describe('Bucketing used from visitor instance', () => {
         sdk.eventEmitter.on('bucketPollingSuccess', () => {
             called += 1;
         });
-        sdk.eventEmitter.on('bucketPollingFailed', () => {
-            done.fail('not supposed to be here');
+        sdk.eventEmitter.on('bucketPollingFailed', (e) => {
+            done.fail(`not supposed to be here ${e.stack}`);
         });
 
         mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
@@ -565,50 +567,60 @@ describe('Bucketing used from visitor instance', () => {
                 // expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                 const activateUrl = 'https://decision-api.flagship.io/v1/activate';
 
-                expect(mockAxios.post).toHaveBeenNthCalledWith(1, `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`, {
-                    data: {
-                        ...visitorInstance.context
-                    },
-                    type: 'CONTEXT',
-                    visitor_id: visitorInstance.id
-                });
+                expect(mockAxios.post).toHaveBeenCalledTimes(4);
 
-                expect(mockAxios.post).toHaveBeenNthCalledWith(2, `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`, {
-                    data: {
-                        ...visitorInstance.context
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`,
+                    {
+                        data: {
+                            ...visitorInstance.context
+                        },
+                        type: 'CONTEXT',
+                        visitor_id: visitorInstance.id
                     },
-                    type: 'CONTEXT',
-                    visitor_id: visitorInstance.id
-                });
+                    {}
+                );
 
-                expect(mockAxios.post).toHaveBeenNthCalledWith(3, activateUrl, {
-                    caid: 'bptggipaqi903f3haq1g',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    vaid: 'bptggipaqi903f3haq2g',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(4, activateUrl, {
-                    caid: 'bq4sf09oet0006cfihe0',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    vaid: 'bq4sf09oet0006cfihf0',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(5, activateUrl, {
-                    caid: 'bptggipaqi903f3haq1g',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    vaid: 'bptggipaqi903f3haq2g',
-                    vid: 'test-perf'
-                });
-                expect(mockAxios.post).toHaveBeenNthCalledWith(6, activateUrl, {
-                    caid: 'bq4sf09oet0006cfihe0',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    vaid: 'bq4sf09oet0006cfihf0',
-                    vid: 'test-perf'
-                });
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`,
+                    {
+                        data: {
+                            ...visitorInstance.context
+                        },
+                        type: 'CONTEXT',
+                        visitor_id: visitorInstance.id
+                    },
+                    {}
+                );
+
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    3,
+                    activateUrl,
+                    {
+                        caid: 'bptggipaqi903f3haq1g',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        vaid: 'bptggipaqi903f3haq2g',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    4,
+                    activateUrl,
+                    {
+                        caid: 'bq4sf09oet0006cfihe0',
+                        cid: 'bn1ab7m56qolupi5sa0g',
+                        vaid: 'bq4sf09oet0006cfihf0',
+                        vid: 'test-perf'
+                    },
+                    {}
+                );
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -619,8 +631,8 @@ describe('Bucketing used from visitor instance', () => {
         sdk.eventEmitter.on('bucketPollingSuccess', () => {
             done.fail('not supposed to be here');
         });
-        sdk.eventEmitter.on('bucketPollingFailed', () => {
-            done.fail('not supposed to be here');
+        sdk.eventEmitter.on('bucketPollingFailed', (e) => {
+            done.fail(`not supposed to be here: ${e.stack}`);
         });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         expect(visitorInstance.bucket.data).toEqual(null);
@@ -631,7 +643,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(mockAxios.get).not.toHaveBeenCalled();
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -729,7 +741,7 @@ describe('Bucketing - polling', () => {
 
                     done();
                 } catch (error) {
-                    done.fail(error);
+                    done.fail(error.stack);
                 }
             }
         });
@@ -770,7 +782,7 @@ describe('Bucketing - polling', () => {
 
                     done();
                 } catch (error) {
-                    done.fail(error);
+                    done.fail(error.stack);
                 }
             }
         });
@@ -836,7 +848,7 @@ describe('Bucketing - polling', () => {
 
                     done();
                 } catch (error) {
-                    done.fail(error);
+                    done.fail(error.stack);
                 }
             }
         });
@@ -895,7 +907,7 @@ describe('Bucketing - polling', () => {
 
                     done();
                 } catch (error) {
-                    done.fail(error);
+                    done.fail(error.stack);
                 }
             }
         });
@@ -909,7 +921,7 @@ describe('Bucketing - polling', () => {
                     { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }
                 ]);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -957,7 +969,7 @@ describe('Bucketing - polling', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -968,7 +980,7 @@ describe('Bucketing - polling', () => {
                 sdk.startBucketingPolling(); // manually start polling
                 mockPollingRequest(done, () => pollingLoop, ['server crashed']);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -1086,7 +1098,7 @@ describe('Bucketing - polling', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1097,7 +1109,7 @@ describe('Bucketing - polling', () => {
                 sdk.startBucketingPolling(); // manually start polling
                 mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }]);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -1144,7 +1156,7 @@ describe('Bucketing - polling', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1155,7 +1167,7 @@ describe('Bucketing - polling', () => {
                 sdk.startBucketingPolling(); // manually start polling
                 mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }]);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -1202,7 +1214,7 @@ describe('Bucketing - polling', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1213,7 +1225,7 @@ describe('Bucketing - polling', () => {
                 sdk.startBucketingPolling(); // manually start polling
                 mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }]);
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
     });
@@ -1265,12 +1277,12 @@ describe('Bucketing - callApi', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
         bucketInstance.on('error', () => {
-            done.fail('not supposed to be here');
+            done.fail(`not supposed to be here: ${e.stack}`);
         });
 
         bucketInstance.callApi();
@@ -1305,7 +1317,7 @@ describe('Bucketing - callApi', () => {
 
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1346,7 +1358,7 @@ describe('Bucketing - callApi', () => {
                 expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing up to date (api status=304)');
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1377,7 +1389,7 @@ describe('Bucketing - callApi', () => {
                 expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'Panic mode detected, running SDK in safe mode...');
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
 
@@ -1408,7 +1420,7 @@ describe('Bucketing - callApi', () => {
                 expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'An error occurred while fetching using bucketing...');
                 done();
             } catch (error) {
-                done.fail(error);
+                done.fail(error.stack);
             }
         });
         bucketInstance.on('launched', () => {

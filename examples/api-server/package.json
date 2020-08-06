@@ -1,32 +1,36 @@
 {
-  "name": "api-server",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "start": "node ./bin/www",
-    "start:mac": "DEBUG=api-server:* nodemon start",
-    "start:linux": "DEBUG=api-server:* nodemon start",
-    "start:windows": "set DEBUG=api-server:* & nodemon start"
-  },
-  "contributors": [
-    {
-      "name": "Emilien Domenge-Heritier",
-      "email": "emilien.domenge-heritier@abtasty.com",
-      "url": "https://domenge.fr"
+    "name": "api-server",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "start": "node ./bin/www.js",
+        "build": "npx webpack --config webpack.config.js",
+        "start:mac": "DEBUG=api-server:* nodemon start",
+        "start:linux": "DEBUG=api-server:* nodemon start",
+        "start:windows": "set DEBUG=api-server:* & nodemon start"
     },
-    {
-      "name": "Guillaume Jacquart",
-      "email": "guillaume.jacquart@abtasty.com"
+    "contributors": [
+        {
+            "name": "Emilien Domenge-Heritier",
+            "email": "emilien.domenge-heritier@abtasty.com",
+            "url": "https://domenge.fr"
+        },
+        {
+            "name": "Guillaume Jacquart",
+            "email": "guillaume.jacquart@abtasty.com"
+        }
+    ],
+    "dependencies": {
+        "@flagship.io/js-sdk": "^2.0.4",
+        "cookie-parser": "~1.4.4",
+        "debug": "~2.6.9",
+        "express": "~4.16.1",
+        "morgan": "~1.9.1",
+        "webpack-node-externals": "^2.5.0"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.1",
+        "webpack": "^4.44.1",
+        "webpack-cli": "^3.3.12"
     }
-  ],
-  "dependencies": {
-    "@flagship.io/js-sdk": "^1.2.1",
-    "cookie-parser": "~1.4.4",
-    "debug": "~2.6.9",
-    "express": "~4.16.1",
-    "morgan": "~1.9.1"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.1"
-  }
 }

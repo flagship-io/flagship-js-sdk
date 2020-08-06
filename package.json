@@ -1,6 +1,6 @@
 {
     "name": "@flagship.io/js-sdk",
-    "version": "1.2.1",
+    "version": "2.0.4",
     "description": "Flagship JS SDK",
     "main": "dist/index.node.js",
     "browser": "dist/index.browser.js",
@@ -17,13 +17,14 @@
         "node": ">=6"
     },
     "scripts": {
-        "test": "jest --verbose && rm -rf flagshipNodeSdkLogs",
-        "test:coverage": "jest --coverage && rm -rf flagshipNodeSdkLogs",
+        "test": "jest --verbose",
+        "test:coverage": "jest --coverage",
+        "test:badges": "npm run test:coverage && jest-coverage-badges && cp ./coverage/badge-lines.svg ./badges/ && cp ./coverage/badge-functions.svg ./badges/",
         "test:react-sample": "cd ./examples/react-app && npm test",
         "eslint": "eslint --version && eslint --quiet .ts,.js",
         "release": "np",
         "version": "npm run build",
-        "publish": "npm run update:react-app && npm run update:api-server && git add . && git commit -m\"Post publish update\" && git push && npm run publish:react",
+        "publish": "npm run test:badges && npm run update:react-app && npm run update:api-server && git add . && git commit -m\"Post publish update\" && git push && npm run publish:react",
         "publish:react": "cd ./examples/react-app && npm run deploy:github",
         "update:react-app": "cd ./examples/react-app && npm install @flagship.io/js-sdk@latest --save && cd ../../",
         "update:api-server": "cd ./examples/api-server && npm install @flagship.io/js-sdk@latest --save && cd ../../",
@@ -87,6 +88,7 @@
         "supertest": "^4.0.2",
         "ts-loader": "^7.0.5",
         "typescript": "^3.7.2",
+        "jest-coverage-badges": "^1.1.2",
         "webpack": "4.41.0",
         "webpack-bundle-analyzer": "^3.8.0",
         "webpack-cli": "^3.3.10",
@@ -94,16 +96,20 @@
         "webpack-node-externals": "^1.7.2"
     },
     "dependencies": {
-        "@flagship.io/js-sdk-logs": "^0.1.1",
-        "@types/murmurhash": "0.0.1",
+        "@flagship.io/js-sdk-logs": "^0.1.2",
         "axios": "^0.19.0",
         "events": "^3.1.0",
-        "murmurhash": "^1.0.0",
-        "react-native-murmurhash": "^1.0.2",
+        "react-native-murmurhash": "^1.1.0",
         "validate.js": "^0.13.1"
     },
     "jest": {
         "testEnvironment": "node",
+        "coverageReporters": [
+            "json-summary",
+            "text",
+            "lcov"
+        ],
+        "collectCoverage": true,
         "transform": {
             "^.+\\.[t|j]sx?$": "babel-jest"
         },

@@ -4,23 +4,23 @@
 
 ### Prerequisites
 
-- **Node.js**: version 6.0.0 or later...
+-   **Node.js**: version 6.0.0 or later...
 
-- **Npm**: version 3.0.0 or later...
+-   **Npm**: version 3.0.0 or later...
 
-  ```
+    ```
 
-  ```
+    ```
 
 ## Getting Started
 
-- **Install** the node module:
+-   **Install** the node module:
 
 ```
 examples/api-server$ npm install
 ```
 
-- **Start** the project:
+-   **Start** the project:
 
 on Mac:
 
@@ -42,18 +42,18 @@ examples/api-server$ npm run start:windows
 
 ## Run with local Flagship JS SDK
 
-- You need to link `@flagship.io/js-sdk` :
+-   You need to link `@flagship.io/js-sdk` :
 
-  - 1 - At the root level (=`PATH/TO/flagship-js-sdk`), run:
+    -   1 - At the root level (=`PATH/TO/flagship-js-sdk`), run:
 
-    ```
-    flagship-js-sdk$ npm link
-    ```
+        ```
+        flagship-js-sdk$ npm link
+        ```
 
-  - 2 - Then, move to `examples/api-server`:
-    ```
-    examples/api-server$ npm link PATH/TO/flagship-js-sdk
-    ```
+    -   2 - Then, move to `examples/api-server`:
+        ```
+        examples/api-server$ npm link PATH/TO/flagship-js-sdk
+        ```
 
 ## Demo
 
@@ -191,6 +191,27 @@ Open your terminal, then execute:
 
 ```
 curl -d "username=scott&password=secret&transactionId=12345" -X POST http://localhost:3000/checkout
+```
+
+### Stress test / Ram performance
+
+Create a lot of visitor on your server, to see how it impacts the performance:
+
+```
+# creating 3 visitors:
+curl -d "nbVisitor=3" -X POST http://localhost:3000/fsVisitor/create
+```
+
+Search for a visitor with its id.
+
+```
+curl -X GET http://localhost:3000/getInfo\?id\=VISITOR_ID
+```
+
+Search for modifications assigned to a specific visitor.
+
+```
+curl -X GET http://localhost:3000/getModifications\?id\=VISITOR_ID
 ```
 
 That's it ! 🎉
