@@ -143,7 +143,7 @@ describe('BucketingVisitor - callEventEndpoint', () => {
         bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, {
             ...bucketingConfig,
             flagshipApi: 'https://decision.flagship.io/v2/',
-            apiKey: 'toto'
+            apiKey: demoData.apiKey[0]
         });
         initSpyLogs(bucketInstance);
         bucketInstance

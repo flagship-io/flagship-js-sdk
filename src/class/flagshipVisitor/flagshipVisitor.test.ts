@@ -30,7 +30,7 @@ const initSpyLogs = (vInstance): void => {
 
 describe('FlagshipVisitor', () => {
     beforeAll(() => {
-        sdk = flagshipSdk.start(demoData.envId[0], testConfig);
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfig);
     });
     afterEach(() => {
         mockAxios.reset();
@@ -1141,7 +1141,7 @@ describe('FlagshipVisitor', () => {
 
     describe('GetAllModifications function', () => {
         beforeEach(() => {
-            sdk = flagshipSdk.start(demoData.envId[0], testConfig);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfig);
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         });
         it('should receive all modifications from visitor', (done) => {
@@ -1170,8 +1170,8 @@ describe('FlagshipVisitor', () => {
                 }
             );
         });
-        it('should not put the apiKey in the header if we\'re using the decision api V1', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], {...testConfig, apiKey: 'test'});
+        it("should not put the apiKey in the header if we're using the decision api V1", (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, apiKey: 'test' });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             const responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -1198,8 +1198,8 @@ describe('FlagshipVisitor', () => {
                 }
             );
         });
-        it('should PUT the apiKey in the header if we\'re using the decision api V2', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], {...testConfig, apiKey: 'test', flagshipApi: demoData.api.v2});
+        it("should PUT the apiKey in the header if we're using the decision api V2", (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, apiKey: 'test', flagshipApi: demoData.api.v2 });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             const responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -1220,8 +1220,11 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
                 `https://decision.flagship.io/v2/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: false, visitor_id: demoData.visitor.id[0] , 
-                    "x-api-key": "test"
+                {
+                    context: demoData.visitor.cleanContext,
+                    trigger_hit: false,
+                    visitor_id: demoData.visitor.id[0],
+                    'x-api-key': demoData.apiKey[0]
                 },
                 {
                     params: { exposeAllKeys: true }
