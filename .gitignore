@@ -13,3 +13,6 @@ stats.json
 *.tgz
 
 IMPROVEMENTS.md
+
+.vscode
+.idea
