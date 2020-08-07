@@ -2,6 +2,7 @@ import flagship from './index';
 import Flagship from './class/flagship/flagship';
 import testConfig from './config/test';
 import defaultConfig from './config/default';
+import demoData from '../test/mock/demoData';
 
 const randomUUID = 'e375004d-1fe3-4dc4-ba28-32b7fdf363ed';
 
@@ -43,7 +44,8 @@ describe('Flagship initialization', () => {
             unknownSettings: 'hello world'
         };
         const sdk = flagship.start(randomUUID, customConfig);
-        const splitElement = spyWarnLogs.mock.calls[0][0].split(' - ');
+        const splitElement1 = spyWarnLogs.mock.calls[0][0].split(' - ');
+        const splitElement2 = spyWarnLogs.mock.calls[1][0].split(' - ');
         expect(sdk.config).toEqual({
             activateNow: false,
             apiKey: null,
@@ -55,7 +57,43 @@ describe('Flagship initialization', () => {
             initialModifications: null,
             nodeEnv: 'debug'
         });
-        expect(spyWarnLogs).toHaveBeenCalledTimes(1);
-        expect(splitElement[2]).toEqual('Unknown key "unknownSettings" detected (with value="hello world"). This key has been ignored...');
+        expect(spyWarnLogs).toHaveBeenCalledTimes(2);
+
+        // TODO: temporary until major release
+        expect(splitElement1[2]).toEqual(
+            'WARNING: "start" function signature will change in the next major release. "start(envId, settings)" will be "start(envId, apiKey, settings)", please make this change ASAP!'
+        );
+        expect(splitElement2[2]).toEqual('Unknown key "unknownSettings" detected (with value="hello world"). This key has been ignored...');
+    });
+
+    it('start should warn deprecated start even if apiKey is defined in the settings', () => {
+        const customConfig = {
+            ...testConfig,
+            nodeEnv: 'debug',
+            enableConsoleLogs: true,
+            apiKey: demoData.apiKey[0],
+            unknownSettings: 'hello world'
+        };
+        const sdk = flagship.start(randomUUID, customConfig);
+        const splitElement1 = spyWarnLogs.mock.calls[0][0].split(' - ');
+        const splitElement2 = spyWarnLogs.mock.calls[1][0].split(' - ');
+        expect(sdk.config).toEqual({
+            activateNow: false,
+            apiKey: demoData.apiKey[0],
+            decisionMode: 'API',
+            enableConsoleLogs: true,
+            fetchNow: false,
+            pollingInterval: null,
+            flagshipApi: 'https://decision-api.flagship.io/v1/',
+            initialModifications: null,
+            nodeEnv: 'debug'
+        });
+        expect(spyWarnLogs).toHaveBeenCalledTimes(2);
+
+        // TODO: temporary until major release
+        expect(splitElement1[2]).toEqual(
+            'WARNING: "start" function signature will change in the next major release. "start(envId, settings)" will be "start(envId, apiKey, settings)", please make this change ASAP!'
+        );
+        expect(splitElement2[2]).toEqual('Unknown key "unknownSettings" detected (with value="hello world"). This key has been ignored...');
     });
 });

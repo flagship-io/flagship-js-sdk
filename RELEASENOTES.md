@@ -1,5 +1,27 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.0.5
+
+### Breaking changes ⚠️
+
+Be aware that `apiKey` will be mandatory in the next major release as it will use the [Decision API v2](http://developers.flagship.io/api/v2/).
+
+-   `start` function signature will change. It will takes `apiKey` (string) as second argument and `settings` is moving as third argument:
+
+    -   **BEFORE**:
+
+    ```javascript
+    flagshipSdk.start('ENV_ID', { apiKey: 'API_KEY' /*, other settings...*/ }); // "apiKey" was not required
+    ```
+
+    -   **NOW**:
+
+    ```javascript
+    flagshipSdk.start('ENV_ID', 'API_KEY', {
+        /*some settings...*/
+    }); // "apiKey" IS required and MUST NOT be set in the settings argument
+    ```
+
 ## ➡️ Version 2.0.4
 
 ### Bug fixes 🐛

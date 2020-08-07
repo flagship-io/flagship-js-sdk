@@ -24,7 +24,7 @@ const flagshipSdkHelper = {
     ): Promise<any> => {
         const additionalParams: { [key: string]: string } = {};
         checkRequiredSettingsForApiV2(config, log);
-        const isNotApiV1 = !config.flagshipApi.includes('/v1/')
+        const isNotApiV1 = !config.flagshipApi.includes('/v1/');
         if (config.apiKey && isNotApiV1) {
             additionalParams['x-api-key'] = config.apiKey;
         }
@@ -75,7 +75,7 @@ const flagshipSdkHelper = {
             log.debug(`No unknown key detected :) - ${objectName}`);
         }
     },
-    checkConfig: (unknownConfig: { [key: string]: any }): { cleanConfig: object; ignoredConfig: object } => {
+    checkConfig: (unknownConfig: { [key: string]: any }, apiKey?: string): { cleanConfig: object; ignoredConfig: object } => {
         const cleanObject: { [key: string]: string | boolean | null } = {};
         const dirtyObject: { [key: string]: string | boolean | null } = {};
         const validAttributesList: Array<string> = [];
@@ -95,6 +95,12 @@ const flagshipSdkHelper = {
                 dirtyObject[key] = value;
             }
         });
+
+        // TODO: remove in next major release
+        if (apiKey) {
+            cleanObject.apiKey = apiKey;
+        }
+
         return { cleanConfig: { ...cleanObject }, ignoredConfig: { ...dirtyObject } };
     },
     checkDecisionApiResponseFormat: (response: DecisionApiResponse, log: FsLogger): DecisionApiResponseData | null => {

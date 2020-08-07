@@ -21,13 +21,18 @@ class Flagship implements IFlagship {
 
     envId: string;
 
-    constructor(envId: string, config = {}) {
-        const { cleanConfig: cleanCustomConfig, ignoredConfig } = flagshipSdkHelper.checkConfig(config);
+    constructor(envId: string, apiKey?: string, config = {}) {
+        const { cleanConfig: cleanCustomConfig, ignoredConfig } = flagshipSdkHelper.checkConfig(config, apiKey);
         this.config = { ...defaultConfig, ...cleanCustomConfig };
         this.log = loggerHelper.getLogger(this.config);
         this.eventEmitter = new EventEmitter();
         this.bucket = null;
         this.envId = envId;
+        if (!apiKey) {
+            this.log.warn(
+                'WARNING: "start" function signature will change in the next major release. "start(envId, settings)" will be "start(envId, apiKey, settings)", please make this change ASAP!'
+            );
+        }
         if (cleanCustomConfig) {
             this.log.debug('Custom flagship SDK config attribute(s) detected');
         }

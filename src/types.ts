@@ -110,5 +110,5 @@ export interface IFlagship {
 }
 
 export interface FlagshipNodeSdk {
-    start(envId: string, config?: FlagshipSdkConfig): IFlagship;
+    start(envId: string, apiKeyOrSettings?: any, config?: FlagshipSdkConfig): IFlagship;
 }
