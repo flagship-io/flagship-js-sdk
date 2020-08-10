@@ -9,6 +9,7 @@ import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor } fr
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import Bucketing from './bucketing';
 import { BucketingApiResponse } from './types';
+import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -1454,6 +1455,62 @@ describe('Bucketing initialization', () => {
         expect(bucketInstance.isPollingRunning).toEqual(false);
         expect(bucketInstance.config).toEqual(bucketingConfig);
         expect(bucketInstance.lastModifiedDate).toEqual(null);
+        done();
+    });
+    it('should preset bucketing if "initialBucketing" is set correctly', (done) => {
+        bucketInstance = new Bucketing(demoData.envId[0], {
+            ...bucketingConfig,
+            initialBucketing: demoData.bucketing.classical
+        } as FlagshipSdkConfig);
+        expect(bucketInstance instanceof Bucketing).toEqual(true);
+
+        expect(bucketInstance.data).toEqual(demoData.bucketing.classical);
+        expect(bucketInstance.log).toBeDefined();
+        expect(bucketInstance.envId).toEqual(demoData.envId[0]);
+        expect(bucketInstance.isPollingRunning).toEqual(false);
+        expect(bucketInstance.lastModifiedDate).toEqual(demoData.bucketing.classical.lastModifiedDate);
+
+        done();
+    });
+
+    it('should NOT preset bucketing if "initialBucketing" is NOT set correctly', (done) => {
+        const helperSpy = jest.spyOn(flagshipSdkHelper, 'generateValidateError');
+        bucketInstance = new Bucketing(demoData.envId[0], {
+            ...bucketingConfig,
+            initialBucketing: { test: 'oops' }
+        } as FlagshipSdkConfig);
+        expect(bucketInstance instanceof Bucketing).toEqual(true);
+
+        expect(bucketInstance.data).toEqual(null);
+        expect(bucketInstance.log).toBeDefined();
+        expect(bucketInstance.envId).toEqual(demoData.envId[0]);
+        expect(bucketInstance.isPollingRunning).toEqual(false);
+        expect(bucketInstance.lastModifiedDate).toEqual(null);
+
+        expect(helperSpy).toHaveBeenCalledTimes(1);
+        expect(helperSpy.mock.results[0].value.replace(/\n|\r/g, '')).toEqual(
+            'Element:- "campaigns" Campaigns is missing.- "panic" Panic is missing.- "lastModifiedDate" Last modified date is missing.'
+        );
+        done();
+    });
+    it('should NOT preset bucketing if "initialBucketing" is NOT set correctly - part 2', (done) => {
+        const helperSpy = jest.spyOn(flagshipSdkHelper, 'generateValidateError');
+        bucketInstance = new Bucketing(demoData.envId[0], {
+            ...bucketingConfig,
+            initialBucketing: { panic: false, lastModifiedDate: 'oops2', campaigns: [{ test: 'toos' }] }
+        } as FlagshipSdkConfig);
+        expect(bucketInstance instanceof Bucketing).toEqual(true);
+
+        expect(bucketInstance.data).toEqual(null);
+        expect(bucketInstance.log).toBeDefined();
+        expect(bucketInstance.envId).toEqual(demoData.envId[0]);
+        expect(bucketInstance.isPollingRunning).toEqual(false);
+        expect(bucketInstance.lastModifiedDate).toEqual(null);
+
+        expect(helperSpy).toHaveBeenCalledTimes(2);
+        expect(helperSpy.mock.results[1].value.replace(/\n|\r/g, '')).toEqual(
+            'Element at index=0:- "id" Id is missing.- "type" Type is missing.- "variationGroups" Variation groups is missing.'
+        );
         done();
     });
 });
