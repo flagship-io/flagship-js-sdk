@@ -65,6 +65,7 @@ export interface IFlagshipBucketing extends EventEmitter {
     lastModifiedDate: string | null;
     callApi(): Promise<BucketingApiResponse | void>;
     startPolling(): void;
+    stopPolling(): void;
     on(event: 'launched', listener: ({ status: number }) => void): this;
     on(event: 'error', listener: (args: Error) => void): this;
 }
@@ -108,6 +109,7 @@ export interface IFlagship {
     bucket: IFlagshipBucketing | null;
     newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;
     startBucketingPolling(): void;
+    stopBucketingPolling(): void;
 }
 
 export interface FlagshipNodeSdk {

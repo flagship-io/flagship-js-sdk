@@ -102,6 +102,15 @@ class Flagship implements IFlagship {
             this.log.error('startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"');
         }
     }
+
+    public stopBucketingPolling(): void {
+        if (this.bucket !== null && this.bucket.isPollingRunning) {
+            this.bucket.stopPolling();
+            this.log.info('stopBucketingPolling - bucketing is stopped');
+        } else {
+            this.log.info('stopBucketingPolling - bucketing is already stopped');
+        }
+    }
 }
 
 export default Flagship;

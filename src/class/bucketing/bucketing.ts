@@ -35,7 +35,11 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
             if (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval) === 'ok' && this.isPollingRunning) {
                 this.log.debug(`startPolling - polling finished successfully. Next polling in ${this.config.pollingInterval} minute(s)`);
                 setTimeout(() => {
-                    this.pollingMechanism();
+                    if (this.isPollingRunning) {
+                        this.pollingMechanism();
+                    } else {
+                        this.log.debug('on("launched") listener - bucketing stop detected.');
+                    }
                 }, (this.config.pollingInterval as number) * 60 * 1000);
             } // no need to do logs on "else" statement because already done before
         });
@@ -86,6 +90,10 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                 this.log.fatal('An error occurred while fetching using bucketing...');
                 this.emit('error', response);
             });
+    }
+
+    public stopPolling(): void {
+        this.isPollingRunning = false;
     }
 
     private pollingMechanism(): void {
