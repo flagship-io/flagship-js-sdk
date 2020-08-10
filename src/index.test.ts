@@ -1,7 +1,7 @@
 import flagship from './index';
 import Flagship from './class/flagship/flagship';
 import testConfig from './config/test';
-import defaultConfig from './config/default';
+import defaultConfig, { internalConfig } from './config/default';
 import demoData from '../test/mock/demoData';
 
 const randomUUID = 'e375004d-1fe3-4dc4-ba28-32b7fdf363ed';
@@ -27,13 +27,18 @@ describe('Flagship initialization', () => {
 
     it('start should take default config if none is set', () => {
         const sdk = flagship.start(randomUUID, demoData.apiKey[0]);
-        expect(sdk.config).toMatchObject({ ...defaultConfig, apiKey: demoData.apiKey[0] });
+        expect(sdk.config).toMatchObject({ ...defaultConfig, apiKey: demoData.apiKey[0], flagshipApi: internalConfig.apiV2 });
     });
 
     it('start should consider custom config if exist and override default config', () => {
         const customConfig = { ...testConfig, nodeEnv: 'debug' };
         const sdk = flagship.start(randomUUID, demoData.apiKey[0], customConfig);
-        expect(sdk.config).toMatchObject({ ...defaultConfig, ...customConfig, apiKey: demoData.apiKey[0] });
+        expect(sdk.config).toMatchObject({
+            ...defaultConfig,
+            ...customConfig,
+            apiKey: demoData.apiKey[0],
+            flagshipApi: internalConfig.apiV2
+        });
     });
 
     it('start should log when a setting is not recognized except for React special settings', () => {
@@ -52,7 +57,7 @@ describe('Flagship initialization', () => {
             enableConsoleLogs: true,
             fetchNow: false,
             pollingInterval: null,
-            flagshipApi: 'https://decision-api.flagship.io/v1/',
+            flagshipApi: internalConfig.apiV2,
             initialModifications: null,
             nodeEnv: 'debug'
         });

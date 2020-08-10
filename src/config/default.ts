@@ -14,6 +14,8 @@ const defaultConfig: FlagshipSdkConfig = {
 
 export const internalConfig: FlagshipSdkInternalConfig = {
     bucketingEndpoint: 'https://cdn.flagship.io/@ENV_ID@/bucketing.json',
+    apiV1: 'https://decision-api.flagship.io/v1/',
+    apiV2: 'https://decision.flagship.io/v2/',
     pollingIntervalMinValue: 1 // (= 1 min)
 };
 

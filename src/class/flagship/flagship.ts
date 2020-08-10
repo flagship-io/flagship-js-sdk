@@ -1,7 +1,7 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { EventEmitter } from 'events';
 
-import defaultConfig from '../../config/default';
+import defaultConfig, { internalConfig } from '../../config/default';
 import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor } from '../../types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
@@ -32,6 +32,10 @@ class Flagship implements IFlagship {
             this.log.warn(
                 'WARNING: "start" function signature will change in the next major release. "start(envId, settings)" will be "start(envId, apiKey, settings)", please make this change ASAP!'
             );
+        } else if (this.config && this.config.apiKey && flagshipSdkHelper.isUsingFlagshipApi('v1', this.config)) {
+            // force API v2 if apiKey is set, whatever how
+            this.config.flagshipApi = internalConfig.apiV2;
+            this.log.debug('apiKey detected, forcing the use of Flagship api V2');
         }
         if (cleanCustomConfig) {
             this.log.debug('Custom flagship SDK config attribute(s) detected');

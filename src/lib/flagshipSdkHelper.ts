@@ -160,6 +160,18 @@ const flagshipSdkHelper = {
         }
         log.error(errorMsg);
         return null;
+    },
+    isUsingFlagshipApi: (version: 'v1' | 'v2', config: FlagshipSdkConfig): boolean => {
+        switch (version) {
+            case 'v1':
+                return config.flagshipApi.includes(internalConfig.apiV1);
+
+            case 'v2':
+                return config.flagshipApi.includes(internalConfig.apiV2);
+
+            default:
+                return false;
+        }
     }
 };
 

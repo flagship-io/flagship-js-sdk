@@ -13,7 +13,7 @@ function start(envId: string, apiKeyOrSettings?: any, config?: FlagshipSdkConfig
     return new Flagship(envId, apiKeyOrSettings as string, config);
 }
 
-export const flagship: FlagshipNodeSdk = {
+const flagship: FlagshipNodeSdk = {
     start
 };
 

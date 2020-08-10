@@ -1,4 +1,5 @@
 import mockAxios from 'jest-mock-axios';
+import { internalConfig } from '../../config/default';
 import { IFlagshipVisitor } from '../../types';
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
@@ -195,7 +196,12 @@ describe('FlagshipVisitor', () => {
             };
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-            expect(visitorInstance.config).toMatchObject({ ...testConfig, fetchNow: true, apiKey: demoData.apiKey[0] });
+            expect(visitorInstance.config).toMatchObject({
+                ...testConfig,
+                fetchNow: true,
+                apiKey: demoData.apiKey[0],
+                flagshipApi: internalConfig.apiV2
+            });
             visitorInstance.once('ready', () => {
                 done();
             });
@@ -206,40 +212,48 @@ describe('FlagshipVisitor', () => {
         it('should create a Visitor with modifications already loaded and activated if config "activateNow=true"', (done) => {
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, activateNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-            expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true, apiKey: demoData.apiKey[0] });
+            expect(visitorInstance.config).toMatchObject({
+                ...testConfig,
+                activateNow: true,
+                apiKey: demoData.apiKey[0],
+                flagshipApi: internalConfig.apiV2
+            });
             visitorInstance.once('ready', () => {
                 try {
                     expect(visitorInstance.fetchedModifications).not.toBe(null);
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         2,
-                        'https://decision-api.flagship.io/v1/activate',
+                        `${internalConfig.apiV2}activate`,
                         {
                             vaid: 'blntcamqmdvg04g371hg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'blntcamqmdvg04g371h0',
-                            vid: 'test-perf'
+                            vid: 'test-perf',
+                            'x-api-key': demoData.apiKey[0]
                         },
                         {}
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         3,
-                        'https://decision-api.flagship.io/v1/activate',
+                        `${internalConfig.apiV2}activate`,
                         {
                             vaid: 'bmjdprsjan0g01uq2ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2csg',
-                            vid: 'test-perf'
+                            vid: 'test-perf',
+                            'x-api-key': demoData.apiKey[0]
                         },
                         {}
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         4,
-                        'https://decision-api.flagship.io/v1/activate',
+                        `${internalConfig.apiV2}activate`,
                         {
                             vaid: 'bmjdprsjan0g01uq1ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2ceg',
-                            vid: 'test-perf'
+                            vid: 'test-perf',
+                            'x-api-key': demoData.apiKey[0]
                         },
                         {}
                     );
@@ -251,8 +265,13 @@ describe('FlagshipVisitor', () => {
             mockAxios.mockResponse(responseObj);
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] },
+                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                {
+                    context: demoData.visitor.cleanContext,
+                    trigger_hit: true,
+                    visitor_id: demoData.visitor.id[0],
+                    'x-api-key': demoData.apiKey[0]
+                },
                 { params: { exposeAllKeys: true } }
             );
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
@@ -402,7 +421,7 @@ describe('FlagshipVisitor', () => {
             sdk = flagshipSdk.start(demoData.envId[0], undefined, {
                 ...testConfig,
                 fetchNow: false,
-                flagshipApi: 'https://decision.flagship.io/v2/'
+                flagshipApi: internalConfig.apiV2
             });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             initSpyLogs(visitorInstance);
@@ -469,7 +488,7 @@ describe('FlagshipVisitor', () => {
                 decisionMode: 'API',
                 apiKey: demoData.apiKey[0],
                 pollingInterval: null,
-                flagshipApi: 'https://decision-api.flagship.io/v1/',
+                flagshipApi: internalConfig.apiV2,
                 initialModifications: null,
                 nodeEnv: 'production'
             });

@@ -565,7 +565,7 @@ describe('Bucketing used from visitor instance', () => {
                 // expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 // expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 // expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-                const activateUrl = 'https://decision-api.flagship.io/v1/activate';
+                const activateUrl = `${internalConfig.apiV2}activate`;
 
                 expect(mockAxios.post).toHaveBeenCalledTimes(4);
 
@@ -577,7 +577,8 @@ describe('Bucketing used from visitor instance', () => {
                             ...visitorInstance.context
                         },
                         type: 'CONTEXT',
-                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
+                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId,
+                        'x-api-key': demoData.apiKey[0]
                     },
                     {}
                 );
@@ -590,7 +591,8 @@ describe('Bucketing used from visitor instance', () => {
                             ...visitorInstance.context
                         },
                         type: 'CONTEXT',
-                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
+                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId,
+                        'x-api-key': demoData.apiKey[0]
                     },
                     {}
                 );
@@ -602,7 +604,8 @@ describe('Bucketing used from visitor instance', () => {
                         caid: demoData.bucketing.functions.murmur.allocation[68].variationGroup,
                         cid: 'bn1ab7m56qolupi5sa0g',
                         vaid: 'bptggipaqi903f3haq2g',
-                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId
+                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId,
+                        'x-api-key': demoData.apiKey[0]
                     },
                     {}
                 );
@@ -613,7 +616,8 @@ describe('Bucketing used from visitor instance', () => {
                         caid: '9',
                         cid: 'bn1ab7m56qolupi5sa0g',
                         vaid: 'bq4sf09oet0006cfiheg',
-                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId
+                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId,
+                        'x-api-key': demoData.apiKey[0]
                     },
                     {}
                 );

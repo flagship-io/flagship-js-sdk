@@ -31,6 +31,8 @@ export type FlagshipSdkConfig = {
 
 export type FlagshipSdkInternalConfig = {
     bucketingEndpoint: string;
+    apiV1: string;
+    apiV2: string;
     pollingIntervalMinValue: number;
 };
 
