@@ -32,6 +32,9 @@ export default {
             badTraffic: murmurBadTraffic
         }
     },
+    headers: {
+        lastModified: ['Wed, 18 Mar 2020 23:29:16 GMT']
+    },
     oneCampaignWithBadTraffic,
     oneCampaignWith100PercentAllocation,
     multipleCampaigns,

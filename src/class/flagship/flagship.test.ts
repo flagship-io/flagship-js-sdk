@@ -459,6 +459,7 @@ describe('FlagshipVisitor', () => {
                 decisionMode: 'API',
                 pollingInterval: null,
                 flagshipApi: 'https://decision-api.flagship.io/v1/',
+                initialBucketing: null,
                 initialModifications: null,
                 nodeEnv: 'production'
             });

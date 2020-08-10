@@ -1,6 +1,7 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { validate } from 'validate.js';
 import axios from 'axios';
+import { BucketingApiResponse } from '../class/bucketing/types';
 import { FlagshipSdkConfig } from '../types';
 
 import defaultConfig, { internalConfig } from '../config/default';
@@ -24,7 +25,7 @@ const flagshipSdkHelper = {
     ): Promise<any> => {
         const additionalParams: { [key: string]: string } = {};
         checkRequiredSettingsForApiV2(config, log);
-        const isNotApiV1 = !config.flagshipApi.includes('/v1/')
+        const isNotApiV1 = !config.flagshipApi.includes('/v1/');
         if (config.apiKey && isNotApiV1) {
             additionalParams['x-api-key'] = config.apiKey;
         }
@@ -104,6 +105,77 @@ const flagshipSdkHelper = {
         }
         return response.data;
     },
+    checkBucketingApiResponse: (response: any, log: FsLogger): BucketingApiResponse | null => {
+        const constraints = {
+            campaigns: {
+                presence: { message: 'is missing' },
+                type: { type: 'array', message: 'is not a array' }
+            },
+            panic: {
+                presence: { message: 'is missing' },
+                type: { type: 'boolean', message: 'is not a boolean' }
+            },
+            lastModifiedDate: {
+                presence: { message: 'is missing' },
+                type: { type: 'string', message: 'is not a string' }
+            }
+        };
+
+        const constraintsBucketingCampaigns = {
+            id: {
+                presence: { message: 'is missing' },
+                type: { type: 'string', message: 'is not a string' }
+            },
+            type: {
+                presence: { message: 'is missing' },
+                type: { type: 'string', message: 'is not a string' }
+            },
+            variationGroups: {
+                presence: { message: 'is missing' },
+                type: { type: 'array', message: 'is not a array' }
+            }
+        };
+
+        let result = true;
+        let errorLog = '';
+        const firstCheck = validate(response, constraints);
+
+        if (!firstCheck) {
+            response.campaigns.forEach((element, index) => {
+                const secondCheck = validate(element, constraintsBucketingCampaigns);
+                if (secondCheck) {
+                    result = false;
+                    errorLog += flagshipSdkHelper.generateValidateError(secondCheck, index);
+                }
+            });
+        } else {
+            result = false;
+            errorLog += flagshipSdkHelper.generateValidateError(firstCheck);
+        }
+
+        if (result) {
+            return response as BucketingApiResponse;
+        }
+
+        log.error(errorLog);
+        return null;
+    },
+    generateValidateError: (validateOutput: any, index?: number): string => {
+        let errorMsg = '';
+        if (typeof index === 'number') {
+            errorMsg += `Element at index=${index}:\n`;
+        } else {
+            errorMsg += `Element:\n`;
+        }
+        Object.keys(validateOutput).forEach((key) => {
+            errorMsg += `- "${key}" ${validateOutput[key].map((err: string, j: number) =>
+                j === validateOutput[key].length - 1 ? `${err}` : `${err} and `
+            )}.\n`;
+        });
+        errorMsg += '\n';
+
+        return errorMsg;
+    },
     validateDecisionApiData: (data: DecisionApiCampaign[] | null, log: FsLogger): null | DecisionApiCampaign[] => {
         const constraints = {
             id: {
@@ -140,13 +212,7 @@ const flagshipSdkHelper = {
             const output = validate(potentialCampaign, constraints);
             if (output) {
                 result[i] = output;
-                errorMsg += `Element at index=${i}:\n`;
-                Object.keys(output).forEach((key) => {
-                    errorMsg += `- "${key}" ${output[key].map((err: string, j: number) =>
-                        j === output[key].length - 1 ? `${err}` : `${err} and `
-                    )}.\n`;
-                });
-                errorMsg += '\n';
+                errorMsg += flagshipSdkHelper.generateValidateError(output, i);
             }
         });
         if (Object.keys(result).length === 0) {

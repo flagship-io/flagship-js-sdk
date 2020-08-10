@@ -26,9 +26,9 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         this.config = config;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - Bucketing`);
         this.envId = envId;
-        this.data = null;
+        this.data = (config.initialBucketing && flagshipSdkHelper.checkBucketingApiResponse(config.initialBucketing, this.log)) || null;
         this.isPollingRunning = false;
-        this.lastModifiedDate = null;
+        this.lastModifiedDate = (this.data && this.data.lastModifiedDate) || null;
 
         // init listeners
         this.on('launched', (/* {status} */) => {
@@ -77,7 +77,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                         this.lastModifiedDate = other.headers['last-modified'];
                     }
                     this.log.info(`callApi - current bucketing updated`);
-                    this.data = { ...bucketingData };
+                    this.data = { ...bucketingData, lastModifiedDate: this.lastModifiedDate };
                 }
                 this.emit('launched', { status });
                 return bucketingData;

@@ -32,7 +32,7 @@ let bucketingEventMockResponse: HttpResponse;
 
 const bucketingApiMockOtherResponse200: { status: number; headers: { 'last-modified': string } } = {
     status: 200,
-    headers: { 'last-modified': 'Wed, 18 Mar 2020 23:29:16 GMT' }
+    headers: { 'last-modified': demoData.bucketing.headers.lastModified[0] }
 };
 
 const bucketingApiMockOtherResponse304: { status: number; headers: {} } = {
@@ -1273,7 +1273,7 @@ describe('Bucketing - callApi', () => {
                     'callApi - http GET request (url="https://cdn.flagship.io/bn1ab7m56qolupi5sa0g/bucketing.json") did not return attribute "last-modified"'
                 );
 
-                expect(bucketInstance.data).toEqual(bucketingApiMockResponse);
+                expect(bucketInstance.data).toEqual({ ...bucketingApiMockResponse, lastModifiedDate: null });
 
                 done();
             } catch (error) {

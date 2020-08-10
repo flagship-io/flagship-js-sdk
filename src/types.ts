@@ -26,6 +26,7 @@ export type FlagshipSdkConfig = {
     flagshipApi?: string;
     apiKey?: string | null;
     initialModifications?: DecisionApiCampaign[] | null;
+    initialBucketing?: BucketingApiResponse | null;
     murmurhashV3?: MurmurV3 | null;
 };
 
