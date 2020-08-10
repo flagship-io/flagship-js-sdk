@@ -77,7 +77,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                         this.lastModifiedDate = other.headers['last-modified'];
                     }
                     this.log.info(`callApi - current bucketing updated`);
-                    this.data = { ...bucketingData, lastModifiedDate: this.lastModifiedDate };
+                    this.data = { ...bucketingData, lastModifiedDate: this.lastModifiedDate, panic: !!bucketingData.panic };
                 }
                 this.emit('launched', { status });
                 return bucketingData;
