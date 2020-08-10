@@ -1,6 +1,7 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { validate } from 'validate.js';
 import axios from 'axios';
+import { demoPollingInterval } from '../config/test';
 import { BucketingApiResponse } from '../class/bucketing/types';
 import { FlagshipSdkConfig } from '../types';
 
@@ -36,7 +37,7 @@ const flagshipSdkHelper = {
         const valueType = typeof pollingIntervalValue;
         switch (valueType) {
             case 'number':
-                if (process && process.env && process.env.NODE_ENV === 'test' && pollingIntervalValue === 0.022) {
+                if (process && process.env && process.env.NODE_ENV === 'test' && pollingIntervalValue === demoPollingInterval) {
                     // for unit test
                     return 'ok';
                 }
