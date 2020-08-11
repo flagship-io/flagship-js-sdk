@@ -10,7 +10,8 @@ import {
     DecisionApiCampaign,
     GetModificationInfoOutput,
     DecisionApiResponseData,
-    DecisionApiSimpleResponse
+    DecisionApiSimpleResponse,
+    ModificationsInternalStatus
 } from './class/flagshipVisitor/types';
 import { BucketingApiResponse } from './class/bucketing/types';
 
@@ -79,6 +80,7 @@ export interface IFlagshipVisitor extends EventEmitter {
     isAllModificationsFetched: boolean;
     bucket: IFlagshipBucketingVisitor | null;
     fetchedModifications: DecisionApiCampaign[] | null;
+    modificationsInternalStatus: ModificationsInternalStatus | null;
     sdkListener: EventEmitter;
     activateModifications(
         modifications: Array<{
