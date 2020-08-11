@@ -377,9 +377,10 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
     it('should expect correct behavior for "classic" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         bucketingEventMockResponse = { status: 204, data: {} };
+        const allocation = 68;
         bucketInstance = new BucketingVisitor(
             demoData.envId[0],
-            demoData.bucketing.functions.murmur.allocation[89].visitorId,
+            demoData.bucketing.functions.murmur.allocation[allocation].visitorId,
             demoData.visitor.cleanContext,
             bucketingConfig
         );
@@ -403,7 +404,7 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
         expect(result).toEqual([
             {
                 id: 'bptggipaqi903f3haq0g',
-                variationGroupId: '8',
+                variationGroupId: demoData.bucketing.functions.murmur.allocation[allocation].variationGroup,
                 variation: {
                     id: 'bptggipaqi903f3haq2g',
                     modifications: {
@@ -416,15 +417,15 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
             },
             {
                 id: 'bq4sf09oet0006cfihd0',
-                variationGroupId: demoData.bucketing.functions.murmur.allocation[89].variationGroup,
+                variationGroupId: demoData.bucketing.functions.murmur.allocation[17].variationGroup,
                 variation: {
-                    id: 'bq4sf09oet0006cfihf0',
+                    id: 'bq4sf09oet0006cfiheg',
                     modifications: {
                         type: 'JSON',
                         value: {
-                            'btn-color': 'green',
-                            'btn-text': 'Buy now with discount !',
-                            'txt-color': '#A3A3A3'
+                            'btn-color': 'red',
+                            'btn-text': 'Buy now !',
+                            'txt-color': '#fff'
                         }
                     }
                 }
@@ -595,7 +596,13 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
 
     it('should expect correct behavior for "bad murmur allocation" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.oneCampaignWithBadTraffic as BucketingApiResponse;
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], {}, bucketingConfig);
+        const allocation = 99;
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.bucketing.functions.murmur.allocation[allocation].visitorId,
+            {},
+            bucketingConfig
+        );
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
@@ -608,10 +615,10 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
         expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'Bucketing - campaign (id="bptggipaqi903f3haq0g") is matching visitor context');
-        expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'computeMurmurAlgorithm - murmur returned value="62"');
+        expect(spyDebugLogs).toHaveBeenNthCalledWith(2, `computeMurmurAlgorithm - murmur returned value="${allocation}"`);
         expect(spyDebugLogs).toHaveBeenNthCalledWith(
             3,
-            'computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="bptggipaqi903f3haq0g") using murmur for visitor (id="test-perf"). This visitor will be untracked.'
+            `computeMurmurAlgorithm - Unable to find the corresponding variation (campaignId="bptggipaqi903f3haq0g") using murmur for visitor (id="${demoData.bucketing.functions.murmur.allocation[allocation].visitorId}"). This visitor will be untracked.`
         );
         expect(spyFatalLogs).toHaveBeenNthCalledWith(
             1,
@@ -646,6 +653,28 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
 });
 
 describe('BucketingVisitor - murmur algorithm', () => {
+    const expectedIsoAssertions = [
+        { '202072017183814142': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 4 } },
+        { '202072017183860649': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 1 } },
+        { '202072017183828850': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 2 } },
+        { '202072017183818733': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 4 } },
+        { '202072017183823773': { bs8r119sbs4016meiiii: 2, bs8qvmo4nlr01fl9bbbb: 2 } },
+        { '202072017183894922': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 4 } },
+        { '202072017183829817': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 1 } },
+        { '202072017183842202': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 3 } },
+        { '202072017233645009': { bs8r119sbs4016meiiii: 2, bs8qvmo4nlr01fl9bbbb: 2 } },
+        { '202072017233690230': { bs8r119sbs4016meiiii: 2, bs8qvmo4nlr01fl9bbbb: 1 } },
+        { '202072017183886606': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 4 } },
+        { '202072017183877657': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 4 } },
+        { '202072017183860380': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 1 } },
+        { '202072017183972690': { bs8r119sbs4016meiiii: 2, bs8qvmo4nlr01fl9bbbb: 1 } },
+        { '202072017183912618': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 2 } },
+        { '202072017183951364': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 3 } },
+        { '202072017183920657': { bs8r119sbs4016meiiii: 2, bs8qvmo4nlr01fl9bbbb: 4 } },
+        { '202072017183922748': { bs8r119sbs4016meiiii: 2, bs8qvmo4nlr01fl9bbbb: 1 } },
+        { '202072017183943575': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 3 } },
+        { '202072017183987677': { bs8r119sbs4016meiiii: 1, bs8qvmo4nlr01fl9bbbb: 4 } }
+    ];
     beforeEach(() => {
         spyCatch = jest.fn();
         spyThen = jest.fn();
@@ -723,6 +752,44 @@ describe('BucketingVisitor - murmur algorithm', () => {
         expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'computeMurmurAlgorithm - murmur returned value="24"');
 
         done();
+    });
+
+    it('should be ISO with other SDK (campaign 50/50)', (done) => {
+        try {
+            const vgIdToCheck = 'bs8r119sbs4016meiiii';
+            expectedIsoAssertions.forEach((assertion) => {
+                const assertion_vId = Object.keys(assertion)[0];
+                bucketInstance = new BucketingVisitor(demoData.envId[0], assertion_vId, demoData.visitor.cleanContext, bucketingConfig);
+                bucketInstance.data = demoData.bucketing.isoSdk_50_50;
+                initSpyLogs(bucketInstance);
+                const result = bucketInstance.getEligibleCampaigns();
+                expect(result.length).toEqual(1);
+                expect(result[0].variation.modifications.value.variation50).toEqual(assertion[assertion_vId][vgIdToCheck]);
+              
+            });
+            done();
+        } catch (error) {
+            done.fail(error);
+        }
+    });
+
+    it('should be ISO with other SDK (campaign 25/25/25/25)', (done) => {
+        try {
+            const vgIdToCheck = 'bs8qvmo4nlr01fl9bbbb';
+            expectedIsoAssertions.forEach((assertion) => {
+                const assertion_vId = Object.keys(assertion)[0];
+                bucketInstance = new BucketingVisitor(demoData.envId[0], assertion_vId, demoData.visitor.cleanContext, bucketingConfig);
+                bucketInstance.data = demoData.bucketing.isoSdk_25_25_25_25;
+                initSpyLogs(bucketInstance);
+                const result = bucketInstance.getEligibleCampaigns();
+                expect(result.length).toEqual(1);
+                expect(result[0].variation.modifications.value.variation).toEqual(assertion[assertion_vId][vgIdToCheck]);
+              
+            });
+            done();
+        } catch (error) {
+            done.fail(error);
+        }
     });
 
     it('should works with a campaign containing a 100% allocation variation', (done) => {

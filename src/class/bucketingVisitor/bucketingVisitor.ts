@@ -77,7 +77,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
     private computeMurmurAlgorithm(variations: BucketingVariation[], variationGroupId: string): BucketingVariation | null {
         let assignedVariation: BucketingVariation | null = null;
         // generates a v3 hash
-        const murmurAllocation = MurmurHashV3(this.visitorId + variationGroupId, undefined) % 100; // 2nd argument is set to 0 by default
+        const murmurAllocation = MurmurHashV3(variationGroupId+this.visitorId, undefined) % 100; // 2nd argument is set to 0 by default
         this.log.debug(`computeMurmurAlgorithm - murmur returned value="${murmurAllocation}"`);
 
         const variationTrafficCheck = variations.reduce((sum, v) => {

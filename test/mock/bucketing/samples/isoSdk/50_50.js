@@ -1,19 +1,19 @@
 export default {
     campaigns: [
         {
-            id: 'bptggipaqi903f3haq0g',
+            id: 'bs8r119sbs4016mehhhh',
             type: 'ab',
             variationGroups: [
                 {
-                    id: 'vfrgk91ebwf',
+                    id: 'bs8r119sbs4016meiiii',
                     targeting: {
                         targetingGroups: [
                             {
                                 targetings: [
                                     {
                                         operator: 'EQUALS',
-                                        key: 'fs_users',
-                                        value: 'ktkzyb7z2'
+                                        key: 'fs_all_users',
+                                        value: ''
                                     }
                                 ]
                             }
@@ -21,22 +21,31 @@ export default {
                     },
                     variations: [
                         {
-                            id: 'bptggipaqi903f3haq20',
+                            id: 'bs8r119sbs4016mejjjj',
                             modifications: {
                                 type: 'JSON',
                                 value: {
-                                    testCache: null
+                                    variation50: null
                                 }
                             },
-                            allocation: 60,
                             reference: true
                         },
                         {
-                            id: 'bptggipaqi903f3haq2g',
+                            id: 'bs8r119sbs4016mekkkk',
                             modifications: {
                                 type: 'JSON',
                                 value: {
-                                    testCache: 'value'
+                                    variation50: 1
+                                }
+                            },
+                            allocation: 50
+                        },
+                        {
+                            id: 'bs8r119sbs4016mellll',
+                            modifications: {
+                                type: 'JSON',
+                                value: {
+                                    variation50: 2
                                 }
                             },
                             allocation: 50
@@ -45,6 +54,5 @@ export default {
                 }
             ]
         }
-    ],
-    panic: false
+    ]
 };
