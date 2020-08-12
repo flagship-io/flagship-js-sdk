@@ -1,4 +1,5 @@
 export default {
+    lastModifiedDate: 'Wed, 18 Mar 2020 23:29:16 GMT',
     campaigns: [
         {
             id: 'bptggipaqi903f3haq0g',

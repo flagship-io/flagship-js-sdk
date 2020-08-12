@@ -102,6 +102,9 @@ export default {
     },
     isoSdk_50_50,
     isoSdk_25_25_25_25,
+    headers: {
+        lastModified: ['Wed, 18 Mar 2020 23:29:16 GMT']
+    },
     oneCampaignWithBadTraffic,
     oneCampaignWith100PercentAllocation,
     multipleCampaigns,
