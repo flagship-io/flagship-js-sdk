@@ -64,7 +64,7 @@ export type DecisionApiCampaign = {
 
 export type DecisionApiResponseDataFullComputed = {
     [key: string]: {
-        value: Array<string>;
+        value: Array<FlagshipModification>;
         type: Array<string>;
         campaignId: Array<string>;
         variationId: Array<string>;
