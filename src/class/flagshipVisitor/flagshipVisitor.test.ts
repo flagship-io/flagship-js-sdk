@@ -7,6 +7,7 @@ import testConfig from '../../config/test';
 import flagshipSdk from '../../index';
 import FlagshipVisitor from './flagshipVisitor';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
+import { DecisionApiResponseData } from './types';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -41,6 +42,7 @@ describe('FlagshipVisitor', () => {
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         expect(visitorInstance).toBeInstanceOf(FlagshipVisitor);
     });
+
     describe('Modifications cache management', () => {
         beforeEach(() => {
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
@@ -74,6 +76,7 @@ describe('FlagshipVisitor', () => {
             done();
         });
     });
+
     describe('Activate cache management', () => {
         beforeEach(() => {
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
@@ -581,6 +584,30 @@ describe('FlagshipVisitor', () => {
                 done.fail(error);
             }
         });
+
+        it('should return correctly a complex JSON modification', () => {
+            initSpyLogs(visitorInstance);
+            visitorInstance.fetchAllModifications();
+            responseObject = {
+                status: 200,
+                statusText: 'OK',
+                data: demoData.decisionApi.normalResponse.complexJson
+            };
+            mockAxios.mockResponse(responseObject);
+            expect(mockAxios.post).toHaveBeenCalledTimes(1);
+            expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
+
+            expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+            expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+            // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, ''); // saveModificationsInCache - saving in cache those modifications [...]
+
+            expect(visitorInstance.fetchedModifications).toEqual(demoData.decisionApi.normalResponse.complexJson.campaigns);
+        });
+
         it('should return decision API response (mode=normal) when there is no optional argument set', () => {
             visitorInstance.fetchAllModifications();
             expect(mockAxios.post).toHaveBeenCalledWith(
@@ -2156,6 +2183,49 @@ describe('FlagshipVisitor', () => {
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - loadFromCache enabled');
                 expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
                 expect(cacheResponse).toMatchObject({ testUnexistingKey: 'NOOOOO' });
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+        it('should handle complex JSON modification', (done) => {
+            responseObject.data = demoData.decisionApi.normalResponse.complexJson;
+            visitorInstance.saveModificationsInCache(responseObject.data.campaigns); // Mock a previous fetch
+            const cacheResponse = visitorInstance.getModifications([
+                {
+                    key: 'array',
+                    defaultValue: []
+                },
+                {
+                    key: 'object',
+                    defaultValue: {
+                        fail: true
+                    }
+                },
+                {
+                    key: 'complex',
+                    defaultValue: {
+                        complexFail: [{ answer: true }]
+                    }
+                }
+            ]);
+            try {
+                expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
+                expect(spyFetchModifs).toHaveBeenCalledTimes(1);
+
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, ''); // saving in cache those modifications [...]
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - loadFromCache enabled');
+                // expect(spyDebugLogs).toHaveBeenNthCalledWith(3, ''); // getModificationsPostProcess - detailsModifications [...]
+
+                expect(visitorInstance.fetchedModifications).toEqual(responseObject.data.campaigns);
+                expect(cacheResponse).toEqual({ array: [1, 2, 3], complex: { carray: [{ cobject: 0 }] }, object: { value: 123456 } });
                 done();
             } catch (error) {
                 done.fail(error);

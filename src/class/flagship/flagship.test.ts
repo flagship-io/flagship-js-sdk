@@ -539,6 +539,26 @@ describe('FlagshipVisitor', () => {
             }
         });
     });
+
+    it('should have setting "initialModifications" working correctly with complex JSON', (done) => {
+        const defaultCacheData = demoData.decisionApi.normalResponse.complexJson.campaigns;
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+            ...testConfig,
+            fetchNow: false,
+            initialModifications: defaultCacheData
+        });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        visitorInstance.on('ready', () => {
+            try {
+                expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                expect(visitorInstance.fetchedModifications).toEqual(defaultCacheData);
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+    });
+
     it('should not consider setting "initialModifications" if not set correctly', (done) => {
         const defaultCacheData = [
             {
