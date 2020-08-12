@@ -313,22 +313,25 @@ describe('Bucketing used from visitor instance', () => {
         expect(visitorInstance.fetchedModifications).toEqual(null);
         visitorInstance.synchronizeModifications().then(() => {
             try {
-                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(1);
-                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(2);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
                 expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'unexpected status (="999") received. This polling will be ignored.');
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                    2,
+                    `fetchAllModifications - bucket start detected but no data received from bucketing. It might due to an error (see previous logs).`
+                );
                 expect(spyInfoLogs).toHaveBeenNthCalledWith(
                     1,
                     'fetchAllModifications - no data in current bucket, waiting for bucket to start...'
                 );
 
-                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - bucket start detected');
+                // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - bucket start detected'); // saveModificationsInCache - saving in cache those modifications: []
 
-                expect(visitorInstance.fetchedModifications[0].id === demoData.bucketing.classical.campaigns[0].id).toEqual(true);
-                expect(visitorInstance.fetchedModifications[1].id === demoData.bucketing.classical.campaigns[1].id).toEqual(true);
+                expect(visitorInstance.fetchedModifications).toEqual([]);
                 expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
                 done();
             } catch (error) {
@@ -489,7 +492,6 @@ describe('Bucketing used from visitor instance', () => {
         mockAxios.mockResponse();
         mockAxios.mockResponse();
         mockAxios.mockResponse();
-        mockAxios.mockResponse();
         expect(mockAxios.get).toHaveBeenNthCalledWith(
             1,
             internalConfig.bucketingEndpoint.replace('@ENV_ID@', visitorInstance.envId),
@@ -509,7 +511,7 @@ describe('Bucketing used from visitor instance', () => {
                 // expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                 const activateUrl = 'https://decision-api.flagship.io/v1/activate';
 
-                expect(mockAxios.post).toHaveBeenCalledTimes(4);
+                expect(mockAxios.post).toHaveBeenCalledTimes(3);
 
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
                     1,
@@ -526,19 +528,6 @@ describe('Bucketing used from visitor instance', () => {
 
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
                     2,
-                    `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`,
-                    {
-                        data: {
-                            ...visitorInstance.context
-                        },
-                        type: 'CONTEXT',
-                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
-                    },
-                    {}
-                );
-
-                expect(mockAxios.post).toHaveBeenNthCalledWith(
-                    3,
                     activateUrl,
                     {
                         caid: demoData.bucketing.functions.murmur.allocation[68].variationGroup,
@@ -549,7 +538,7 @@ describe('Bucketing used from visitor instance', () => {
                     {}
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
-                    4,
+                    3,
                     activateUrl,
                     {
                         caid: demoData.bucketing.functions.murmur.allocation[17].variationGroup,
