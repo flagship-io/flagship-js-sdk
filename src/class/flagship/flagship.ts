@@ -91,7 +91,7 @@ class Flagship implements IFlagship {
         return flagshipVisitorInstance;
     }
 
-    public startBucketingPolling(): void {
+    public startBucketingPolling(): { success: boolean; reason?: string } {
         if (this.bucket !== null && !this.bucket.isPollingRunning) {
             this.bucket.startPolling();
             this.bucket.on('launched', ({ status }) => {
@@ -103,22 +103,39 @@ class Flagship implements IFlagship {
             this.bucket.on('error', (error: Error) => {
                 this.eventEmitter.emit('bucketPollingFailed', error);
             });
-        } else if (this.bucket !== null && this.bucket.isPollingRunning) {
+            return {
+                success: true
+            };
+        }
+        if (this.bucket !== null && this.bucket.isPollingRunning) {
             this.log.warn(
                 `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" minute(s).`
             );
-        } else {
-            this.log.error('startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"');
+            return {
+                success: false,
+                reason: `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" minute(s).`
+            };
         }
+        this.log.error('startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"');
+        return {
+            success: false,
+            reason: 'startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"'
+        };
     }
 
-    public stopBucketingPolling(): void {
+    public stopBucketingPolling(): { success: boolean; reason?: string } {
         if (this.bucket !== null && this.bucket.isPollingRunning) {
             this.bucket.stopPolling();
             this.log.info('stopBucketingPolling - bucketing is stopped');
-        } else {
-            this.log.info('stopBucketingPolling - bucketing is already stopped');
+            return {
+                success: true
+            };
         }
+        this.log.info('stopBucketingPolling - bucketing is already stopped');
+        return {
+            success: false,
+            reason: 'stopBucketingPolling - bucketing is already stopped'
+        };
     }
 }
 

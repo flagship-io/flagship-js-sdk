@@ -112,8 +112,8 @@ export interface IFlagship {
     eventEmitter: EventEmitter;
     bucket: IFlagshipBucketing | null;
     newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;
-    startBucketingPolling(): void;
-    stopBucketingPolling(): void;
+    startBucketingPolling(): { success: boolean; reason?: string };
+    stopBucketingPolling(): { success: boolean; reason?: string };
 }
 
 export interface FlagshipNodeSdk {
