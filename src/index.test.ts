@@ -59,6 +59,7 @@ describe('Flagship initialization', () => {
             pollingInterval: null,
             flagshipApi: internalConfig.apiV2,
             initialModifications: null,
+            initialBucketing: null,
             nodeEnv: 'debug'
         });
         expect(spyWarnLogs).toHaveBeenCalledTimes(1);
