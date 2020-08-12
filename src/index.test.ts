@@ -85,6 +85,7 @@ describe('Flagship initialization', () => {
             fetchNow: false,
             pollingInterval: null,
             flagshipApi: 'https://decision-api.flagship.io/v1/',
+            initialBucketing: null,
             initialModifications: null,
             nodeEnv: 'debug'
         });

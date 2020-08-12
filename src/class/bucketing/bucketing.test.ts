@@ -1,14 +1,16 @@
 import mockAxios from 'jest-mock-axios';
 import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
+import testConfig, { demoPollingInterval } from '../../config/test';
 
 import flagshipSdk from '../..';
 import demoData from '../../../test/mock/demoData';
 import defaultConfig, { internalConfig } from '../../config/default';
-import testConfig from '../../config/test';
+
 import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor } from '../../types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import Bucketing from './bucketing';
 import { BucketingApiResponse } from './types';
+import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -25,38 +27,17 @@ let bucketSpy;
 let spyThen;
 let spyCatch;
 
-const demoPollingInterval = 0.022;
-
 let bucketingApiMockResponse: BucketingApiResponse;
 let bucketingEventMockResponse: HttpResponse;
 
 const bucketingApiMockOtherResponse200: { status: number; headers: { 'last-modified': string } } = {
     status: 200,
-    headers: { 'last-modified': 'Wed, 18 Mar 2020 23:29:16 GMT' }
+    headers: { 'last-modified': demoData.bucketing.headers.lastModified[0] }
 };
 
 const bucketingApiMockOtherResponse304: { status: number; headers: {} } = {
     status: 304,
     headers: {} // NOTE: 'last-modified' does not exist on 304
-};
-
-const waitBeforeContinue = (condition, sleep): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        try {
-            const wait = (c, s): void => {
-                if (c) {
-                    resolve();
-                } else {
-                    setTimeout(() => {
-                        wait(c, s);
-                    }, sleep);
-                }
-            };
-            wait(condition, sleep);
-        } catch (error) {
-            reject(error);
-        }
-    });
 };
 
 const mockPollingRequest = (
@@ -79,23 +60,6 @@ const mockPollingRequest = (
             );
         }
 
-        // if (Array.isArray(eventLoopScheduler)) {
-        //     bucketingEventMockResponse = { status: 204, data: {} };
-        //     switch (eventLoopScheduler[getPollingLoop()]) {
-        //         case 'success':
-        //             mockAxios.mockResponse(bucketingEventMockResponse);
-        //             break;
-
-        //         case 'fail':
-        //             mockAxios.mockError('event failed');
-        //             break;
-
-        //         default:
-        //             // nothing
-        //             break;
-        //     }
-        // }
-
         if (getPollingLoop() < loopScheduler.length) {
             mockPollingRequest(done, getPollingLoop, loopScheduler);
         }
@@ -108,28 +72,6 @@ const mockPollingRequest = (
             done.fail(`mock ${error}`);
         }
     }
-};
-
-const mockComputedData = {
-    campaigns: [
-        {
-            id: 'bptggipaqi903f3haq0g',
-            variation: { id: 'bptggipaqi903f3haq2g', modifications: { type: 'JSON', value: { testCache: 'value' } } },
-            variationGroupId: 'bptggipaqi903f3haq1g'
-        },
-        {
-            id: 'bq4sf09oet0006cfihd0',
-            variation: {
-                id: 'bq4sf09oet0006cfihf0',
-                modifications: {
-                    type: 'JSON',
-                    value: { 'btn-color': 'green', 'btn-text': 'Buy now with discount !', 'txt-color': '#A3A3A3' }
-                }
-            },
-            variationGroupId: 'bq4sf09oet0006cfihe0'
-        }
-    ],
-    visitorId: 'test-perf'
 };
 
 const bucketingConfig: FlagshipSdkConfig = {
@@ -280,7 +222,7 @@ describe('Bucketing used from visitor instance', () => {
     it('should have correct behavior for bucketing cache api handling', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], bucketingConfig);
-        visitorInstance = sdk.newVisitor(demoData.bucketing.functions.murmur.allocation[89].visitorId, demoData.visitor.cleanContext);
+        visitorInstance = sdk.newVisitor(demoData.bucketing.functions.murmur.allocation[68].visitorId, demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
         mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
@@ -297,21 +239,21 @@ describe('Bucketing used from visitor instance', () => {
                                         id: 'bptggipaqi903f3haq2g',
                                         modifications: { type: 'JSON', value: { testCache: 'value' } }
                                     },
-                                    variationGroupId: '8'
+                                    variationGroupId: demoData.bucketing.functions.murmur.allocation[68].variationGroup
                                 },
                                 {
                                     id: 'bq4sf09oet0006cfihd0',
                                     variation: {
-                                        id: 'bq4sf09oet0006cfihf0',
+                                        id: 'bq4sf09oet0006cfiheg',
                                         modifications: {
                                             type: 'JSON',
-                                            value: { 'btn-color': 'green', 'btn-text': 'Buy now with discount !', 'txt-color': '#A3A3A3' }
+                                            value: { 'btn-color': 'red', 'btn-text': 'Buy now !', 'txt-color': '#fff' }
                                         }
                                     },
-                                    variationGroupId: demoData.bucketing.functions.murmur.allocation[89].variationGroup
+                                    variationGroupId: demoData.bucketing.functions.murmur.allocation[17].variationGroup
                                 }
                             ],
-                            visitorId: demoData.bucketing.functions.murmur.allocation[89].visitorId
+                            visitorId: demoData.bucketing.functions.murmur.allocation[68].visitorId
                         }
                     });
                     expect(spyDebugLogs).toHaveBeenCalledTimes(4);
@@ -371,22 +313,25 @@ describe('Bucketing used from visitor instance', () => {
         expect(visitorInstance.fetchedModifications).toEqual(null);
         visitorInstance.synchronizeModifications().then(() => {
             try {
-                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(1);
-                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(2);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
                 expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'unexpected status (="999") received. This polling will be ignored.');
+                expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                    2,
+                    `fetchAllModifications - bucket start detected but no data received from bucketing. It might due to an error (see previous logs).`
+                );
                 expect(spyInfoLogs).toHaveBeenNthCalledWith(
                     1,
                     'fetchAllModifications - no data in current bucket, waiting for bucket to start...'
                 );
 
-                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - bucket start detected');
+                // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - bucket start detected'); // saveModificationsInCache - saving in cache those modifications: []
 
-                expect(visitorInstance.fetchedModifications[0].id === demoData.bucketing.classical.campaigns[0].id).toEqual(true);
-                expect(visitorInstance.fetchedModifications[1].id === demoData.bucketing.classical.campaigns[1].id).toEqual(true);
+                expect(visitorInstance.fetchedModifications).toEqual([]);
                 expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
                 done();
             } catch (error) {
@@ -547,7 +492,6 @@ describe('Bucketing used from visitor instance', () => {
         mockAxios.mockResponse();
         mockAxios.mockResponse();
         mockAxios.mockResponse();
-        mockAxios.mockResponse();
         expect(mockAxios.get).toHaveBeenNthCalledWith(
             1,
             internalConfig.bucketingEndpoint.replace('@ENV_ID@', visitorInstance.envId),
@@ -567,7 +511,7 @@ describe('Bucketing used from visitor instance', () => {
                 // expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                 const activateUrl = `${internalConfig.apiV2}activate`;
 
-                expect(mockAxios.post).toHaveBeenCalledTimes(4);
+                expect(mockAxios.post).toHaveBeenCalledTimes(3);
 
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
                     1,
@@ -585,20 +529,6 @@ describe('Bucketing used from visitor instance', () => {
 
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
                     2,
-                    `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`,
-                    {
-                        data: {
-                            ...visitorInstance.context
-                        },
-                        type: 'CONTEXT',
-                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId,
-                        'x-api-key': demoData.apiKey[0]
-                    },
-                    {}
-                );
-
-                expect(mockAxios.post).toHaveBeenNthCalledWith(
-                    3,
                     activateUrl,
                     {
                         caid: demoData.bucketing.functions.murmur.allocation[68].variationGroup,
@@ -610,13 +540,13 @@ describe('Bucketing used from visitor instance', () => {
                     {}
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
-                    4,
+                    3,
                     activateUrl,
                     {
-                        caid: '9',
+                        caid: demoData.bucketing.functions.murmur.allocation[17].variationGroup,
                         cid: 'bn1ab7m56qolupi5sa0g',
                         vaid: 'bq4sf09oet0006cfiheg',
-                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId,
+                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId, // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
                         'x-api-key': demoData.apiKey[0]
                     },
                     {}
@@ -737,13 +667,54 @@ describe('Bucketing - polling', () => {
 
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(
                         1,
-                        'startPolling - polling finished successfully. Next polling in 0.022 minute(s)'
+                        `startPolling - polling finished successfully. Next polling in ${demoPollingInterval} minute(s)`
                     );
                     expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
 
                     expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
 
                     done();
+                } catch (error) {
+                    done.fail(error.stack);
+                }
+            }
+        });
+
+        mockPollingRequest(done, () => pollingLoop, [
+            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 },
+            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }
+        ]);
+    });
+
+    it('should run bucketing then stop (after specified) so that the infinite loop is killed', (done) => {
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval });
+        const spySdkLogs = initSpyLogs(sdk);
+        initSpyLogs(sdk.bucket);
+        let pollingLoop = 0;
+        sdk.eventEmitter.on('bucketPollingSuccess', () => {
+            pollingLoop += 1;
+
+            // after one polling, stop the bucketing
+            if (pollingLoop >= 1 && spyInfoLogs.mock.calls.length >= 1 && spyDebugLogs.mock.calls.length >= 1) {
+                try {
+                    sdk.stopBucketingPolling();
+                    setTimeout(() => {
+                        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                        expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+                        expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                        expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'on("launched") listener - bucketing stop detected.');
+
+                        expect(spySdkLogs.spyInfoLogs).toHaveBeenCalledTimes(1);
+                        sdk.stopBucketingPolling();
+                        expect(spySdkLogs.spyInfoLogs).toHaveBeenCalledTimes(2);
+                        expect(spySdkLogs.spyInfoLogs).toHaveBeenNthCalledWith(2, 'stopBucketingPolling - bucketing is already stopped');
+
+                        done();
+                    }, Math.floor(60000 * demoPollingInterval * 1.5));
                 } catch (error) {
                     done.fail(error.stack);
                 }
@@ -783,7 +754,7 @@ describe('Bucketing - polling', () => {
 
                     expect(spySdkLogs.spyWarnLogs).toHaveBeenNthCalledWith(
                         1,
-                        'startBucketingPolling - bucket already polling with interval set to "0.022" minute(s).'
+                        `startBucketingPolling - bucket already polling with interval set to "${demoPollingInterval}" minute(s).`
                     );
 
                     expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);
@@ -846,11 +817,11 @@ describe('Bucketing - polling', () => {
 
                     expect(spyErrorLogs).toHaveBeenNthCalledWith(
                         1,
-                        'startPolling - polling failed with error "server crashed". Next polling in 0.022 minute(s)'
+                        `startPolling - polling failed with error "server crashed". Next polling in ${demoPollingInterval} minute(s)`
                     );
                     expect(spyErrorLogs).toHaveBeenNthCalledWith(
                         2,
-                        'startPolling - polling failed with error "server crashed a lot". Next polling in 0.022 minute(s)'
+                        `startPolling - polling failed with error "server crashed a lot". Next polling in ${demoPollingInterval} minute(s)`
                     );
 
                     expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'An error occurred while fetching using bucketing...');
@@ -910,12 +881,12 @@ describe('Bucketing - polling', () => {
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'startPolling - starting a new polling...');
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(
                         3,
-                        'startPolling - polling finished successfully. Next polling in 0.022 minute(s)'
+                        `startPolling - polling finished successfully. Next polling in ${demoPollingInterval} minute(s)`
                     );
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(4, 'startPolling - starting a new polling...');
                     expect(spyDebugLogs).toHaveBeenNthCalledWith(
                         5,
-                        'startPolling - polling finished successfully. Next polling in 0.022 minute(s)'
+                        `startPolling - polling finished successfully. Next polling in ${demoPollingInterval} minute(s)`
                     );
                     expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'callApi - current bucketing updated');
                     expect(visitorInstance.fetchedModifications).toEqual(null);
@@ -980,7 +951,7 @@ describe('Bucketing - polling', () => {
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'startPolling - starting a new polling...');
                 expect(spyErrorLogs).toHaveBeenNthCalledWith(
                     1,
-                    'startPolling - polling failed with error "server crashed". Next polling in 0.022 minute(s)'
+                    `startPolling - polling failed with error "server crashed". Next polling in ${demoPollingInterval} minute(s)`
                 );
                 expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'An error occurred while fetching using bucketing...');
 
@@ -1297,7 +1268,7 @@ describe('Bucketing - callApi', () => {
                     'callApi - http GET request (url="https://cdn.flagship.io/bn1ab7m56qolupi5sa0g/bucketing.json") did not return attribute "last-modified"'
                 );
 
-                expect(bucketInstance.data).toEqual(bucketingApiMockResponse);
+                expect(bucketInstance.data).toEqual({ ...bucketingApiMockResponse, lastModifiedDate: null });
 
                 done();
             } catch (error) {
@@ -1478,6 +1449,62 @@ describe('Bucketing initialization', () => {
         expect(bucketInstance.isPollingRunning).toEqual(false);
         expect(bucketInstance.config).toEqual(bucketingConfig);
         expect(bucketInstance.lastModifiedDate).toEqual(null);
+        done();
+    });
+    it('should preset bucketing if "initialBucketing" is set correctly', (done) => {
+        bucketInstance = new Bucketing(demoData.envId[0], {
+            ...bucketingConfig,
+            initialBucketing: demoData.bucketing.classical
+        } as FlagshipSdkConfig);
+        expect(bucketInstance instanceof Bucketing).toEqual(true);
+
+        expect(bucketInstance.data).toEqual(demoData.bucketing.classical);
+        expect(bucketInstance.log).toBeDefined();
+        expect(bucketInstance.envId).toEqual(demoData.envId[0]);
+        expect(bucketInstance.isPollingRunning).toEqual(false);
+        expect(bucketInstance.lastModifiedDate).toEqual(demoData.bucketing.classical.lastModifiedDate);
+
+        done();
+    });
+
+    it('should NOT preset bucketing if "initialBucketing" is NOT set correctly', (done) => {
+        const helperSpy = jest.spyOn(flagshipSdkHelper, 'generateValidateError');
+        bucketInstance = new Bucketing(demoData.envId[0], {
+            ...bucketingConfig,
+            initialBucketing: { test: 'oops' }
+        } as FlagshipSdkConfig);
+        expect(bucketInstance instanceof Bucketing).toEqual(true);
+
+        expect(bucketInstance.data).toEqual(null);
+        expect(bucketInstance.log).toBeDefined();
+        expect(bucketInstance.envId).toEqual(demoData.envId[0]);
+        expect(bucketInstance.isPollingRunning).toEqual(false);
+        expect(bucketInstance.lastModifiedDate).toEqual(null);
+
+        expect(helperSpy).toHaveBeenCalledTimes(1);
+        expect(helperSpy.mock.results[0].value.replace(/\n|\r/g, '')).toEqual(
+            'Element:- "campaigns" Campaigns is missing.- "panic" Panic is missing.- "lastModifiedDate" Last modified date is missing.'
+        );
+        done();
+    });
+    it('should NOT preset bucketing if "initialBucketing" is NOT set correctly - part 2', (done) => {
+        const helperSpy = jest.spyOn(flagshipSdkHelper, 'generateValidateError');
+        bucketInstance = new Bucketing(demoData.envId[0], {
+            ...bucketingConfig,
+            initialBucketing: { panic: false, lastModifiedDate: 'oops2', campaigns: [{ test: 'toos' }] }
+        } as FlagshipSdkConfig);
+        expect(bucketInstance instanceof Bucketing).toEqual(true);
+
+        expect(bucketInstance.data).toEqual(null);
+        expect(bucketInstance.log).toBeDefined();
+        expect(bucketInstance.envId).toEqual(demoData.envId[0]);
+        expect(bucketInstance.isPollingRunning).toEqual(false);
+        expect(bucketInstance.lastModifiedDate).toEqual(null);
+
+        expect(helperSpy).toHaveBeenCalledTimes(2);
+        expect(helperSpy.mock.results[1].value.replace(/\n|\r/g, '')).toEqual(
+            'Element at index=0:- "id" Id is missing.- "type" Type is missing.- "variationGroups" Variation groups is missing.'
+        );
         done();
     });
 });

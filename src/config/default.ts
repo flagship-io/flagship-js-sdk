@@ -9,6 +9,7 @@ const defaultConfig: FlagshipSdkConfig = {
     flagshipApi: 'https://decision-api.flagship.io/v1/',
     pollingInterval: null,
     apiKey: null, // TODO: remove next major release
+    initialBucketing: null,
     initialModifications: null
 };
 

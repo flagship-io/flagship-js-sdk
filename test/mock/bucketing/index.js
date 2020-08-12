@@ -24,6 +24,8 @@ import multipleCampaigns from './samples/multipleCampaigns';
 import badOperator from './samples/badOperator';
 import oneCampaignWithBadTraffic from './samples/badTraffic';
 import oneCampaignWith100PercentAllocation from './samples/oneCampaignWith100PercentAllocation';
+import isoSdk_50_50 from './samples/isoSdk/50_50';
+import isoSdk_25_25_25_25 from './samples/isoSdk/25_25_25_25';
 
 export default {
     functions: {
@@ -36,67 +38,72 @@ export default {
             fourVariations: murmurFourVariations,
             allocation: {
                 '0': {
-                    visitorId: 'jzyplpoe6z3qx0fep',
-                    variationGroup: '8um'
+                    variationGroup: 'jzyplpoe6z3qx0fep',
+                    visitorId: '8um'
                 },
                 '9': {
-                    visitorId: 'mayaa9tovat04vvc',
-                    variationGroup: 'jufp'
+                    variationGroup: 'mayaa9tovat04vvc',
+                    visitorId: 'jufp'
                 },
                 '17': {
-                    visitorId: 'vsc1rf8xs3bvu0rzs8b',
-                    variationGroup: '8'
+                    variationGroup: 'vsc1rf8xs3bvu0rzs8b',
+                    visitorId: '8'
                 },
                 '19': {
-                    visitorId: 'mjfhr65cz6ctku4',
-                    variationGroup: 'ylizk'
+                    variationGroup: 'mjfhr65cz6ctku4',
+                    visitorId: 'ylizk'
                 },
                 '24': {
-                    visitorId: 't786w88snxyg6bc',
-                    variationGroup: 'wlcfe'
+                    variationGroup: 't786w88snxyg6bc',
+                    visitorId: 'wlcfe'
                 },
                 '25': {
-                    visitorId: 'wiqyggevjlzquyp',
-                    variationGroup: 'gof9c'
+                    variationGroup: 'wiqyggevjlzquyp',
+                    visitorId: 'gof9c'
                 },
                 '31': {
-                    visitorId: 'caktv2pfer82v3',
-                    variationGroup: 'qq4k19'
+                    variationGroup: 'caktv2pfer82v3',
+                    visitorId: 'qq4k19'
                 },
                 '39': {
-                    visitorId: '4knngzgojeuj851',
-                    variationGroup: 'c77ee'
+                    variationGroup: '4knngzgojeuj851',
+                    visitorId: 'c77ee'
                 },
                 '49': {
-                    visitorId: 'ksahzg4mupmdix',
-                    variationGroup: '6xzbz5'
+                    variationGroup: 'ksahzg4mupmdix',
+                    visitorId: '6xzbz5'
                 },
                 '59': {
-                    visitorId: '8ggalmzqlggx1',
-                    variationGroup: 'vgatasd'
+                    variationGroup: '8ggalmzqlggx1',
+                    visitorId: 'vgatasd'
                 },
                 '68': {
-                    visitorId: 'l7jaucjpddjdwdbfgg7',
-                    variationGroup: '8'
+                    variationGroup: 'l7jaucjpddjdwdbfgg7',
+                    visitorId: '8'
                 },
                 '69': {
-                    visitorId: '9e8h0i1l3l9hfmb',
-                    variationGroup: 'bmdz9'
+                    variationGroup: '9e8h0i1l3l9hfmb',
+                    visitorId: 'bmdz9'
                 },
                 '79': {
-                    visitorId: 'ceua2wiqtqsmkue',
-                    variationGroup: '7q34t'
+                    variationGroup: 'ceua2wiqtqsmkue',
+                    visitorId: '7q34t'
                 },
                 '89': {
-                    visitorId: '392vsut4cnt3lptc58p',
-                    variationGroup: '9'
+                    variationGroup: '392vsut4cnt3lptc58p',
+                    visitorId: '9'
                 },
                 '99': {
-                    visitorId: 'vfrgk91ebwf',
-                    variationGroup: 'ktkzyb7z2'
+                    variationGroup: 'vfrgk91ebwf',
+                    visitorId: 'ktkzyb7z2'
                 }
             }
         }
+    },
+    isoSdk_50_50,
+    isoSdk_25_25_25_25,
+    headers: {
+        lastModified: ['Wed, 18 Mar 2020 23:29:16 GMT']
     },
     oneCampaignWithBadTraffic,
     oneCampaignWith100PercentAllocation,

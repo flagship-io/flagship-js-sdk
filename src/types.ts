@@ -10,7 +10,8 @@ import {
     DecisionApiCampaign,
     GetModificationInfoOutput,
     DecisionApiResponseData,
-    DecisionApiSimpleResponse
+    DecisionApiSimpleResponse,
+    ModificationsInternalStatus
 } from './class/flagshipVisitor/types';
 import { BucketingApiResponse } from './class/bucketing/types';
 
@@ -26,6 +27,7 @@ export type FlagshipSdkConfig = {
     flagshipApi?: string;
     apiKey?: string | null;
     initialModifications?: DecisionApiCampaign[] | null;
+    initialBucketing?: BucketingApiResponse | null;
     murmurhashV3?: MurmurV3 | null;
 };
 
@@ -66,6 +68,7 @@ export interface IFlagshipBucketing extends EventEmitter {
     lastModifiedDate: string | null;
     callApi(): Promise<BucketingApiResponse | void>;
     startPolling(): void;
+    stopPolling(): void;
     on(event: 'launched', listener: ({ status: number }) => void): this;
     on(event: 'error', listener: (args: Error) => void): this;
 }
@@ -79,6 +82,7 @@ export interface IFlagshipVisitor extends EventEmitter {
     isAllModificationsFetched: boolean;
     bucket: IFlagshipBucketingVisitor | null;
     fetchedModifications: DecisionApiCampaign[] | null;
+    modificationsInternalStatus: ModificationsInternalStatus | null;
     sdkListener: EventEmitter;
     activateModifications(
         modifications: Array<{
@@ -109,6 +113,7 @@ export interface IFlagship {
     bucket: IFlagshipBucketing | null;
     newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;
     startBucketingPolling(): void;
+    stopBucketingPolling(): void;
 }
 
 export interface FlagshipNodeSdk {

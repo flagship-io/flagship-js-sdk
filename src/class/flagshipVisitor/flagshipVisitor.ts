@@ -740,19 +740,25 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 } else {
                     this.log.info('fetchAllModifications - no data in current bucket, waiting for bucket to start...');
                     this.sdkListener.once('bucketPollingSuccess', ({ payload: data }) => {
-                        (this.bucket as IFlagshipBucketingVisitor).updateCache(data);
-                        transformedBucketingData = {
-                            ...transformedBucketingData,
-                            campaigns: ((this.bucket as IFlagshipBucketingVisitor).computedData as DecisionApiResponseData).campaigns
-                        };
-                        this.saveModificationsInCache(transformedBucketingData.campaigns);
-                        this.log.debug('fetchAllModifications - bucket start detected');
-                        if (activate) {
-                            this.log.debug(
-                                `fetchAllModifications - activateNow enabled with bucketing mode. ${this.modificationsInternalStatus.length} campaign(s) will be activated.`
+                        if (this.bucket.computedData) {
+                            transformedBucketingData = {
+                                ...transformedBucketingData,
+                                campaigns: ((this.bucket as IFlagshipBucketingVisitor).computedData as DecisionApiResponseData).campaigns
+                            };
+                            this.saveModificationsInCache(transformedBucketingData.campaigns);
+                            this.log.debug('fetchAllModifications - bucket start detected');
+                            if (activate) {
+                                this.log.debug(
+                                    `fetchAllModifications - activateNow enabled with bucketing mode. ${this.modificationsInternalStatus.length} campaign(s) will be activated.`
+                                );
+                                this.triggerActivateIfNeeded(undefined, true);
+                            }
+                        } else {
+                            this.log.error(
+                                `fetchAllModifications - bucket start detected but no data received from bucketing. It might due to an error (see previous logs).`
                             );
-                            this.triggerActivateIfNeeded(undefined, true);
                         }
+
                         resolve(
                             this.fetchAllModificationsPostProcess(transformedBucketingData, {
                                 ...defaultArgs,

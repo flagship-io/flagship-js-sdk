@@ -489,6 +489,7 @@ describe('FlagshipVisitor', () => {
                 apiKey: demoData.apiKey[0],
                 pollingInterval: null,
                 flagshipApi: internalConfig.apiV2,
+                initialBucketing: null,
                 initialModifications: null,
                 nodeEnv: 'production'
             });
