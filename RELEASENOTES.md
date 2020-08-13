@@ -78,6 +78,10 @@ Be aware that `apiKey` will be mandatory in the next major release as it will us
 
 ## ➡️ Version 2.0.1
 
+### Optimization ⚙️
+
+-   The SDK is now checking activate http requests to avoid to send the same more than once.
+
 ### Bug fixes 🐛
 
 -   Hot fix with `decisionMode="API"` not working correctly due to bad implementation of `exposeAllKeys=true`.
