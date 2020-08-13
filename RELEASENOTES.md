@@ -1,8 +1,44 @@
 # Flagship JS SDK - Release notes
 
-## ➡️ Version 2.0.5
+## ➡️ Version 2.1.0
 
-### Breaking changes ⚠️
+### New features 🎉
+
+-   New setting `initialBucketing`. It takes the data received from the flagship bucketing api endpoint. Can be useful when you save this data in cache.
+
+-   Add `flagshipSdk.stopBucketingPolling()` function. It allows to stop the bucketing polling whenever you want.
+
+    Example:
+
+    ```javascript
+    flagshipSdk.start('ENV_ID', { fetchNow: false, decisionMode: 'Bucketing', pollingInterval: 5 /*, other settings...*/ });
+
+    // [...]
+
+    flagshipSdk.startBucketingPolling(); // start manually the bucketing (as fetchNow is equal to "false")
+
+    setTimeout(() => flagshipSdk.stopBucketingPolling(), 100 * 1000); // stop bucketing 100 minutes later...
+    ```
+
+
+    ```
+
+### Bug fixes 🐛
+
+-   When bucketing enabled, fix event's http request sent twice.
+
+### Breaking changes #1 ⚠️
+
+Due to bucketing optimization, the bucketing allocate a variation to a visitor differently than in SDK v2.0.X
+
+-   As a result, assuming you have campaign with the following traffic allocation:
+
+    -   50% => `variation1`
+    -   50% => `variation2`
+
+    By upgrading to this version, you might see your visitor switching from `variation1` to `variation2` and vice-versa.
+
+### Breaking changes #2 ⚠️
 
 Be aware that `apiKey` will be mandatory in the next major release as it will use the [Decision API v2](http://developers.flagship.io/api/v2/).
 
