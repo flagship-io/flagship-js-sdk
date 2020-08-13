@@ -42,7 +42,7 @@
 
 <p align="center">
 <a href="examples/api-server/README.md">
-<img src="./doc/nodeJSandExpress.png" alt="node js and express demo" width="600"/>
+<img width="280" src="./doc/nodeJSandExpress.png" alt="node js and express demo" width="600"/>
 </a>
 </p>
 
@@ -58,7 +58,7 @@
 
 <p align="center">
 <a href="https://codesandbox.io/s/flagship-js-sdk-server-example-zuusm">
-<img src="https://pbs.twimg.com/profile_images/1171375829382774784/70ZgE-ke_400x400.png" alt="node js and express demo" width="600"/>
+<img width="180" src="https://pbs.twimg.com/profile_images/1171375829382774784/70ZgE-ke_400x400.png" alt="node js and express demo" width="600"/>
 </a>
 </p>
 
