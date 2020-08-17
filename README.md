@@ -13,7 +13,9 @@
 ![flagship-js-sdk-functions](badges/badge-functions.svg)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![Apache2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
@@ -33,6 +35,7 @@
 -   [Flagship visitor](https://developers.flagship.io/js/v2.1.x/#i-flagshipvisitor-i-class-1)
 -   [Hit tracking](https://developers.flagship.io/js/v2.1.x/#hits)
 -   [Release Notes](https://github.com/abtasty/flagship-js-sdk/blob/master/RELEASENOTES.md)
+-   [Contributing](https://github.com/abtasty/flagship-js-sdk/blob/master/CONTRIBUTING.md)
 
 ## Examples
 
@@ -113,6 +116,7 @@
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Licence

@@ -58,6 +58,10 @@ Be aware that `apiKey` will be mandatory in the next major release as it will us
     }); // "apiKey" IS required and MUST NOT be set in the settings argument
     ```
 
+### Breaking changes #3 ⚠️
+
+-   `fetchNow` setting is now `true` by default.
+
 ## ➡️ Version 2.0.4
 
 ### Bug fixes 🐛

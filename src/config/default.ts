@@ -1,7 +1,7 @@
 import { FlagshipSdkInternalConfig, FlagshipSdkConfig } from '../types';
 
 const defaultConfig: FlagshipSdkConfig = {
-    fetchNow: false,
+    fetchNow: true,
     activateNow: false,
     enableConsoleLogs: false,
     decisionMode: 'API',

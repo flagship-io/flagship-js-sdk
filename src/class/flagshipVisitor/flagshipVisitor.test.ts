@@ -30,9 +30,11 @@ const initSpyLogs = (vInstance): void => {
     spyErrorLogs = jest.spyOn(vInstance.log, 'error');
 };
 
+const testConfigWithoutFetchNow = { ...testConfig, fetchNow: false };
+
 describe('FlagshipVisitor', () => {
     beforeAll(() => {
-        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfig);
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
     });
     afterEach(() => {
         mockAxios.reset();
@@ -1241,7 +1243,7 @@ describe('FlagshipVisitor', () => {
 
     describe('GetAllModifications function', () => {
         beforeEach(() => {
-            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfig);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         });
         it('should receive all modifications from visitor', (done) => {
@@ -1276,7 +1278,7 @@ describe('FlagshipVisitor', () => {
             );
         });
         it("should not put the apiKey in the header if we're using the decision api V1", (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, apiKey: 'test' });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, apiKey: 'test' });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             const responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -1310,7 +1312,11 @@ describe('FlagshipVisitor', () => {
             );
         });
         it("should PUT the apiKey in the header if we're using the decision api V2", (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, apiKey: 'test', flagshipApi: demoData.api.v2 });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...testConfigWithoutFetchNow,
+                apiKey: 'test',
+                flagshipApi: demoData.api.v2
+            });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             const responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },

@@ -449,7 +449,7 @@ describe('FlagshipVisitor', () => {
         });
 
         it('should report error logs when a Visitor instance has bad context', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: false });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], {
                 nullKey: null,
                 undefinedKey: undefined,

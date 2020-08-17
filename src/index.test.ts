@@ -44,6 +44,7 @@ describe('Flagship initialization', () => {
     it('start should log when a setting is not recognized except for React special settings', () => {
         const customConfig = {
             ...testConfig,
+            fetchNow: false,
             nodeEnv: 'debug',
             enableConsoleLogs: true,
             unknownSettings: 'hello world'
@@ -70,6 +71,7 @@ describe('Flagship initialization', () => {
     it('start should warn deprecated start even if apiKey is defined in the settings', () => {
         const customConfig = {
             ...testConfig,
+            fetchNow: false,
             nodeEnv: 'debug',
             enableConsoleLogs: true,
             apiKey: demoData.apiKey[0],
