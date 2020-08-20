@@ -10,6 +10,7 @@ import bucketing from './bucketing';
 const demoData = {
     bucketing,
     envId: ['bn1ab7m56qolupi5sa0g'],
+    apiKey: ['jbgzeougezjlvniqjipzrejgoiezjoij'],
     api: {
         v1: 'https://decision-api.flagship.io/v1/',
         v2: 'https://decision.flagship.io/v2/'

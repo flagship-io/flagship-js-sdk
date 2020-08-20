@@ -1,8 +1,20 @@
 import Flagship from './class/flagship/flagship';
-import { FlagshipNodeSdk } from './types';
+import { FlagshipNodeSdk, FlagshipSdkConfig, IFlagship } from './types';
 
-export const flagship: FlagshipNodeSdk = {
-    start: (envId, config) => new Flagship(envId, config)
+function startLegacy(envId: string, config?: FlagshipSdkConfig): IFlagship {
+    return new Flagship(envId, undefined, config);
+}
+
+// NOTE: apiKeyOrSettings (any) will become apiKey (string) in next major release
+function start(envId: string, apiKeyOrSettings?: any, config?: FlagshipSdkConfig): IFlagship {
+    if (typeof apiKeyOrSettings === 'object' && !Array.isArray(apiKeyOrSettings)) {
+        return startLegacy(envId, apiKeyOrSettings as FlagshipSdkConfig);
+    }
+    return new Flagship(envId, apiKeyOrSettings as string, config);
+}
+
+const flagship: FlagshipNodeSdk = {
+    start
 };
 
 export default flagship as FlagshipNodeSdk;

@@ -6,9 +6,11 @@ import twoCampaignsWithSameId from './data/twoCampaignsWithSameId';
 import oneCampaignWithFurtherModifs from './data/oneCampaignWithFurtherModifs';
 import oneCampaignOneModif from './data/oneCampaignOneModif';
 import oneCampaignOneModifWithAnUpdate from './data/oneCampaignOneModifWithAnUpdate';
+import complexJson from './data/complexJson';
 
 export default {
     normalResponse: {
+        complexJson,
         oneCampaignOneModif,
         oneCampaignOneModifWithAnUpdate,
         oneModifInMoreThanOneCampaign,

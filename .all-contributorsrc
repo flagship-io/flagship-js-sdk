@@ -31,6 +31,15 @@
         "bug",
         "review"
       ]
+    },
+    {
+      "login": "Madorakkusu",
+      "name": "Yanis Tam",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11974574?v=4",
+      "profile": "https://yanistam.me/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7

@@ -14,7 +14,7 @@
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
@@ -28,32 +28,53 @@
 
 **Visit [https://developers.flagship.io/](https://developers.flagship.io/) to get started with Flagship.**
 
--   [Installation & Getting Started](https://developers.flagship.io/js/v2.x.x/#getting-started)
--   [SDK Settings](https://developers.flagship.io/js/v2.x.x/#sdk-settings)
--   [API Summary](https://developers.flagship.io/js/v2.x.x/#js-sdk-features)
--   [Flagship class](https://developers.flagship.io/js/v2.x.x/#i-flagship-i-class-1)
--   [Flagship visitor](https://developers.flagship.io/js/v2.x.x/#i-flagshipvisitor-i-class-1)
--   [Hit tracking](https://developers.flagship.io/js/v2.x.x/#hits)
+-   [Installation & Getting Started](https://developers.flagship.io/js/v2.1.x/#getting-started)
+-   [SDK Settings](https://developers.flagship.io/js/v2.1.x/#sdk-settings)
+-   [API Summary](https://developers.flagship.io/js/v2.1.x/#js-sdk-features)
+-   [Flagship class](https://developers.flagship.io/js/v2.1.x/#i-flagship-i-class-1)
+-   [Flagship visitor](https://developers.flagship.io/js/v2.1.x/#i-flagshipvisitor-i-class-1)
+-   [Hit tracking](https://developers.flagship.io/js/v2.1.x/#hits)
 -   [Release Notes](https://github.com/abtasty/flagship-js-sdk/blob/master/RELEASENOTES.md)
+-   [Contributing](https://github.com/abtasty/flagship-js-sdk/blob/master/CONTRIBUTING.md)
 
 ## Examples
 
 -   With Express JS:
 
 <p align="center">
-<img src="./doc/nodeJSandExpress.png" alt="node js and express demo" width="600"/>
+<a href="examples/api-server/README.md">
+<img width="280" src="./doc/nodeJSandExpress.png" alt="node js and express demo" width="600"/>
+</a>
 </p>
 
 <div style="display: flex; justify-content: space-around; font-size: 24px">
 
 [Readme 📖](examples/api-server/README.md)
 
+**NOTE**: The demo is runnable locally only.
+
+</div>
+
+-   CodeSandbox with Express JS:
+
+<p align="center">
+<a href="https://codesandbox.io/s/flagship-js-sdk-server-example-zuusm">
+<img width="180" src="https://pbs.twimg.com/profile_images/1171375829382774784/70ZgE-ke_400x400.png" alt="node js and express demo" width="600"/>
+</a>
+</p>
+
+<div style="display: flex; justify-content: space-around; font-size: 24px">
+
+[Live Demo 🕹](https://codesandbox.io/s/flagship-js-sdk-server-example-zuusm)
+
 </div>
 
 -   With React, inside react component:
 
 <p align="center">
+<a href="https://abtasty.github.io/flagship-js-sdk/">
 <img src="./doc/react-with-sdk-js.gif" alt="react ecommerce demo with cookie" width="600"/>
+</a>
 </p>
 
 <div style="display: flex; justify-content: space-around; font-size: 24px">
@@ -67,7 +88,9 @@
 -   With React, using cookies:
 
 <p align="center">
+<a href="https://react-ecommerce-demo.internal.flagship.io/">
 <img src="./doc/react-ecommerce-demo.gif" alt="react ecommerce demo with cookie" width="600"/>
+</a>
 </p>
 
 <div style="display: flex; justify-content: space-around; font-size: 24px">
@@ -87,6 +110,7 @@
   <tr>
     <td align="center"><a href="https://www.domenge.fr/"><img src="https://avatars0.githubusercontent.com/u/15636263?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Emilien Domenge</b></sub></a><br /><a href="https://github.com/abtasty/flagship-js-sdk/commits?author=Emidomenge" title="Code">💻</a> <a href="https://github.com/abtasty/flagship-js-sdk/commits?author=Emidomenge" title="Documentation">📖</a> <a href="#example-Emidomenge" title="Examples">💡</a> <a href="#maintenance-Emidomenge" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://github.com/guillaumejacquart"><img src="https://avatars2.githubusercontent.com/u/5268752?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Guillaume Jacquart</b></sub></a><br /><a href="https://github.com/abtasty/flagship-js-sdk/issues?q=author%3Aguillaumejacquart" title="Bug reports">🐛</a> <a href="https://github.com/abtasty/flagship-js-sdk/pulls?q=is%3Apr+reviewed-by%3Aguillaumejacquart" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://yanistam.me/"><img src="https://avatars1.githubusercontent.com/u/11974574?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Yanis Tam</b></sub></a><br /><a href="https://github.com/abtasty/flagship-js-sdk/commits?author=Madorakkusu" title="Code">💻</a></td>
   </tr>
 </table>
 

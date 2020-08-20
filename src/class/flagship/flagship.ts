@@ -1,7 +1,7 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { EventEmitter } from 'events';
 
-import defaultConfig from '../../config/default';
+import defaultConfig, { internalConfig } from '../../config/default';
 import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor } from '../../types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
@@ -21,13 +21,22 @@ class Flagship implements IFlagship {
 
     envId: string;
 
-    constructor(envId: string, config = {}) {
-        const { cleanConfig: cleanCustomConfig, ignoredConfig } = flagshipSdkHelper.checkConfig(config);
+    constructor(envId: string, apiKey?: string, config = {}) {
+        const { cleanConfig: cleanCustomConfig, ignoredConfig } = flagshipSdkHelper.checkConfig(config, apiKey);
         this.config = { ...defaultConfig, ...cleanCustomConfig };
         this.log = loggerHelper.getLogger(this.config);
         this.eventEmitter = new EventEmitter();
         this.bucket = null;
         this.envId = envId;
+        if (!apiKey) {
+            this.log.warn(
+                'WARNING: "start" function signature will change in the next major release. "start(envId, settings)" will be "start(envId, apiKey, settings)", please make this change ASAP!'
+            );
+        } else if (this.config && this.config.apiKey && flagshipSdkHelper.isUsingFlagshipApi('v1', this.config)) {
+            // force API v2 if apiKey is set, whatever how
+            this.config.flagshipApi = internalConfig.apiV2;
+            this.log.debug('apiKey detected, forcing the use of Flagship api V2');
+        }
         if (cleanCustomConfig) {
             this.log.debug('Custom flagship SDK config attribute(s) detected');
         }
@@ -82,7 +91,7 @@ class Flagship implements IFlagship {
         return flagshipVisitorInstance;
     }
 
-    public startBucketingPolling(): void {
+    public startBucketingPolling(): { success: boolean; reason?: string } {
         if (this.bucket !== null && !this.bucket.isPollingRunning) {
             this.bucket.startPolling();
             this.bucket.on('launched', ({ status }) => {
@@ -94,22 +103,39 @@ class Flagship implements IFlagship {
             this.bucket.on('error', (error: Error) => {
                 this.eventEmitter.emit('bucketPollingFailed', error);
             });
-        } else if (this.bucket !== null && this.bucket.isPollingRunning) {
+            return {
+                success: true
+            };
+        }
+        if (this.bucket !== null && this.bucket.isPollingRunning) {
             this.log.warn(
                 `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" minute(s).`
             );
-        } else {
-            this.log.error('startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"');
+            return {
+                success: false,
+                reason: `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" minute(s).`
+            };
         }
+        this.log.error('startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"');
+        return {
+            success: false,
+            reason: 'startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"'
+        };
     }
 
-    public stopBucketingPolling(): void {
+    public stopBucketingPolling(): { success: boolean; reason?: string } {
         if (this.bucket !== null && this.bucket.isPollingRunning) {
             this.bucket.stopPolling();
             this.log.info('stopBucketingPolling - bucketing is stopped');
-        } else {
-            this.log.info('stopBucketingPolling - bucketing is already stopped');
+            return {
+                success: true
+            };
         }
+        this.log.info('stopBucketingPolling - bucketing is already stopped');
+        return {
+            success: false,
+            reason: 'stopBucketingPolling - bucketing is already stopped'
+        };
     }
 }
 

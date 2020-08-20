@@ -1,10 +1,12 @@
+export type FlagshipModification = string | boolean | number | Array<any> | { [key: string]: any };
+
 export type FlagshipVisitorContext = {
     [key: string]: boolean | number | string;
 };
 
 export type FsModifsRequestedList = Array<{
     key: string;
-    defaultValue: string | boolean | number;
+    defaultValue: FlagshipModification;
     activate?: boolean;
 }>;
 
@@ -14,7 +16,7 @@ export type DecisionApiResponse = {
 };
 
 export type DecisionApiSimpleResponse = {
-    [key: string]: any;
+    [key: string]: FlagshipModification;
 };
 
 export type DecisionApiResponseData = {
@@ -29,7 +31,7 @@ export type GetModificationInfoOutput = {
 };
 
 export type GetModificationsOutput = {
-    [key: string]: any;
+    [key: string]: FlagshipModification;
 };
 
 export type checkCampaignsActivatedMultipleTimesOutput = {
@@ -43,7 +45,7 @@ export type checkCampaignsActivatedMultipleTimesOutput = {
 };
 
 export type DecisionApiResponseDataSimpleComputed = {
-    [key: string]: any;
+    [key: string]: FlagshipModification;
 };
 
 export type DecisionApiCampaign = {
@@ -54,7 +56,7 @@ export type DecisionApiCampaign = {
         modifications: {
             type: string;
             value: {
-                [key: string]: any;
+                [key: string]: FlagshipModification;
             };
         };
     };
@@ -62,7 +64,7 @@ export type DecisionApiCampaign = {
 
 export type DecisionApiResponseDataFullComputed = {
     [key: string]: {
-        value: Array<string>;
+        value: Array<FlagshipModification>;
         type: Array<string>;
         campaignId: Array<string>;
         variationId: Array<string>;

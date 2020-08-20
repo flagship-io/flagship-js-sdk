@@ -33,6 +33,8 @@ export type FlagshipSdkConfig = {
 
 export type FlagshipSdkInternalConfig = {
     bucketingEndpoint: string;
+    apiV1: string;
+    apiV2: string;
     pollingIntervalMinValue: number;
 };
 
@@ -110,10 +112,10 @@ export interface IFlagship {
     eventEmitter: EventEmitter;
     bucket: IFlagshipBucketing | null;
     newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;
-    startBucketingPolling(): void;
-    stopBucketingPolling(): void;
+    startBucketingPolling(): { success: boolean; reason?: string };
+    stopBucketingPolling(): { success: boolean; reason?: string };
 }
 
 export interface FlagshipNodeSdk {
-    start(envId: string, config?: FlagshipSdkConfig): IFlagship;
+    start(envId: string, apiKeyOrSettings?: any, config?: FlagshipSdkConfig): IFlagship;
 }

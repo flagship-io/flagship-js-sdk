@@ -77,7 +77,7 @@ const flagshipSdkHelper = {
             log.debug(`No unknown key detected :) - ${objectName}`);
         }
     },
-    checkConfig: (unknownConfig: { [key: string]: any }): { cleanConfig: object; ignoredConfig: object } => {
+    checkConfig: (unknownConfig: { [key: string]: any }, apiKey?: string): { cleanConfig: object; ignoredConfig: object } => {
         const cleanObject: { [key: string]: string | boolean | null } = {};
         const dirtyObject: { [key: string]: string | boolean | null } = {};
         const validAttributesList: Array<string> = [];
@@ -97,6 +97,12 @@ const flagshipSdkHelper = {
                 dirtyObject[key] = value;
             }
         });
+
+        // TODO: remove in next major release
+        if (apiKey) {
+            cleanObject.apiKey = apiKey;
+        }
+
         return { cleanConfig: { ...cleanObject }, ignoredConfig: { ...dirtyObject } };
     },
     checkDecisionApiResponseFormat: (response: DecisionApiResponse, log: FsLogger): DecisionApiResponseData | null => {
@@ -221,6 +227,18 @@ const flagshipSdkHelper = {
         }
         log.error(errorMsg);
         return null;
+    },
+    isUsingFlagshipApi: (version: 'v1' | 'v2', config: FlagshipSdkConfig): boolean => {
+        switch (version) {
+            case 'v1':
+                return config.flagshipApi.includes(internalConfig.apiV1);
+
+            case 'v2':
+                return config.flagshipApi.includes(internalConfig.apiV2);
+
+            default:
+                return false;
+        }
     }
 };
 

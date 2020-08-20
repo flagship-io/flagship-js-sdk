@@ -123,7 +123,7 @@ describe('Bucketing used from visitor instance', () => {
     });
     it('should have correct behavior when there is an error during bucketing + activate', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
         visitorInstance.getAllModifications(true).catch((err) => {
@@ -150,7 +150,7 @@ describe('Bucketing used from visitor instance', () => {
 
     it('should not erase previous fetched modification (when exist) and bucket has failed', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns;
         initSpyLogs(visitorInstance);
@@ -180,7 +180,7 @@ describe('Bucketing used from visitor instance', () => {
     });
 
     it('should report an error if apiMode is "Bucketing" and it failed during first call', (done) => {
-        sdk = flagshipSdk.start(demoData.envId[0], bucketingConfig);
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], bucketingConfig);
         const sdkLogs = initSpyLogs(sdk);
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
@@ -221,7 +221,7 @@ describe('Bucketing used from visitor instance', () => {
 
     it('should have correct behavior for bucketing cache api handling', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], bucketingConfig);
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], bucketingConfig);
         visitorInstance = sdk.newVisitor(demoData.bucketing.functions.murmur.allocation[68].visitorId, demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
@@ -273,7 +273,7 @@ describe('Bucketing used from visitor instance', () => {
 
     it('should warn when synchronizing and no fetch have been done before. + should wait a bucket polling', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
@@ -306,7 +306,7 @@ describe('Bucketing used from visitor instance', () => {
 
     it('should warn when receiving unexpected polling status code', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
@@ -343,7 +343,7 @@ describe('Bucketing used from visitor instance', () => {
 
     it('should consider new visitor context when sync modifs and bucketing already init', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], bucketingConfig);
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], bucketingConfig);
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
 
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
@@ -389,7 +389,7 @@ describe('Bucketing used from visitor instance', () => {
 
     it('should consider new campaigns from bucket api when sync modifs and bucketing already init', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], bucketingConfig);
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], bucketingConfig);
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
 
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
@@ -442,7 +442,7 @@ describe('Bucketing used from visitor instance', () => {
 
     it('should trigger bucketing behavior when creating new visitor with config having "bucketing" in decision mode + fetchNow=true', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], bucketingConfig);
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], bucketingConfig);
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
         expect(sdk.bucket instanceof Bucketing).toEqual(true);
@@ -476,7 +476,7 @@ describe('Bucketing used from visitor instance', () => {
 
     it('should trigger bucketing behavior when creating new visitor with config having "bucketing" in decision mode + fetchNow=true + activate=true', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, activateNow: true });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, activateNow: true });
         visitorInstance = sdk.newVisitor(demoData.bucketing.functions.murmur.allocation[68].visitorId, demoData.visitor.cleanContext);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
         expect(sdk.bucket instanceof Bucketing).toEqual(true);
@@ -509,7 +509,7 @@ describe('Bucketing used from visitor instance', () => {
                 // expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 // expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 // expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-                const activateUrl = 'https://decision-api.flagship.io/v1/activate';
+                const activateUrl = `${internalConfig.apiV2}activate`;
 
                 expect(mockAxios.post).toHaveBeenCalledTimes(3);
 
@@ -521,7 +521,8 @@ describe('Bucketing used from visitor instance', () => {
                             ...visitorInstance.context
                         },
                         type: 'CONTEXT',
-                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
+                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId,
+                        'x-api-key': demoData.apiKey[0]
                     },
                     {}
                 );
@@ -533,7 +534,8 @@ describe('Bucketing used from visitor instance', () => {
                         caid: demoData.bucketing.functions.murmur.allocation[68].variationGroup,
                         cid: 'bn1ab7m56qolupi5sa0g',
                         vaid: 'bptggipaqi903f3haq2g',
-                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId
+                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId,
+                        'x-api-key': demoData.apiKey[0]
                     },
                     {}
                 );
@@ -544,7 +546,8 @@ describe('Bucketing used from visitor instance', () => {
                         caid: demoData.bucketing.functions.murmur.allocation[17].variationGroup,
                         cid: 'bn1ab7m56qolupi5sa0g',
                         vaid: 'bq4sf09oet0006cfiheg',
-                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
+                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId, // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
+                        'x-api-key': demoData.apiKey[0]
                     },
                     {}
                 );
@@ -558,7 +561,7 @@ describe('Bucketing used from visitor instance', () => {
 
     it('should NOT trigger bucketing behavior when creating new visitor with config having "bucketing" in decision mode + fetchNow=false', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
         sdk.eventEmitter.on('bucketPollingSuccess', () => {
             done.fail('not supposed to be here');
         });
@@ -646,7 +649,7 @@ describe('Bucketing - polling', () => {
 
     it('should work when correctly set + fetchNow=true', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, pollingInterval: demoPollingInterval });
         initSpyLogs(sdk.bucket);
         let pollingLoop = 0;
         sdk.eventEmitter.on('bucketPollingSuccess', () => {
@@ -726,7 +729,11 @@ describe('Bucketing - polling', () => {
 
     it('should warn a log when trying to start polling and it has been already launched', async (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval, fetchNow: false });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+            ...bucketingConfig,
+            pollingInterval: demoPollingInterval,
+            fetchNow: false
+        });
         const spySdkLogs = initSpyLogs(sdk);
         initSpyLogs(sdk.bucket);
         let pollingLoop = 0;
@@ -767,7 +774,11 @@ describe('Bucketing - polling', () => {
 
     it('should have correct behavior when failure', async (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval, fetchNow: false });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+            ...bucketingConfig,
+            pollingInterval: demoPollingInterval,
+            fetchNow: false
+        });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         const spySdkLogs = initSpyLogs(sdk);
         const spyVisitorLogs = initSpyLogs(visitorInstance);
@@ -830,7 +841,11 @@ describe('Bucketing - polling', () => {
 
     it('should work when correctly set + fetchNow=false', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: demoPollingInterval });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+            ...bucketingConfig,
+            fetchNow: false,
+            pollingInterval: demoPollingInterval
+        });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         const spySdkLogs = initSpyLogs(sdk);
         const spyVisitorLogs = initSpyLogs(visitorInstance);
@@ -900,7 +915,11 @@ describe('Bucketing - polling', () => {
 
     it('should behave nicely when api bucketing fail during polling', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: demoPollingInterval });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+            ...bucketingConfig,
+            fetchNow: false,
+            pollingInterval: demoPollingInterval
+        });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         const spySdkLogs = initSpyLogs(sdk);
         const spyVisitorLogs = initSpyLogs(visitorInstance);
@@ -960,7 +979,7 @@ describe('Bucketing - polling', () => {
     // TODO: waiting to solve https://github.com/knee-cola/jest-mock-axios/issues/55 because conflict with mock ERROR
     // it('should keep the last valid data when api bucketing fail during polling', (done) => {
     //     bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-    //     sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: demoPollingInterval });
+    //     sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false, pollingInterval: demoPollingInterval });
     //     visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
     //     const spySdkLogs = initSpyLogs(sdk);
     //     const spyVisitorLogs = initSpyLogs(visitorInstance);
@@ -1030,7 +1049,7 @@ describe('Bucketing - polling', () => {
 
     it('should report an error if pollingInterval is below limit', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: 0.1 });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false, pollingInterval: 0.1 });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         const spySdkLogs = initSpyLogs(sdk);
         const spyVisitorLogs = initSpyLogs(visitorInstance);
@@ -1088,7 +1107,11 @@ describe('Bucketing - polling', () => {
 
     it('should report an error if pollingInterval is not supported format', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: 'hello world' });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+            ...bucketingConfig,
+            fetchNow: false,
+            pollingInterval: 'hello world'
+        });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         const spySdkLogs = initSpyLogs(sdk);
         const spyVisitorLogs = initSpyLogs(visitorInstance);
@@ -1146,7 +1169,7 @@ describe('Bucketing - polling', () => {
 
     it('should report an error if pollingInterval is null', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...bucketingConfig, fetchNow: false, pollingInterval: null });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false, pollingInterval: null });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         const spySdkLogs = initSpyLogs(sdk);
         const spyVisitorLogs = initSpyLogs(visitorInstance);
