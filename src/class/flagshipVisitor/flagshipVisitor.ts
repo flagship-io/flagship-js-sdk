@@ -535,6 +535,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     const castResponse = response as DecisionApiResponse;
                     const output = flagshipSdkHelper.checkDecisionApiResponseFormat(castResponse, this.log);
                     this.saveModificationsInCache((output && output.campaigns) || null);
+                    this.callEventEndpoint();
                     resolve(castResponse.status || 200);
                 })
                 .catch((error: Error) => {
@@ -747,6 +748,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                             };
                             this.saveModificationsInCache(transformedBucketingData.campaigns);
                             this.log.debug('fetchAllModifications - bucket start detected');
+
                             if (activate) {
                                 this.log.debug(
                                     `fetchAllModifications - activateNow enabled with bucketing mode. ${this.modificationsInternalStatus.length} campaign(s) will be activated.`
@@ -1012,6 +1014,27 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     public sendHit(hitData: HitShape): Promise<void> {
         return this.sendHits([hitData]);
+    }
+
+    private callEventEndpoint(): Promise<number> {
+        return new Promise((resolve, reject) => {
+            flagshipSdkHelper
+                .postFlagshipApi(this.config, this.log, `${this.config.flagshipApi}${this.envId}/events`, {
+                    visitor_id: this.id,
+                    type: 'CONTEXT',
+                    data: {
+                        ...this.context
+                    }
+                })
+                .then((response) => {
+                    this.log.debug(`callEventEndpoint - returns status=${response.status}`);
+                    resolve(response.status);
+                })
+                .catch((error: Error) => {
+                    this.log.error(`callEventEndpoint - failed with error="${error}"`);
+                    reject(error);
+                });
+        });
     }
 }
 

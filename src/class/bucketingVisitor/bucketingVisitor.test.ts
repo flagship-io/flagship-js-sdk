@@ -111,87 +111,6 @@ describe('BucketingVisitor - callEventEndpoint', () => {
         bucketInstance = null;
         mockAxios.reset();
     });
-
-    it('should notify when fail with api v2 and apiKey is missing', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, {
-            ...bucketingConfig,
-            flagshipApi: 'https://decision.flagship.io/v2/'
-        });
-        initSpyLogs(bucketInstance);
-        bucketInstance
-            .callEventEndpoint()
-            .then(() => {
-                done.fail('callEventEndpoint not supposed to be here');
-            })
-            .catch((e) => {
-                expect(e).toEqual('server crashed');
-                expect(spyFatalLogs).toHaveBeenCalledTimes(1);
-                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
-                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-
-                expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'callEventEndpoint - failed with error="server crashed"');
-
-                done();
-            });
-
-        mockAxios.mockError('server crashed');
-    });
-
-    it('should notify when fail with api v2', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, {
-            ...bucketingConfig,
-            flagshipApi: 'https://decision.flagship.io/v2/',
-            apiKey: demoData.apiKey[0]
-        });
-        initSpyLogs(bucketInstance);
-        bucketInstance
-            .callEventEndpoint()
-            .then(() => {
-                done.fail('callEventEndpoint not supposed to be here');
-            })
-            .catch((e) => {
-                expect(e).toEqual('server crashed');
-                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
-                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-
-                expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'callEventEndpoint - failed with error="server crashed"');
-
-                done();
-            });
-
-        mockAxios.mockError('server crashed');
-    });
-
-    it('should notify when fail with api v1', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, {
-            ...bucketingConfig
-        });
-        initSpyLogs(bucketInstance);
-        bucketInstance
-            .callEventEndpoint()
-            .then(() => {
-                done.fail('callEventEndpoint not supposed to be here');
-            })
-            .catch((e) => {
-                expect(e).toEqual('server crashed');
-                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyErrorLogs).toHaveBeenCalledTimes(1);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
-                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-
-                expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'callEventEndpoint - failed with error="server crashed"');
-
-                done();
-            });
-
-        mockAxios.mockError('server crashed');
-    });
 });
 
 describe('BucketingVisitor - updateVisitorContext', () => {
@@ -388,19 +307,6 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
 
-        mockAxios.mockResponse(bucketingEventMockResponse);
-
-        expect(mockAxios.post).toHaveBeenNthCalledWith(
-            1,
-            `${bucketInstance.config.flagshipApi}${bucketInstance.envId}/events`,
-            {
-                data: { ...bucketInstance.visitorContext },
-                type: 'CONTEXT',
-                visitor_id: bucketInstance.visitorId
-            },
-            {}
-        );
-
         expect(result).toEqual([
             {
                 id: 'bptggipaqi903f3haq0g',
@@ -432,13 +338,11 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
             }
         ]);
 
-        expect(spyDebugLogs).toHaveBeenCalledTimes(5);
+        expect(spyDebugLogs).toHaveBeenCalledTimes(4);
         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
         expect(spyFatalLogs).toHaveBeenCalledTimes(0);
         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-
-        expect(spyDebugLogs).toHaveBeenNthCalledWith(5, 'callEventEndpoint - returns status=204');
 
         done();
     });
@@ -765,7 +669,6 @@ describe('BucketingVisitor - murmur algorithm', () => {
                 const result = bucketInstance.getEligibleCampaigns();
                 expect(result.length).toEqual(1);
                 expect(result[0].variation.modifications.value.variation50).toEqual(assertion[assertion_vId][vgIdToCheck]);
-              
             });
             done();
         } catch (error) {
@@ -784,7 +687,6 @@ describe('BucketingVisitor - murmur algorithm', () => {
                 const result = bucketInstance.getEligibleCampaigns();
                 expect(result.length).toEqual(1);
                 expect(result[0].variation.modifications.value.variation).toEqual(assertion[assertion_vId][vgIdToCheck]);
-              
             });
             done();
         } catch (error) {

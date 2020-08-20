@@ -491,7 +491,6 @@ describe('Bucketing used from visitor instance', () => {
         mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
         mockAxios.mockResponse();
         mockAxios.mockResponse();
-        mockAxios.mockResponse();
         expect(mockAxios.get).toHaveBeenNthCalledWith(
             1,
             internalConfig.bucketingEndpoint.replace('@ENV_ID@', visitorInstance.envId),
@@ -514,7 +513,7 @@ describe('Bucketing used from visitor instance', () => {
                 expect(mockAxios.post).toHaveBeenCalledTimes(3);
 
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
-                    1,
+                    3,
                     `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`,
                     {
                         data: {
@@ -528,7 +527,7 @@ describe('Bucketing used from visitor instance', () => {
                 );
 
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
-                    2,
+                    1,
                     activateUrl,
                     {
                         caid: demoData.bucketing.functions.murmur.allocation[68].variationGroup,
@@ -540,7 +539,7 @@ describe('Bucketing used from visitor instance', () => {
                     {}
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
-                    3,
+                    2,
                     activateUrl,
                     {
                         caid: demoData.bucketing.functions.murmur.allocation[17].variationGroup,

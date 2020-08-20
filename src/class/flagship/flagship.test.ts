@@ -430,15 +430,20 @@ describe('FlagshipVisitor', () => {
                     visitorInstance
                         .synchronizeModifications()
                         .then(() => {
-                            expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+                            expect(spyFatalLogs).toHaveBeenCalledTimes(2);
                             expect(spyFatalLogs).toHaveBeenNthCalledWith(
                                 1,
                                 'initialization - flagshipApi v2 detected but required setting "apiKey" is missing !'
                             );
+                            expect(spyFatalLogs).toHaveBeenNthCalledWith(
+                                2,
+                                'initialization - flagshipApi v2 detected but required setting "apiKey" is missing !'
+                            );
+
                             done();
                         })
                         .catch((e) => {
-                            done.fail(`unexpected ${e}`);
+                            done.fail(`unexpected ${e.stack}`);
                         });
                 } catch (error) {
                     done.fail(error);
@@ -624,7 +629,22 @@ describe('FlagshipVisitor', () => {
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         visitorInstance.on('ready', () => {
             try {
-                expect(mockAxios.post).toHaveBeenCalledTimes(1);
+                expect(mockAxios.post).toHaveBeenCalledTimes(2);
+
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`,
+                    {
+                        data: {
+                            ...visitorInstance.context
+                        },
+                        type: 'CONTEXT',
+                        visitor_id: demoData.visitor.id[0],
+                        'x-api-key': demoData.apiKey[0]
+                    },
+                    {}
+                );
+
                 expect(visitorInstance.fetchedModifications).toEqual(
                     demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns
                 );
