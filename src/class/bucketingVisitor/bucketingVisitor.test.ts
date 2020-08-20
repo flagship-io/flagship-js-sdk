@@ -3,7 +3,7 @@ import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
 
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
-import { FlagshipSdkConfig, IFlagship, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../types';
+import { FlagshipSdkConfig, IFlagship, IFlagshipBucketingVisitor, IFlagshipVisitor, IFlagshipBucketing } from '../../types';
 import { BucketingApiResponse } from '../bucketing/types';
 import BucketingVisitor from './bucketingVisitor';
 
@@ -23,7 +23,6 @@ let spyThen;
 let spyCatch;
 
 let bucketingApiMockResponse: BucketingApiResponse;
-let bucketingEventMockResponse: HttpResponse;
 
 const bucketingConfig: FlagshipSdkConfig = {
     ...testConfig,
@@ -60,7 +59,13 @@ const murmurAllocationCheck = (variations, acceptedRange, nbVisitor) => {
     const nbAllocation = variations.length;
     const variationAllocationResult = new Array(nbAllocation).fill(0);
     for (let i = 0; i < nbVisitor; i += 1) {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], generateUuid(), demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            generateUuid(),
+            demoData.visitor.cleanContext,
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
+        );
         const { id } = bucketInstance.computeMurmurAlgorithm(variations, randomVariationGroupId);
         const vIndex = variations.findIndex((el) => el.id === id);
         variationAllocationResult[vIndex] += 1;
@@ -87,20 +92,11 @@ const murmurAllocationCheck = (variations, acceptedRange, nbVisitor) => {
 const expectedRequestHeaderFirstCall = { headers: { 'If-Modified-Since': '' } };
 const expectedRequestHeaderNotFirstCall = { headers: { 'If-Modified-Since': 'Wed, 18 Mar 2020 23:29:16 GMT' } };
 
-describe('BucketingVisitor used from visitor instance', () => {
-    beforeEach(() => {
-        //
-    });
-    afterEach(() => {
-        sdk = null;
-        bucketingApiMockResponse = null;
-        visitorInstance = null;
-        bucketInstance = null;
-        mockAxios.reset();
-    });
-});
+const temporaryGlobalBucketMock = {
+    data: null
+};
 
-describe('BucketingVisitor - callEventEndpoint', () => {
+describe('BucketingVisitor used from visitor instance', () => {
     beforeEach(() => {
         //
     });
@@ -126,7 +122,13 @@ describe('BucketingVisitor - updateVisitorContext', () => {
     });
 
     it('should works', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.visitor.id[3],
+            demoData.visitor.cleanContext,
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
+        );
         initSpyLogs(bucketInstance);
         expect(bucketInstance.visitorContext).toEqual(demoData.visitor.cleanContext);
         bucketInstance.updateVisitorContext({ isVip: false });
@@ -135,7 +137,13 @@ describe('BucketingVisitor - updateVisitorContext', () => {
     });
 
     it('should filter bad values', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.visitor.id[3],
+            demoData.visitor.cleanContext,
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
+        );
         initSpyLogs(bucketInstance);
         expect(bucketInstance.visitorContext).toEqual(demoData.visitor.cleanContext);
         bucketInstance.updateVisitorContext({ isVip: [false, true, false], ok: 'ok' });
@@ -200,7 +208,13 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
                 demoData.visitor.contextBucketingOperatorTestSuccess
             );
             bucketingApiMockResponse = getCorrespondingOperatorApiMockResponse(operator, type);
-            bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], bucketingContext, bucketingConfig);
+            bucketInstance = new BucketingVisitor(
+                demoData.envId[0],
+                demoData.visitor.id[3],
+                bucketingContext,
+                bucketingConfig,
+                temporaryGlobalBucketMock as IFlagshipBucketing
+            );
             bucketInstance.data = bucketingApiMockResponse;
             initSpyLogs(bucketInstance);
             const result = bucketInstance.getEligibleCampaigns();
@@ -295,13 +309,13 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
 
     it('should expect correct behavior for "classic" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        bucketingEventMockResponse = { status: 204, data: {} };
         const allocation = 68;
         bucketInstance = new BucketingVisitor(
             demoData.envId[0],
             demoData.bucketing.functions.murmur.allocation[allocation].visitorId,
             demoData.visitor.cleanContext,
-            bucketingConfig
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
         );
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
@@ -348,7 +362,13 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
     });
 
     it('should expect correct behavior when bucket api return no data', (done) => {
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], demoData.visitor.cleanContext, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.visitor.id[3],
+            demoData.visitor.cleanContext,
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
+        );
         bucketInstance.data = {};
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
@@ -368,16 +388,29 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
 
     it('should expect correct behavior for "multiple variation groups" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.oneCampaignOneVgMultipleTgg as BucketingApiResponse;
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], { foo1: 'yes1' }, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.visitor.id[3],
+            { foo1: 'yes1' },
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
+        );
         bucketInstance.data = bucketingApiMockResponse;
         const bucketInstance2 = new BucketingVisitor(
             demoData.envId[0],
             demoData.visitor.id[3],
             { foo1: 'NOPE', foo2: 'yes2' },
-            bucketingConfig
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
         );
         bucketInstance2.data = bucketingApiMockResponse;
-        const bucketInstance3 = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], { foo3: 'yes3' }, bucketingConfig);
+        const bucketInstance3 = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.visitor.id[3],
+            { foo3: 'yes3' },
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
+        );
         bucketInstance3.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
         let result = bucketInstance.getEligibleCampaigns();
@@ -398,13 +431,20 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
 
     it('should expect correct behavior for "multiple campaigns" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.multipleCampaigns as BucketingApiResponse;
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], { foo1: 'yes1' }, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.visitor.id[3],
+            { foo1: 'yes1' },
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
+        );
         bucketInstance.data = bucketingApiMockResponse;
         const bucketInstance2 = new BucketingVisitor(
             demoData.envId[0],
             demoData.visitor.id[3],
             { foo1: 'yes1', isVip: true },
-            bucketingConfig
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
         );
         bucketInstance2.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
@@ -432,7 +472,8 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
                 lowerThanBadTypeArray: 0,
                 lowerThanBadTypeJson: 2
             },
-            bucketingConfig
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
         );
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
@@ -466,7 +507,13 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
     });
     it('should expect correct behavior for "fs_all_users" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.fs_all_users as BucketingApiResponse;
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], {}, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.visitor.id[3],
+            {},
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
+        );
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
@@ -483,7 +530,13 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
 
     it('should expect correct behavior for "fs_users" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.fs_users as BucketingApiResponse;
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[0], {}, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.visitor.id[0],
+            {},
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
+        );
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
@@ -505,7 +558,8 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
             demoData.envId[0],
             demoData.bucketing.functions.murmur.allocation[allocation].visitorId,
             {},
-            bucketingConfig
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
         );
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
@@ -534,7 +588,13 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
 
     it('should expect correct behavior for "unknown operator" data received', (done) => {
         bucketingApiMockResponse = demoData.bucketing.badOperator as BucketingApiResponse;
-        bucketInstance = new BucketingVisitor(demoData.envId[0], demoData.visitor.id[3], { isVip: false }, bucketingConfig);
+        bucketInstance = new BucketingVisitor(
+            demoData.envId[0],
+            demoData.visitor.id[3],
+            { isVip: false },
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
+        );
         bucketInstance.data = bucketingApiMockResponse;
         initSpyLogs(bucketInstance);
         const result = bucketInstance.getEligibleCampaigns();
@@ -627,7 +687,8 @@ describe('BucketingVisitor - murmur algorithm', () => {
             demoData.envId[0],
             demoData.bucketing.functions.murmur.allocation[24].visitorId,
             demoData.visitor.cleanContext,
-            bucketingConfig
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
         );
 
         expect(bucketInstance.data).toEqual(null);
@@ -663,7 +724,13 @@ describe('BucketingVisitor - murmur algorithm', () => {
             const vgIdToCheck = 'bs8r119sbs4016meiiii';
             expectedIsoAssertions.forEach((assertion) => {
                 const assertion_vId = Object.keys(assertion)[0];
-                bucketInstance = new BucketingVisitor(demoData.envId[0], assertion_vId, demoData.visitor.cleanContext, bucketingConfig);
+                bucketInstance = new BucketingVisitor(
+                    demoData.envId[0],
+                    assertion_vId,
+                    demoData.visitor.cleanContext,
+                    bucketingConfig,
+                    temporaryGlobalBucketMock as IFlagshipBucketing
+                );
                 bucketInstance.data = demoData.bucketing.isoSdk_50_50;
                 initSpyLogs(bucketInstance);
                 const result = bucketInstance.getEligibleCampaigns();
@@ -681,7 +748,13 @@ describe('BucketingVisitor - murmur algorithm', () => {
             const vgIdToCheck = 'bs8qvmo4nlr01fl9bbbb';
             expectedIsoAssertions.forEach((assertion) => {
                 const assertion_vId = Object.keys(assertion)[0];
-                bucketInstance = new BucketingVisitor(demoData.envId[0], assertion_vId, demoData.visitor.cleanContext, bucketingConfig);
+                bucketInstance = new BucketingVisitor(
+                    demoData.envId[0],
+                    assertion_vId,
+                    demoData.visitor.cleanContext,
+                    bucketingConfig,
+                    temporaryGlobalBucketMock as IFlagshipBucketing
+                );
                 bucketInstance.data = demoData.bucketing.isoSdk_25_25_25_25;
                 initSpyLogs(bucketInstance);
                 const result = bucketInstance.getEligibleCampaigns();
@@ -699,7 +772,8 @@ describe('BucketingVisitor - murmur algorithm', () => {
             demoData.envId[0],
             demoData.bucketing.functions.murmur.allocation[79].visitorId,
             demoData.visitor.cleanContext,
-            bucketingConfig
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
         );
 
         expect(bucketInstance.data).toEqual(null);
@@ -734,7 +808,8 @@ describe('BucketingVisitor - murmur algorithm', () => {
             demoData.envId[0],
             demoData.bucketing.functions.murmur.allocation[79].visitorId,
             demoData.visitor.cleanContext,
-            bucketingConfig
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
         );
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
@@ -760,7 +835,8 @@ describe('BucketingVisitor - murmur algorithm', () => {
             demoData.envId[0],
             demoData.bucketing.functions.murmur.allocation[79].visitorId,
             demoData.visitor.cleanContext,
-            bucketingConfig
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
         );
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
@@ -792,7 +868,8 @@ describe('BucketingVisitor - murmur algorithm', () => {
             demoData.envId[0],
             demoData.bucketing.functions.murmur.allocation[99].visitorId,
             demoData.visitor.cleanContext,
-            bucketingConfig
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
         );
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');
@@ -824,7 +901,8 @@ describe('BucketingVisitor - murmur algorithm', () => {
             demoData.envId[0],
             demoData.bucketing.functions.murmur.allocation[31].visitorId,
             demoData.visitor.cleanContext,
-            bucketingConfig
+            bucketingConfig,
+            temporaryGlobalBucketMock as IFlagshipBucketing
         );
         initSpyLogs(bucketInstance);
         bucketSpy = jest.spyOn(bucketInstance, 'computeMurmurAlgorithm');

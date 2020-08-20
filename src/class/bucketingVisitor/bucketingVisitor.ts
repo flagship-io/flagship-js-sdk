@@ -1,6 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { MurmurHashV3 } from 'react-native-murmurhash';
-import { FlagshipSdkConfig, IFlagshipBucketingVisitor } from '../../types';
+import { FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipBucketing } from '../../types';
 import { FlagshipVisitorContext, DecisionApiCampaign, DecisionApiResponseData } from '../flagshipVisitor/types';
 import {
     BucketingVariation,
@@ -29,16 +29,20 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
 
     visitorContext: FlagshipVisitorContext;
 
+    global: IFlagshipBucketing;
+
     constructor(
         envId: string,
         visitorId: string,
         visitorContext: FlagshipVisitorContext,
         config: FlagshipSdkConfig,
-        bucketingData?: BucketingApiResponse | null
+        globalBucket: IFlagshipBucketing
     ) {
+        const bucketingData = globalBucket.data;
         this.config = config;
         this.visitorId = visitorId;
         this.visitorContext = visitorContext;
+        this.global = globalBucket;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - Bucketing (visitorId=${this.visitorId})`);
         this.envId = envId;
         this.data = bucketingData || null;

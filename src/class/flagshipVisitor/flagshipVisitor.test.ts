@@ -1,4 +1,5 @@
 import mockAxios from 'jest-mock-axios';
+import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
 import { internalConfig } from '../../config/default';
 import { IFlagshipVisitor, IFlagship } from '../../types';
 
@@ -8,6 +9,7 @@ import flagshipSdk from '../../index';
 import FlagshipVisitor from './flagshipVisitor';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import { DecisionApiResponseData } from './types';
+import { BucketingApiResponse } from '../bucketing/types';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -30,6 +32,8 @@ const initSpyLogs = (vInstance): void => {
     spyErrorLogs = jest.spyOn(vInstance.log, 'error');
 };
 
+let eventMockResponse: HttpResponse;
+let bucketingApiMockResponse: BucketingApiResponse;
 const testConfigWithoutFetchNow = { ...testConfig, fetchNow: false };
 
 describe('FlagshipVisitor', () => {
@@ -2500,6 +2504,215 @@ describe('FlagshipVisitor', () => {
                     done.fail(error);
                 }
             });
+        });
+    });
+
+    describe('callEventEndpoint function', () => {
+        beforeEach(() => {
+            sdk = null;
+
+            bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+            defaultDecisionApiResponse = {
+                data: demoData.decisionApi.normalResponse.oneCampaignWithFurtherModifs,
+                status: 200,
+                statusText: 'OK'
+            };
+            eventMockResponse = { status: 204, data: {} };
+        });
+        afterEach(() => {
+            bucketingApiMockResponse = null;
+            mockAxios.reset();
+        });
+        it('should call event endpoint first time automatically with (decisionMode="API") + fetchNow=true', (done) => {
+            try {
+                sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfig);
+                visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+                mockAxios.mockResponse(defaultDecisionApiResponse);
+                visitorInstance.on('ready', () => {
+                    expect(mockAxios.post).toBeCalledTimes(2);
+                    expect(mockAxios.post).toHaveBeenNthCalledWith(
+                        2,
+                        `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`,
+                        {
+                            data: { ...visitorInstance.context },
+                            type: 'CONTEXT',
+                            visitor_id: visitorInstance.id,
+                            'x-api-key': demoData.apiKey[0]
+                        },
+                        {}
+                    );
+                    done();
+                });
+            } catch (error) {
+                done.fail(error.stack);
+            }
+        });
+        it('should call event endpoint first time automatically with (decisionMode="Bucketing") + fetchNow=true', (done) => {
+            try {
+                sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                    ...testConfig,
+                    decisionMode: 'Bucketing',
+                    pollingInterval: 1
+                });
+                visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+                mockAxios.mockResponse(bucketingApiMockResponse);
+                visitorInstance.on('ready', () => {
+                    expect(mockAxios.get).toBeCalledTimes(1);
+                    expect(mockAxios.post).toBeCalledTimes(1);
+                    expect(mockAxios.post).toHaveBeenNthCalledWith(
+                        1,
+                        `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`,
+                        {
+                            data: { ...visitorInstance.context },
+                            type: 'CONTEXT',
+                            visitor_id: visitorInstance.id,
+                            'x-api-key': demoData.apiKey[0]
+                        },
+                        {}
+                    );
+                    done();
+                });
+            } catch (error) {
+                done.fail(error.stack);
+            }
+        });
+        it('should call event endpoint when making a synchronization with (decisionMode="API")', (done) => {
+            try {
+                sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
+                visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+                visitorInstance.on('ready', () => {
+                    visitorInstance
+                        .synchronizeModifications()
+                        .then(() => {
+                            try {
+                                expect(mockAxios.post).toBeCalledTimes(2);
+                                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                                    2,
+                                    `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`,
+                                    {
+                                        data: { ...visitorInstance.context },
+                                        type: 'CONTEXT',
+                                        visitor_id: visitorInstance.id,
+                                        'x-api-key': demoData.apiKey[0]
+                                    },
+                                    {}
+                                );
+                                done();
+                            } catch (e) {
+                                done.fail(e.stack);
+                            }
+                        })
+                        .catch((e) => {
+                            done.fail(e.stack);
+                        });
+                    mockAxios.mockResponse(defaultDecisionApiResponse);
+                });
+            } catch (error) {
+                done.fail(error.stack);
+            }
+        });
+        it('should call event endpoint when making a synchronization with (decisionMode="Bucketing")', (done) => {
+            try {
+                sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                    ...testConfigWithoutFetchNow,
+                    decisionMode: 'Bucketing',
+                    pollingInterval: 1
+                });
+                visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+                initSpyLogs(visitorInstance);
+                visitorInstance.on('ready', () => {
+                    visitorInstance
+                        .synchronizeModifications()
+                        .then(() => {
+                            try {
+                                expect(mockAxios.get).toBeCalledTimes(0);
+                                expect(mockAxios.post).toBeCalledTimes(1);
+                                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                                    1,
+                                    `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`,
+                                    {
+                                        data: { ...visitorInstance.context },
+                                        type: 'CONTEXT',
+                                        visitor_id: visitorInstance.id,
+                                        'x-api-key': demoData.apiKey[0]
+                                    },
+                                    {}
+                                );
+
+                                expect(spyDebugLogs).toBeCalledTimes(1);
+                                expect(spyInfoLogs).toBeCalledTimes(1);
+                                expect(spyWarnLogs).toBeCalledTimes(0);
+                                expect(spyErrorLogs).toBeCalledTimes(0);
+                                expect(spyFatalLogs).toBeCalledTimes(0);
+
+                                // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, ''); // saveModificationsInCache - saving in cache those modifications "null"
+                                expect(spyInfoLogs).toHaveBeenNthCalledWith(
+                                    1,
+                                    'synchronizeModifications - you might synchronize modifications too early because bucketing is empty or did not start'
+                                );
+
+                                done();
+                            } catch (e) {
+                                done.fail(e.stack);
+                            }
+                        })
+                        .catch((e) => {
+                            done.fail(e.stack);
+                        });
+                });
+            } catch (error) {
+                done.fail(error.stack);
+            }
+        });
+        it('should notify when call event endpoint fail', (done) => {
+            try {
+                sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
+                visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+                initSpyLogs(visitorInstance);
+                visitorInstance
+                    .callEventEndpoint()
+                    .then(() => {
+                        done.fail('not supposed to be here');
+                    })
+                    .catch(() => {
+                        expect(spyDebugLogs).toBeCalledTimes(0);
+                        expect(spyInfoLogs).toBeCalledTimes(0);
+                        expect(spyWarnLogs).toBeCalledTimes(0);
+                        expect(spyErrorLogs).toBeCalledTimes(1);
+                        expect(spyFatalLogs).toBeCalledTimes(0);
+
+                        expect(spyErrorLogs).toHaveBeenNthCalledWith(1, 'callEventEndpoint - failed with error="error event !"');
+                        done();
+                    });
+                mockAxios.mockError('error event !');
+            } catch (error) {
+                done.fail(error.stack);
+            }
+        });
+        it('should notify when call event endpoint succeed', (done) => {
+            try {
+                sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
+                visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+                initSpyLogs(visitorInstance);
+                visitorInstance
+                    .callEventEndpoint()
+                    .then(() => {
+                        expect(spyDebugLogs).toBeCalledTimes(1);
+                        expect(spyInfoLogs).toBeCalledTimes(0);
+                        expect(spyWarnLogs).toBeCalledTimes(0);
+                        expect(spyErrorLogs).toBeCalledTimes(0);
+                        expect(spyFatalLogs).toBeCalledTimes(0);
+
+                        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'callEventEndpoint - returns status=204');
+                        done();
+                    })
+                    .catch((e) => {
+                        done.fail(`${e.stack}`);
+                    });
+                mockAxios.mockResponse(eventMockResponse);
+            } catch (error) {
+                done.fail(error.stack);
+            }
         });
     });
 });

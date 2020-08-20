@@ -151,6 +151,7 @@ describe('Bucketing used from visitor instance', () => {
     it('should not erase previous fetched modification (when exist) and bucket has failed', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
+        sdk.bucket.isPollingRunning = true; // mock
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns;
         initSpyLogs(visitorInstance);
@@ -274,6 +275,7 @@ describe('Bucketing used from visitor instance', () => {
     it('should warn when synchronizing and no fetch have been done before. + should wait a bucket polling', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
+        sdk.bucket.isPollingRunning = true; // mock
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
@@ -307,6 +309,7 @@ describe('Bucketing used from visitor instance', () => {
     it('should warn when receiving unexpected polling status code', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
+        sdk.bucket.isPollingRunning = true; // mock
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
