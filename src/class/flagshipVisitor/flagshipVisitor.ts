@@ -811,7 +811,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                         // query params:
                         {
                             params: {
-                                exposeAllKeys: true // hardcoded
+                                exposeAllKeys: true, // hardcoded
+                                sendContextEvent: false // hardcoded - tell decision api not to automatically manage events
                             }
                         }
                     )

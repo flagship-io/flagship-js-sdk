@@ -5,6 +5,14 @@ const assertionHelper = {
                 'x-api-key': apiKey
             }
         };
+    },
+    getCampaignsQueryParams: (): { params: { exposeAllKeys: boolean; sendContextEvent: boolean } } => {
+        return {
+            params: {
+                exposeAllKeys: true,
+                sendContextEvent: false
+            }
+        };
     }
 };
 

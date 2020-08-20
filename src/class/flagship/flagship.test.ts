@@ -276,7 +276,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -350,7 +350,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -425,7 +425,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );

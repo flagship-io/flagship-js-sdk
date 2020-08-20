@@ -432,8 +432,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
-
+                    ...assertionHelper.getCampaignsQueryParams(),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -462,15 +461,13 @@ describe('FlagshipVisitor', () => {
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0],
+                    visitor_id: demoData.visitor.id[0]
                 },
-                { params: { exposeAllKeys: true },
-            
-            
-                
+                {
+                    ...assertionHelper.getCampaignsQueryParams(),
+
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
-                
-            }
+                }
             );
         });
         it('should always init "fetchedModifications" to "null" if decision API failed', (done) => {
@@ -502,7 +499,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -534,7 +531,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -572,7 +569,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -642,7 +639,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -807,10 +804,10 @@ describe('FlagshipVisitor', () => {
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0],
+                    visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -845,7 +842,7 @@ describe('FlagshipVisitor', () => {
                         vaid: 'bmjdprsjan0g01uq2ctg',
                         cid: 'bn1ab7m56qolupi5sa0g',
                         caid: 'bmjdprsjan0g01uq2csg',
-                        vid: 'test-perf',
+                        vid: 'test-perf'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -876,7 +873,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1138,7 +1135,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1172,7 +1169,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1217,7 +1214,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1255,7 +1252,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1285,10 +1282,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: {
-                        exposeAllKeys: true
-                    },
-
+                    ...assertionHelper.getCampaignsQueryParams(),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -1326,7 +1320,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1360,7 +1354,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -1397,7 +1391,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -1428,7 +1422,7 @@ describe('FlagshipVisitor', () => {
                     visitor_id: demoData.visitor.id[0]
                 },
                 {
-                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getCampaignsQueryParams(),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1736,7 +1730,7 @@ describe('FlagshipVisitor', () => {
                     vaid: '5e26ccd89609296ae8430137',
                     cid: 'bn1ab7m56qolupi5sa0g',
                     caid: '5e26ccd8fcde4be7ff55476f',
-                    vid: 'test-perf',
+                    vid: 'test-perf'
                 },
                 {
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1920,7 +1914,7 @@ describe('FlagshipVisitor', () => {
                         vaid: '5e26ccd828feadeb6d9b8414',
                         cid: 'bn1ab7m56qolupi5sa0g',
                         caid: '5e26ccd8d4106bb1ae2b6455',
-                        vid: 'test-perf',
+                        vid: 'test-perf'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -2343,7 +2337,7 @@ describe('FlagshipVisitor', () => {
                         vaid: 'blntcamqmdvg04g371hg',
                         cid: 'bn1ab7m56qolupi5sa0g',
                         caid: 'blntcamqmdvg04g371h0',
-                        vid: 'test-perf',
+                        vid: 'test-perf'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -2357,7 +2351,7 @@ describe('FlagshipVisitor', () => {
                         vaid: 'bmjdprsjan0g01uq2ctg',
                         cid: 'bn1ab7m56qolupi5sa0g',
                         caid: 'bmjdprsjan0g01uq2csg',
-                        vid: 'test-perf',
+                        vid: 'test-perf'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -2609,7 +2603,7 @@ describe('FlagshipVisitor', () => {
                         {
                             data: { ...visitorInstance.context },
                             type: 'CONTEXT',
-                            visitor_id: visitorInstance.id,
+                            visitor_id: visitorInstance.id
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -2639,7 +2633,7 @@ describe('FlagshipVisitor', () => {
                         {
                             data: { ...visitorInstance.context },
                             type: 'CONTEXT',
-                            visitor_id: visitorInstance.id,
+                            visitor_id: visitorInstance.id
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -2667,7 +2661,7 @@ describe('FlagshipVisitor', () => {
                                     {
                                         data: { ...visitorInstance.context },
                                         type: 'CONTEXT',
-                                        visitor_id: visitorInstance.id,
+                                        visitor_id: visitorInstance.id
                                     },
                                     {
                                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -2709,7 +2703,7 @@ describe('FlagshipVisitor', () => {
                                     {
                                         data: { ...visitorInstance.context },
                                         type: 'CONTEXT',
-                                        visitor_id: visitorInstance.id,
+                                        visitor_id: visitorInstance.id
                                     },
                                     {
                                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
