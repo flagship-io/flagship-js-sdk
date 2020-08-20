@@ -5,6 +5,7 @@ import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
 import Flagship from './flagship';
 import flagshipSdk from '../../index';
+import assertionHelper from '../../../test/helper/assertion';
 
 let sdk: Flagship;
 let visitorInstance: IFlagshipVisitor;
@@ -228,10 +229,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'blntcamqmdvg04g371hg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'blntcamqmdvg04g371h0',
-                            vid: 'test-perf',
-                            'x-api-key': demoData.apiKey[0]
+                            vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         3,
@@ -240,10 +242,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'bmjdprsjan0g01uq2ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2csg',
-                            vid: 'test-perf',
-                            'x-api-key': demoData.apiKey[0]
+                            vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         4,
@@ -252,10 +255,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'bmjdprsjan0g01uq1ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2ceg',
-                            vid: 'test-perf',
-                            'x-api-key': demoData.apiKey[0]
+                            vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     done();
                 } catch (error) {
@@ -269,10 +273,12 @@ describe('FlagshipVisitor', () => {
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0],
-                    'x-api-key': demoData.apiKey[0]
+                    visitor_id: demoData.visitor.id[0]
                 },
-                { params: { exposeAllKeys: true } }
+                {
+                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                }
             );
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
@@ -297,10 +303,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'blntcamqmdvg04g371hg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'blntcamqmdvg04g371h0',
-                            vid: 'test-perf',
-                            'x-api-key': demoData.apiKey[0]
+                            vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         3,
@@ -309,10 +316,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'bmjdprsjan0g01uq2ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2csg',
-                            vid: 'test-perf',
-                            'x-api-key': demoData.apiKey[0]
+                            vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         4,
@@ -321,11 +329,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'bmjdprsjan0g01uq1ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2ceg',
-                            vid: 'test-perf',
-                            'x-api-key': demoData.apiKey[0]
+                            vid: 'test-perf'
                         },
-
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     done();
                 } catch (error) {
@@ -339,10 +347,12 @@ describe('FlagshipVisitor', () => {
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0],
-                    'x-api-key': demoData.apiKey[0]
+                    visitor_id: demoData.visitor.id[0]
                 },
-                { params: { exposeAllKeys: true } }
+                {
+                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                }
             );
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
@@ -367,10 +377,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'blntcamqmdvg04g371hg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'blntcamqmdvg04g371h0',
-                            'x-api-key': demoData.apiKey[0],
                             vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         3,
@@ -379,10 +390,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'bmjdprsjan0g01uq2ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2csg',
-                            'x-api-key': demoData.apiKey[0],
                             vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         4,
@@ -391,10 +403,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'bmjdprsjan0g01uq1ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2ceg',
-                            'x-api-key': demoData.apiKey[0],
                             vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     done();
                 } catch (error) {
@@ -409,10 +422,12 @@ describe('FlagshipVisitor', () => {
                     context: demoData.visitor.cleanContext,
 
                     trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0],
-                    'x-api-key': demoData.apiKey[0]
+                    visitor_id: demoData.visitor.id[0]
                 },
-                { params: { exposeAllKeys: true } }
+                {
+                    params: { exposeAllKeys: true },
+                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                }
             );
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
@@ -639,10 +654,11 @@ describe('FlagshipVisitor', () => {
                             ...visitorInstance.context
                         },
                         type: 'CONTEXT',
-                        visitor_id: demoData.visitor.id[0],
-                        'x-api-key': demoData.apiKey[0]
+                        visitor_id: demoData.visitor.id[0]
                     },
-                    {}
+                    {
+                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    }
                 );
 
                 expect(visitorInstance.fetchedModifications).toEqual(

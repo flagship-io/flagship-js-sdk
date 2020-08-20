@@ -11,6 +11,7 @@ import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import Bucketing from './bucketing';
 import { BucketingApiResponse } from './types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
+import assertionHelper from '../../../test/helper/assertion';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -523,10 +524,11 @@ describe('Bucketing used from visitor instance', () => {
                             ...visitorInstance.context
                         },
                         type: 'CONTEXT',
-                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId,
-                        'x-api-key': demoData.apiKey[0]
+                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
                     },
-                    {}
+                    {
+                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    }
                 );
 
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -536,10 +538,11 @@ describe('Bucketing used from visitor instance', () => {
                         caid: demoData.bucketing.functions.murmur.allocation[68].variationGroup,
                         cid: 'bn1ab7m56qolupi5sa0g',
                         vaid: 'bptggipaqi903f3haq2g',
-                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId,
-                        'x-api-key': demoData.apiKey[0]
+                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId
                     },
-                    {}
+                    {
+                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    }
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
                     2,
@@ -548,10 +551,11 @@ describe('Bucketing used from visitor instance', () => {
                         caid: demoData.bucketing.functions.murmur.allocation[17].variationGroup,
                         cid: 'bn1ab7m56qolupi5sa0g',
                         vaid: 'bq4sf09oet0006cfiheg',
-                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId, // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
-                        'x-api-key': demoData.apiKey[0]
+                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
                     },
-                    {}
+                    {
+                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    }
                 );
 
                 done();
