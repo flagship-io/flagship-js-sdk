@@ -74,7 +74,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         return Axios.get(url, axiosConfig)
             .then(({ data: bucketingData, status, ...other }: AxiosResponse<BucketingApiResponse>) => {
                 this.panic.checkPanicMode(bucketingData);
-                if (!this.panic.shouldRunSafeMode('bucketing polling')) {
+                if (!this.panic.enabled) {
                     if (status === 304) {
                         this.log.info(`callApi - current bucketing up to date (api status=304)`);
                     } else {
@@ -84,7 +84,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                             this.lastModifiedDate = other.headers['last-modified'];
                         }
                         this.log.info(`callApi - current bucketing updated`);
-                        this.data = { ...bucketingData, lastModifiedDate: this.lastModifiedDate, panic: !!bucketingData.panic };
+                        this.data = { ...bucketingData, lastModifiedDate: this.lastModifiedDate };
                     }
                 }
                 this.emit('launched', { status });

@@ -2687,11 +2687,11 @@ describe('FlagshipVisitor', () => {
                                 );
                                 done();
                             } catch (e) {
-                                done.fail(e.stack);
+                                done.fail(e);
                             }
                         })
                         .catch((e) => {
-                            done.fail(e.stack);
+                            done.fail(e);
                         });
                     mockAxios.mockResponse(defaultDecisionApiResponse);
                 });
@@ -2728,13 +2728,12 @@ describe('FlagshipVisitor', () => {
                                     }
                                 );
 
-                                expect(spyDebugLogs).toBeCalledTimes(1);
+                                expect(spyDebugLogs).toBeCalledTimes(0);
                                 expect(spyInfoLogs).toBeCalledTimes(1);
                                 expect(spyWarnLogs).toBeCalledTimes(0);
                                 expect(spyErrorLogs).toBeCalledTimes(0);
                                 expect(spyFatalLogs).toBeCalledTimes(0);
 
-                                // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, ''); // saveModificationsInCache - saving in cache those modifications "null"
                                 expect(spyInfoLogs).toHaveBeenNthCalledWith(
                                     1,
                                     'synchronizeModifications - you might synchronize modifications too early because bucketing is empty or did not start'
@@ -2742,15 +2741,15 @@ describe('FlagshipVisitor', () => {
 
                                 done();
                             } catch (e) {
-                                done.fail(e.stack);
+                                done.fail(e);
                             }
                         })
                         .catch((e) => {
-                            done.fail(e.stack);
+                            done.fail(e);
                         });
                 });
             } catch (error) {
-                done.fail(error.stack);
+                done.fail(error);
             }
         });
         it('should notify when call event endpoint fail', (done) => {
@@ -2967,6 +2966,7 @@ describe('FlagshipVisitor', () => {
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, decisionMode: 'Bucketing' });
             sdk.panic.setPanicModeTo(true);
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
 
             visitorSpy = initSpyLogs(visitorInstance);
             panicModeSpy = initSpyLogs(sdk.panic);
@@ -2975,12 +2975,16 @@ describe('FlagshipVisitor', () => {
                 .synchronizeModifications(true)
                 .then((status) => {
                     expect(status).toEqual(400);
+                    expect(visitorInstance.fetchedModifications).toEqual([]);
 
                     expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+
+                    // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, ''); // "saveModificationsInCache - saving in cache those modifications: \"[]\""
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - bucket start detected');
 
                     expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
                     expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
@@ -2995,23 +2999,19 @@ describe('FlagshipVisitor', () => {
 
                     done();
                 })
-                .catch((e) => done.fail(`oops ${e.stack}`));
+                .catch((e) => done.fail(e));
 
-            try {
-                mockAxios.mockResponse();
-            } catch (error) {
-                expect(error.message).toEqual('No request to respond to!');
-            }
+            mockAxios.mockResponse({ data: demoData.bucketing.panic, status: 200 });
 
             expect(mockAxios.post).toHaveBeenCalledTimes(0);
             expect(mockAxios.get).toHaveBeenCalledTimes(1); // get from bucketing
         });
 
-        it('synchronizeModifications should trigger safe mode in panic mode - bucketing mode', (done) => {
+        it('synchronizeModifications should trigger safe mode in panic mode - decision api mode', (done) => {
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, decisionMode: 'API' });
             sdk.panic.setPanicModeTo(true);
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-
+            visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
             visitorSpy = initSpyLogs(visitorInstance);
             panicModeSpy = initSpyLogs(sdk.panic);
 
@@ -3019,27 +3019,25 @@ describe('FlagshipVisitor', () => {
                 .synchronizeModifications(true)
                 .then((status) => {
                     expect(status).toEqual(200);
-
+                    expect(visitorInstance.fetchedModifications).toEqual([]);
                     expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
-                    expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, '');
-                    expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, '');
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
                     expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
                     expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
-                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                     expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenNthCalledWith(
                         1,
-                        "Can't execute 'synchronizeModifications' because the SDK is in panic mode !"
+                        "Can't execute 'callEventEndpoint' because the SDK is in panic mode !"
                     );
                 })
-                .catch((e) => done.fail(`${e.stack}`))
+                .catch((e) => done.fail(e))
                 .finally(() => {
                     expect(mockAxios.post).toHaveBeenCalledTimes(1);
                     expect(mockAxios.get).toHaveBeenCalledTimes(0);

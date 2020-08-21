@@ -84,7 +84,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 if (status === 304) {
                     // do nothing
                 } else if (status === 200) {
-                    this.log.debug('bucketing polling with fresh data detected.');
+                    if (!this.panic.enabled) {
+                        this.log.debug('bucketing polling with fresh data detected.');
+                    }
                     (this.bucket as IFlagshipBucketingVisitor).updateCache(data);
                     // NOTE: saveModificationsInCache MUST be done only when synchronizing !
                 } else {
@@ -1059,7 +1061,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     private callEventEndpoint(): Promise<number> {
-        if (this.panic.shouldRunSafeMode('callEventEndpoint')) {
+        if (this.panic.shouldRunSafeMode('callEventEndpoint', { logType: 'debug' })) {
             return new Promise((resolve) => resolve(400));
         }
         return new Promise((resolve, reject) => {
