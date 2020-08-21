@@ -127,6 +127,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public activateModifications(modifications: Array<{ key: string; variationId?: string; variationGroupId?: string }>): void {
+        if (this.panic.shouldRunSafeMode('activateModifications')) {
+            return;
+        }
+
         const modificationsRequested: FsModifsRequestedList = modifications.reduce(
             (output, { key }) => [...output, { key, defaultValue: '', activate: true }],
             [] as FsModifsRequestedList
@@ -431,11 +435,15 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             } else {
                 const { defaultValue } = modifRequested;
                 desiredModifications[modifRequested.key] = defaultValue;
-                this.log.debug(`No value found for modification "${modifRequested.key}".\nSetting default value "${defaultValue}"`);
-                if (modifRequested.activate) {
-                    this.log.warn(
-                        `Unable to activate modification "${modifRequested.key}" because it does not exist on any existing campaign...`
-                    );
+
+                // log only if we're not in panic mode
+                if (this.panic.enabled === false) {
+                    this.log.debug(`No value found for modification "${modifRequested.key}".\nSetting default value "${defaultValue}"`);
+                    if (modifRequested.activate) {
+                        this.log.warn(
+                            `Unable to activate modification "${modifRequested.key}" because it does not exist on any existing campaign...`
+                        );
+                    }
                 }
             }
         });
@@ -474,6 +482,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         modificationsRequested: FsModifsRequestedList,
         activateAllModifications: boolean | null = null
     ): GetModificationsOutput {
+        if (this.panic.shouldRunSafeMode('getModifications')) {
+            const { desiredModifications } = this.extractDesiredModifications([], modificationsRequested, false);
+            return desiredModifications;
+        }
+
         if (!this.fetchedModifications) {
             this.log.warn('No modifications found in cache...');
             const { desiredModifications } = this.extractDesiredModifications([], modificationsRequested, activateAllModifications);
@@ -487,6 +500,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public getModificationInfo(key: string): Promise<null | GetModificationInfoOutput> {
+        if (this.panic.shouldRunSafeMode('getModificationInfo')) {
+            return new Promise((resolve) => resolve(null));
+        }
         const polishOutput = (data: DecisionApiCampaign): GetModificationInfoOutput => ({
             campaignId: data.id,
             variationId: data.variation.id,
@@ -525,13 +541,19 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public updateContext(context: FlagshipVisitorContext): void {
+        if (this.panic.shouldRunSafeMode('updateContext')) {
+            return;
+        }
         this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
     }
 
     public synchronizeModifications(activate = false): Promise<number> {
+        if (this.config.decisionMode !== 'API' && this.panic.shouldRunSafeMode('synchronizeModifications')) {
+            return new Promise((resolve) => resolve(400));
+        }
+
         return new Promise((resolve, reject) => {
             const postSynchro = (output?: DecisionApiResponseData, response?: DecisionApiResponse): void => {
-                this.saveModificationsInCache((output && output.campaigns) || null);
                 this.callEventEndpoint();
                 resolve(response?.status || 200);
             };
@@ -1037,6 +1059,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     private callEventEndpoint(): Promise<number> {
+        if (this.panic.shouldRunSafeMode('callEventEndpoint')) {
+            return new Promise((resolve) => resolve(400));
+        }
         return new Promise((resolve, reject) => {
             flagshipSdkHelper
                 .postFlagshipApi(this.panic, this.config, this.log, `${this.config.flagshipApi}${this.envId}/events`, {

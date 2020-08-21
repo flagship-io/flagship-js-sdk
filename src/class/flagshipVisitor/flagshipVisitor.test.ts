@@ -16,6 +16,8 @@ let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
 let spyActivateCampaign;
 let spyGenerateCustomTypeParamsOf;
+let panicModeSpy;
+let visitorSpy;
 let responseObject;
 let spyWarnLogs;
 let spyErrorLogs;
@@ -25,12 +27,28 @@ let spyDebugLogs;
 let defaultDecisionApiResponse: DecisionApiResponseData;
 let defaultActivateModificationResponse;
 
-const initSpyLogs = (vInstance): void => {
+type initSpyLogsOutput = {
+    spyWarnLogs: jest.SpyInstance<any, unknown[]>;
+    spyErrorLogs: jest.SpyInstance<any, unknown[]>;
+    spyFatalLogs: jest.SpyInstance<any, unknown[]>;
+    spyInfoLogs: jest.SpyInstance<any, unknown[]>;
+    spyDebugLogs: jest.SpyInstance<any, unknown[]>;
+};
+
+const initSpyLogs = (vInstance): initSpyLogsOutput => {
     spyFatalLogs = jest.spyOn(vInstance.log, 'fatal');
     spyWarnLogs = jest.spyOn(vInstance.log, 'warn');
     spyInfoLogs = jest.spyOn(vInstance.log, 'info');
     spyDebugLogs = jest.spyOn(vInstance.log, 'debug');
     spyErrorLogs = jest.spyOn(vInstance.log, 'error');
+
+    return {
+        spyWarnLogs,
+        spyErrorLogs,
+        spyFatalLogs,
+        spyInfoLogs,
+        spyDebugLogs
+    };
 };
 
 let eventMockResponse: HttpResponse;
@@ -2784,6 +2802,251 @@ describe('FlagshipVisitor', () => {
             } catch (error) {
                 done.fail(error.stack);
             }
+        });
+    });
+
+    describe('panic mode function behavior', () => {
+        beforeEach(() => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
+            sdk.panic.setPanicModeTo(true);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+            defaultDecisionApiResponse = {
+                data: demoData.decisionApi.normalResponse.oneCampaignWithFurtherModifs,
+                status: 200,
+                statusText: 'OK'
+            };
+            visitorSpy = initSpyLogs(visitorInstance);
+            panicModeSpy = initSpyLogs(sdk.panic);
+            eventMockResponse = { status: 204, data: {} };
+        });
+        afterEach(() => {
+            bucketingApiMockResponse = null;
+            mockAxios.reset();
+        });
+
+        it('activateModifications should trigger safe mode in panic mode', () => {
+            visitorInstance.activateModifications([
+                {
+                    key: 'modif1'
+                }
+            ]);
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+
+            expect(mockAxios.post).toHaveBeenCalledTimes(0);
+            expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+            expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+            expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                1,
+                "Can't execute 'activateModifications' because the SDK is in panic mode !"
+            );
+        });
+
+        it('getModifications should trigger safe mode in panic mode', () => {
+            const output = visitorInstance.getModifications(
+                demoData.flagshipVisitor.getModifications.args.requestOneUnexistingKeyWithActivate
+            );
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+
+            expect(output.testUnexistingKey).toEqual('NOOOOO');
+
+            expect(mockAxios.post).toHaveBeenCalledTimes(0);
+            expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+            expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+            expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                1,
+                "Can't execute 'getModifications' because the SDK is in panic mode !"
+            );
+        });
+
+        it('getModificationInfo should trigger safe mode in panic mode', (done) => {
+            visitorInstance
+                .getModificationInfo('testUnexistingKey')
+                .then((output) => {
+                    expect(output).toEqual(null);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'getModificationInfo' because the SDK is in panic mode !"
+                    );
+                    done();
+                })
+                .catch((e) => {
+                    done.fail(`oops ${e.stack}`);
+                });
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+
+            expect(mockAxios.post).toHaveBeenCalledTimes(0);
+            expect(mockAxios.get).toHaveBeenCalledTimes(0);
+        });
+
+        it('updateContext should trigger safe mode in panic mode', () => {
+            visitorInstance.updateContext({
+                hero: 'batman'
+            });
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+
+            expect(mockAxios.post).toHaveBeenCalledTimes(0);
+            expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+            expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+            expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                1,
+                "Can't execute 'updateContext' because the SDK is in panic mode !"
+            );
+        });
+
+        it('synchronizeModifications should trigger safe mode in panic mode - bucketing mode', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, decisionMode: 'Bucketing' });
+            sdk.panic.setPanicModeTo(true);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+
+            visitorSpy = initSpyLogs(visitorInstance);
+            panicModeSpy = initSpyLogs(sdk.panic);
+
+            visitorInstance
+                .synchronizeModifications(true)
+                .then((status) => {
+                    expect(status).toEqual(400);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'synchronizeModifications' because the SDK is in panic mode !"
+                    );
+
+                    done();
+                })
+                .catch((e) => done.fail(`oops ${e.stack}`));
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+
+            expect(mockAxios.post).toHaveBeenCalledTimes(0);
+            expect(mockAxios.get).toHaveBeenCalledTimes(1); // get from bucketing
+        });
+
+        it('synchronizeModifications should trigger safe mode in panic mode - bucketing mode', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, decisionMode: 'API' });
+            sdk.panic.setPanicModeTo(true);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+
+            visitorSpy = initSpyLogs(visitorInstance);
+            panicModeSpy = initSpyLogs(sdk.panic);
+
+            visitorInstance
+                .synchronizeModifications(true)
+                .then((status) => {
+                    expect(status).toEqual(200);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, '');
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, '');
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'synchronizeModifications' because the SDK is in panic mode !"
+                    );
+                })
+                .catch((e) => done.fail(`${e.stack}`))
+                .finally(() => {
+                    expect(mockAxios.post).toHaveBeenCalledTimes(1);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                    done();
+                });
+
+            mockAxios.mockResponse({ data: demoData.decisionApi.normalResponse.panicMode, status: 200 });
         });
     });
 });

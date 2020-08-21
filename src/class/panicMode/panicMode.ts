@@ -41,6 +41,23 @@ class PanicMode implements IFsPanicMode {
         const answer = !!response.panic;
         this.setPanicModeTo(answer, { sendLogs: answer !== this.enabled });
     }
+
+    public shouldRunSafeMode(functionName: string, options: { logType: 'debug' | 'error' } = { logType: 'error' }): boolean {
+        const { logType } = options;
+        if (this.enabled) {
+            switch (logType) {
+                case 'debug':
+                    this.log.debug(`Can't execute '${functionName}' because the SDK is in panic mode !`);
+                    break;
+
+                default:
+                    this.log.error(`Can't execute '${functionName}' because the SDK is in panic mode !`);
+                    break;
+            }
+        }
+
+        return this.enabled;
+    }
 }
 
 export default PanicMode;
