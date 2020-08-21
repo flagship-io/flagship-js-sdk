@@ -3,7 +3,7 @@ import { validate } from 'validate.js';
 import axios from 'axios';
 import { demoPollingInterval } from '../config/test';
 import { BucketingApiResponse } from '../class/bucketing/types';
-import { FlagshipSdkConfig } from '../types';
+import { FlagshipSdkConfig, IFsPanicMode } from '../types';
 
 import defaultConfig, { internalConfig } from '../config/default';
 import { FlagshipVisitorContext, DecisionApiResponseData, DecisionApiResponse, DecisionApiCampaign } from '../class/flagshipVisitor/types';
@@ -18,6 +18,7 @@ const checkRequiredSettingsForApiV2 = (config: FlagshipSdkConfig, log: FsLogger)
 
 const flagshipSdkHelper = {
     postFlagshipApi: (
+        panic: IFsPanicMode,
         config: FlagshipSdkConfig,
         log: FsLogger,
         endpoint: string,
@@ -33,17 +34,22 @@ const flagshipSdkHelper = {
             additionalHeaderParams['x-api-key'] = config.apiKey;
         }
         const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
-        return axios.post(
-            url,
-            { ...params, ...additionalParams },
-            {
-                ...queryParams,
-                headers: {
-                    ...queryParams.headers,
-                    ...additionalHeaderParams
+        return axios
+            .post(
+                url,
+                { ...params, ...additionalParams },
+                {
+                    ...queryParams,
+                    headers: {
+                        ...queryParams.headers,
+                        ...additionalHeaderParams
+                    }
                 }
-            }
-        );
+            )
+            .then((response: DecisionApiResponse) => {
+                panic.checkPanicMode(response.data);
+                return response;
+            });
     },
     checkPollingIntervalValue: (pollingIntervalValue: any): 'ok' | 'underLimit' | 'notSupported' => {
         const valueType = typeof pollingIntervalValue;

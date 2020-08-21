@@ -12,6 +12,7 @@ import Bucketing from './bucketing';
 import { BucketingApiResponse } from './types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import assertionHelper from '../../../test/helper/assertion';
+import mockGenerator from '../../../test/helper/mockGenerator';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -612,7 +613,8 @@ describe('Bucketing - startPolling', () => {
         mockAxios.reset();
     });
     it('should notify if polling already started before', (done) => {
-        bucketInstance = new Bucketing(demoData.envId[0], { ...bucketingConfig, pollingInterval: demoPollingInterval });
+        const tempConfig = { ...bucketingConfig, pollingInterval: demoPollingInterval };
+        bucketInstance = new Bucketing(demoData.envId[0], tempConfig, mockGenerator.createPanicModeMock(tempConfig));
         initSpyLogs(bucketInstance);
 
         bucketInstance.startPolling();
@@ -1248,7 +1250,7 @@ describe('Bucketing - callApi', () => {
 
     it('should report some logs when bucket api do not return "last-modified" attribute', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig);
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, mockGenerator.createPanicModeMock(bucketingConfig));
 
         expect(bucketInstance.data).toEqual(null);
 
@@ -1292,7 +1294,7 @@ describe('Bucketing - callApi', () => {
 
     it('should works with "classical" bucket api response', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig);
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, mockGenerator.createPanicModeMock(bucketingConfig));
 
         expect(bucketInstance.data).toEqual(null);
 
@@ -1332,7 +1334,7 @@ describe('Bucketing - callApi', () => {
 
     it('should handle status=304', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig);
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, mockGenerator.createPanicModeMock(bucketingConfig));
 
         // simulate already a previous call - BEGIN
         bucketInstance.lastModifiedDate = 'Wed, 18 Mar 2020 23:29:16 GMT';
@@ -1372,9 +1374,14 @@ describe('Bucketing - callApi', () => {
 
     it('should detect when bucket api response return panic mode', (done) => {
         bucketingApiMockResponse = demoData.bucketing.panic as BucketingApiResponse;
-        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig);
+        let pmSpy;
+        const panicModeInstance = mockGenerator.createPanicModeMock(bucketingConfig, false, (PM) => {
+            pmSpy = initSpyLogs(PM);
+            return PM;
+        });
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, panicModeInstance);
         initSpyLogs(bucketInstance);
-
+        expect(panicModeInstance.enabled).toEqual(false);
         bucketInstance.on('launched', () => {
             try {
                 expect(mockAxios.get).toHaveBeenNthCalledWith(
@@ -1383,11 +1390,23 @@ describe('Bucketing - callApi', () => {
                     expectedRequestHeaderFirstCall
                 );
 
+                expect(panicModeInstance.enabled).toEqual(true);
+                expect(pmSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(pmSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(pmSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(pmSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(pmSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+
+                expect(pmSpy.spyInfoLogs).toHaveBeenNthCalledWith(1, 'panic mode is ENABLED. SDK will turn into safe mode.');
+
+                // TODO: to improve
+
                 expect(spyDebugLogs).toHaveBeenCalledTimes(0);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyWarnLogs).toHaveBeenNthCalledWith(1, 'Panic mode detected, running SDK in safe mode...');
+                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'panic mode is ENABLED. SDK will turn into safe mode.');
                 done();
             } catch (error) {
                 done.fail(error.stack);
@@ -1402,7 +1421,7 @@ describe('Bucketing - callApi', () => {
         mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
     });
     it('should log an error when bucketing api fail', (done) => {
-        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig);
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, mockGenerator.createPanicModeMock(bucketingConfig));
         initSpyLogs(bucketInstance);
         bucketInstance.on('error', (err) => {
             try {
@@ -1446,7 +1465,7 @@ describe('Bucketing initialization', () => {
         mockAxios.reset();
     });
     it('should init the bucketing class when arguments are correct', (done) => {
-        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig);
+        bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, mockGenerator.createPanicModeMock(bucketingConfig));
         expect(bucketInstance instanceof Bucketing).toEqual(true);
 
         expect(bucketInstance.data).toEqual(null);
@@ -1458,10 +1477,11 @@ describe('Bucketing initialization', () => {
         done();
     });
     it('should preset bucketing if "initialBucketing" is set correctly', (done) => {
-        bucketInstance = new Bucketing(demoData.envId[0], {
+        const tempConfig = {
             ...bucketingConfig,
             initialBucketing: demoData.bucketing.classical
-        } as FlagshipSdkConfig);
+        } as FlagshipSdkConfig;
+        bucketInstance = new Bucketing(demoData.envId[0], tempConfig, mockGenerator.createPanicModeMock(tempConfig));
         expect(bucketInstance instanceof Bucketing).toEqual(true);
 
         expect(bucketInstance.data).toEqual(demoData.bucketing.classical);
@@ -1475,10 +1495,11 @@ describe('Bucketing initialization', () => {
 
     it('should NOT preset bucketing if "initialBucketing" is NOT set correctly', (done) => {
         const helperSpy = jest.spyOn(flagshipSdkHelper, 'generateValidateError');
-        bucketInstance = new Bucketing(demoData.envId[0], {
+        const tempConfig = {
             ...bucketingConfig,
             initialBucketing: { test: 'oops' }
-        } as FlagshipSdkConfig);
+        } as FlagshipSdkConfig;
+        bucketInstance = new Bucketing(demoData.envId[0], tempConfig, mockGenerator.createPanicModeMock(tempConfig));
         expect(bucketInstance instanceof Bucketing).toEqual(true);
 
         expect(bucketInstance.data).toEqual(null);
@@ -1495,10 +1516,11 @@ describe('Bucketing initialization', () => {
     });
     it('should NOT preset bucketing if "initialBucketing" is NOT set correctly - part 2', (done) => {
         const helperSpy = jest.spyOn(flagshipSdkHelper, 'generateValidateError');
-        bucketInstance = new Bucketing(demoData.envId[0], {
+        const tempConfig = {
             ...bucketingConfig,
             initialBucketing: { panic: false, lastModifiedDate: 'oops2', campaigns: [{ test: 'toos' }] }
-        } as FlagshipSdkConfig);
+        } as FlagshipSdkConfig;
+        bucketInstance = new Bucketing(demoData.envId[0], tempConfig, mockGenerator.createPanicModeMock(tempConfig));
         expect(bucketInstance instanceof Bucketing).toEqual(true);
 
         expect(bucketInstance.data).toEqual(null);

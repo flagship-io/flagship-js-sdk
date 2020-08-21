@@ -73,9 +73,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         const url = internalConfig.bucketingEndpoint.replace('@ENV_ID@', this.envId);
         return Axios.get(url, axiosConfig)
             .then(({ data: bucketingData, status, ...other }: AxiosResponse<BucketingApiResponse>) => {
-                if (bucketingData.panic) {
-                    this.log.warn('Panic mode detected, running SDK in safe mode...');
-                } else if (status === 304) {
+                this.panic.checkPanicMode(bucketingData);
+                if (status === 304) {
                     this.log.info(`callApi - current bucketing up to date (api status=304)`);
                 } else {
                     if (!other.headers['last-modified']) {

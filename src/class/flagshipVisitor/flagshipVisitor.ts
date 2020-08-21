@@ -101,7 +101,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     ): Promise<{ status: number } | Error> {
         return new Promise<{ status: number } | Error>((resolve, reject) => {
             flagshipSdkHelper
-                .postFlagshipApi(this.config, this.log, `${this.config.flagshipApi}activate`, {
+                .postFlagshipApi(this.panic, this.config, this.log, `${this.config.flagshipApi}activate`, {
                     vid: this.id,
                     cid: this.envId,
                     caid: variationGroupId,
@@ -803,6 +803,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             } else {
                 flagshipSdkHelper
                     .postFlagshipApi(
+                        this.panic,
                         this.config,
                         this.log,
                         url,
@@ -1038,7 +1039,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     private callEventEndpoint(): Promise<number> {
         return new Promise((resolve, reject) => {
             flagshipSdkHelper
-                .postFlagshipApi(this.config, this.log, `${this.config.flagshipApi}${this.envId}/events`, {
+                .postFlagshipApi(this.panic, this.config, this.log, `${this.config.flagshipApi}${this.envId}/events`, {
                     visitor_id: this.id,
                     type: 'CONTEXT',
                     data: {
