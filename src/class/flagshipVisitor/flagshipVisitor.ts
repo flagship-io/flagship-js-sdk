@@ -4,7 +4,7 @@ import { EventEmitter } from 'events';
 
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
-import { FlagshipSdkConfig, IFlagshipBucketing, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../types';
+import { FlagshipSdkConfig, IFlagshipBucketing, IFlagshipBucketingVisitor, IFlagshipVisitor, IFsPanicMode } from '../../types';
 import { BucketingApiResponse } from '../bucketing/types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
@@ -48,15 +48,19 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     modificationsInternalStatus: ModificationsInternalStatus | null;
 
+    panic: IFsPanicMode;
+
     constructor(
         envId: string,
         config: FlagshipSdkConfig,
         sdkListener: EventEmitter,
         bucket: IFlagshipBucketing | null,
         id: string,
-        context: FlagshipVisitorContext = {}
+        context: FlagshipVisitorContext = {},
+        panic: IFsPanicMode
     ) {
         super();
+        this.panic = panic;
         this.config = config;
         this.id = id;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);

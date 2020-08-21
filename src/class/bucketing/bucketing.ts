@@ -3,7 +3,7 @@ import Axios, { AxiosResponse } from 'axios';
 import { EventEmitter } from 'events';
 
 import { internalConfig } from '../../config/default';
-import { FlagshipSdkConfig, IFlagshipBucketing } from '../../types';
+import { FlagshipSdkConfig, IFlagshipBucketing, IFsPanicMode } from '../../types';
 import loggerHelper from '../../lib/loggerHelper';
 import { BucketingApiResponse } from './types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
@@ -21,8 +21,11 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
 
     lastModifiedDate: string | null;
 
-    constructor(envId: string, config: FlagshipSdkConfig) {
+    panic: IFsPanicMode;
+
+    constructor(envId: string, config: FlagshipSdkConfig, panic: IFsPanicMode) {
         super();
+        this.panic = panic;
         this.config = config;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - Bucketing`);
         this.envId = envId;

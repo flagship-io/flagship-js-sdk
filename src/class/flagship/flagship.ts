@@ -2,13 +2,14 @@ import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { EventEmitter } from 'events';
 
 import defaultConfig, { internalConfig } from '../../config/default';
-import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor } from '../../types';
+import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor, IFsPanicMode } from '../../types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import Bucketing from '../bucketing/bucketing';
 import { BucketingApiResponse } from '../bucketing/types';
 import FlagshipVisitor from '../flagshipVisitor/flagshipVisitor';
 import { FlagshipVisitorContext } from '../flagshipVisitor/types';
+import PanicMode from '../panicMode/panicMode';
 
 class Flagship implements IFlagship {
     config: FlagshipSdkConfig;
@@ -21,12 +22,15 @@ class Flagship implements IFlagship {
 
     envId: string;
 
+    panic: IFsPanicMode;
+
     constructor(envId: string, apiKey?: string, config = {}) {
         const { cleanConfig: cleanCustomConfig, ignoredConfig } = flagshipSdkHelper.checkConfig(config, apiKey);
         this.config = { ...defaultConfig, ...cleanCustomConfig };
         this.log = loggerHelper.getLogger(this.config);
         this.eventEmitter = new EventEmitter();
         this.bucket = null;
+        this.panic = new PanicMode(this.config);
         this.envId = envId;
         if (!apiKey) {
             this.log.warn(
@@ -41,7 +45,7 @@ class Flagship implements IFlagship {
             this.log.debug('Custom flagship SDK config attribute(s) detected');
         }
         if (this.config.decisionMode === 'Bucketing') {
-            this.bucket = new Bucketing(this.envId, this.config);
+            this.bucket = new Bucketing(this.envId, this.config, this.panic);
 
             if (this.config.fetchNow) {
                 this.startBucketingPolling();
@@ -67,7 +71,15 @@ class Flagship implements IFlagship {
         };
 
         this.log.info(`Creating new visitor (id="${id}")`);
-        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.eventEmitter, this.bucket, id, context);
+        const flagshipVisitorInstance = new FlagshipVisitor(
+            this.envId,
+            this.config,
+            this.eventEmitter,
+            this.bucket,
+            id,
+            context,
+            this.panic
+        );
         if (this.config.fetchNow || this.config.activateNow) {
             this.log.info(logBook[this.config.decisionMode].newVisitorInfo);
             flagshipVisitorInstance

@@ -14,6 +14,7 @@ import {
     ModificationsInternalStatus
 } from './class/flagshipVisitor/types';
 import { BucketingApiResponse } from './class/bucketing/types';
+import { SetPanicModeToOptions } from './class/panicMode/types';
 
 export type MurmurV3 = (value: string, seed?: number) => number;
 
@@ -46,6 +47,14 @@ export type SaveCacheArgs = {
     saveInCacheModifications(modificationsToSaveInCache: DecisionApiCampaign[] | null): void;
 };
 
+export interface IFsPanicMode {
+    enabled: boolean;
+    beginDate: Date | null;
+    log: FsLogger;
+    setPanicModeTo(value: boolean, options: SetPanicModeToOptions): void;
+    checkPanicMode(response: DecisionApiResponseData | BucketingApiResponse): void;
+}
+
 export interface IFlagshipBucketingVisitor {
     data: BucketingApiResponse | null;
     computedData: DecisionApiResponseData | null;
@@ -64,6 +73,7 @@ export interface IFlagshipBucketing extends EventEmitter {
     data: BucketingApiResponse | null;
     log: FsLogger;
     envId: string;
+    panic: IFsPanicMode;
     isPollingRunning: boolean;
     config: FlagshipSdkConfig;
     lastModifiedDate: string | null;
@@ -79,6 +89,7 @@ export interface IFlagshipVisitor extends EventEmitter {
     id: string;
     log: FsLogger;
     envId: string;
+    panic: IFsPanicMode;
     context: FlagshipVisitorContext;
     isAllModificationsFetched: boolean;
     bucket: IFlagshipBucketingVisitor | null;
@@ -109,6 +120,7 @@ export interface IFlagshipVisitor extends EventEmitter {
 export interface IFlagship {
     config: FlagshipSdkConfig;
     log: FsLogger;
+    panic: IFsPanicMode;
     envId: string;
     eventEmitter: EventEmitter;
     bucket: IFlagshipBucketing | null;
