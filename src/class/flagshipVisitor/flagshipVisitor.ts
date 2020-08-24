@@ -595,6 +595,18 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         activate = false,
         options: { force?: boolean; simpleMode?: boolean } = {}
     ): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
+        if (this.panic.shouldRunSafeMode('getAllModifications')) {
+            return new Promise((resolve) => {
+                if (options?.simpleMode) {
+                    resolve({});
+                } else {
+                    resolve({
+                        data: [],
+                        status: 400
+                    });
+                }
+            });
+        }
         const defaultOptions = {
             force: false,
             simpleMode: false

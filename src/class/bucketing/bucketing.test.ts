@@ -1378,6 +1378,8 @@ describe('Bucketing - callApi', () => {
         bucketInstance = new Bucketing(demoData.envId[0], bucketingConfig, panicModeInstance);
         initSpyLogs(bucketInstance);
         expect(panicModeInstance.enabled).toEqual(false);
+        expect(bucketInstance.data).toEqual(null);
+
         bucketInstance.on('launched', () => {
             try {
                 expect(mockAxios.get).toHaveBeenNthCalledWith(
@@ -1395,14 +1397,13 @@ describe('Bucketing - callApi', () => {
 
                 expect(pmSpy.spyInfoLogs).toHaveBeenNthCalledWith(1, 'panic mode is ENABLED. SDK will turn into safe mode.');
 
-                // TODO: to improve
+                expect(bucketInstance.data).toEqual(null);
 
                 expect(spyDebugLogs).toHaveBeenCalledTimes(0);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-                expect(spyInfoLogs).toHaveBeenCalledTimes(1);
-                expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'panic mode is ENABLED. SDK will turn into safe mode.');
+                expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 done();
             } catch (error) {
                 done.fail(error.stack);

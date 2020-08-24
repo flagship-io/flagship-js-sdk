@@ -53,7 +53,7 @@ export interface IFsPanicMode {
     log: FsLogger;
     setPanicModeTo(value: boolean, options?: SetPanicModeToOptions): void;
     checkPanicMode(response: DecisionApiResponseData | BucketingApiResponse): void;
-    shouldRunSafeMode(functionName: string, options: { logType: 'debug' | 'error' }): boolean;
+    shouldRunSafeMode(functionName: string, options?: { logType: 'debug' | 'error' }): boolean;
 }
 
 export interface IFlagshipBucketingVisitor {
