@@ -4,6 +4,8 @@
 
 ### New features 🎉
 
+-   Panic mode supported. When you've enabled panic mode through the web dashboard, the SDK will detect it and be in safe mode. Logs will appear to warns you and default values for modifications will be return.
+
 -   New setting `initialBucketing`. It takes the data received from the flagship bucketing api endpoint. Can be useful when you save this data in cache.
 
 -   Add `flagshipSdk.stopBucketingPolling()` function. It allows to stop the bucketing polling whenever you want.
