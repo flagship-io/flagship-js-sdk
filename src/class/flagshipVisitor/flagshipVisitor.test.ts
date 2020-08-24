@@ -3011,6 +3011,75 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.get).toHaveBeenCalledTimes(1); // get from bucketing
         });
 
+        it('synchronizeModifications should remove panic mode, if respones is back to normal - bucketing mode', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, decisionMode: 'Bucketing' });
+            sdk.panic.setPanicModeTo(true);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
+
+            visitorSpy = initSpyLogs(visitorInstance);
+            panicModeSpy = initSpyLogs(sdk.panic);
+
+            sdk.eventEmitter.on('bucketPollingSuccess', () => {
+                visitorInstance
+                    .synchronizeModifications(true)
+                    .then((status) => {
+                        expect(status).toEqual(200);
+
+                        expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                        expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                        expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                        expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                        expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+
+                        expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                        expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                        expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                        expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                        expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                        expect(panicModeSpy.spyInfoLogs).toHaveBeenNthCalledWith(
+                            1,
+                            'panic mode is DISABLED. Everything is back to normal.'
+                        );
+
+                        expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling with fresh data detected.');
+                        // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(
+                        //     2,
+                        //     "saveModificationsInCache - saving in cache those modifications: ..."
+                        // );
+
+                        expect(visitorInstance.fetchedModifications).toEqual([
+                            {
+                                id: 'bptggipaqi903f3haq0g',
+                                variation: { id: 'bptggipaqi903f3haq20', modifications: { type: 'JSON', value: { testCache: null } } },
+                                variationGroupId: 'l7jaucjpddjdwdbfgg7'
+                            },
+                            {
+                                id: 'bq4sf09oet0006cfihd0',
+                                variation: {
+                                    id: 'bq4sf09oet0006cfiheg',
+                                    modifications: {
+                                        type: 'JSON',
+                                        value: { 'btn-color': 'red', 'btn-text': 'Buy now !', 'txt-color': '#fff' }
+                                    }
+                                },
+                                variationGroupId: 'vsc1rf8xs3bvu0rzs8b'
+                            }
+                        ]);
+
+                        expect(sdk.panic.enabled).toEqual(false);
+                        done();
+                    })
+                    .catch((e) => done.fail(e));
+            });
+
+            mockAxios.mockResponse({ data: demoData.bucketing.classical, status: 200 });
+
+            expect(mockAxios.post).toHaveBeenCalledTimes(2);
+            expect(mockAxios.get).toHaveBeenCalledTimes(1); // get from bucketing
+        });
+
         it('synchronizeModifications should trigger safe mode in panic mode - decision api mode', (done) => {
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, decisionMode: 'API' });
             sdk.panic.setPanicModeTo(true);
