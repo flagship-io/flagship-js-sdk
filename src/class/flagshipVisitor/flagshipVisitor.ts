@@ -588,6 +588,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public getModificationsForCampaign(campaignId: string, activate = false): Promise<DecisionApiResponse> {
+        if (this.panic.shouldRunSafeMode('getModificationsForCampaign')) {
+            return new Promise((resolve) => resolve({ data: flagshipSdkHelper.generatePanicDecisionApiResponse(this.id), status: 400 }));
+        }
         return this.fetchAllModifications({ activate, campaignCustomID: campaignId }) as Promise<DecisionApiResponse>;
     }
 
@@ -1026,6 +1029,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public sendHits(hitsArray: Array<HitShape>): Promise<void> {
+        if (this.panic.shouldRunSafeMode('sendHits')) {
+            return new Promise((resolve) => resolve());
+        }
         const payloads: any[] = [];
         const url = 'https://ariane.abtasty.com';
         const handleHitsError = (error: Error): void => {
@@ -1069,6 +1075,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public sendHit(hitData: HitShape): Promise<void> {
+        if (this.panic.shouldRunSafeMode('sendHit')) {
+            return new Promise((resolve) => resolve());
+        }
         return this.sendHits([hitData]);
     }
 

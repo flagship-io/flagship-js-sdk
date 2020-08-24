@@ -3051,36 +3051,87 @@ describe('FlagshipVisitor', () => {
             mockAxios.mockResponse({ data: demoData.decisionApi.normalResponse.panicMode, status: 200 });
         });
 
-        //     it('getModificationsForCampaign should trigger safe mode in panic mode - normal mode', () => {
-        //         visitorInstance.getModificationsForCampaign('fezfezfez', { force: true, simpleMode: false });
+        it('synchronizeModifications should remove safe mode, if it was in panic mode  and decision api returns normal response', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, decisionMode: 'API' });
+            sdk.panic.setPanicModeTo(true);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
+            visitorSpy = initSpyLogs(visitorInstance);
+            panicModeSpy = initSpyLogs(sdk.panic);
 
-        //         try {
-        //             mockAxios.mockResponse();
-        //         } catch (error) {
-        //             expect(error.message).toEqual('No request to respond to!');
-        //         }
+            visitorInstance
+                .synchronizeModifications(true)
+                .then((status) => {
+                    expect(status).toEqual(200);
+                    expect(visitorInstance.fetchedModifications).toEqual(demoData.decisionApi.normalResponse.oneCampaignOneModif.campaigns);
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-        //         expect(mockAxios.post).toHaveBeenCalledTimes(0);
-        //         expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
 
-        //         expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-        //         expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
-        //         expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
-        //         expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-        //         expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenNthCalledWith(1, 'panic mode is DISABLED. Everything is back to normal.');
 
-        //         expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-        //         expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
-        //         expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
-        //         expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-        //         expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+                    // expect(mockAxios.post).toHaveBeenNthCalledWith(1, ''); // https://decision.flagship.io/v2/bn1ab7m56qolupi5sa0g/campaigns?mode=normal
+                    // expect(mockAxios.post).toHaveBeenNthCalledWith(2, ''); // https://decision.flagship.io/v2/activate
+                    // expect(mockAxios.post).toHaveBeenNthCalledWith(3, ''); // https://decision.flagship.io/v2/bn1ab7m56qolupi5sa0g/events
 
-        //         expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
-        //             1,
-        //             "Can't execute 'getModificationsForCampaign' because the SDK is in panic mode !"
-        //         );
-        //     });
-        // });
+                    expect(mockAxios.post).toHaveBeenCalledTimes(3);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                    expect(sdk.panic.enabled).toEqual(false);
+
+                    done();
+                })
+                .catch((e) => done.fail(e))
+                .finally(() => {});
+
+            mockAxios.mockResponse({ data: demoData.decisionApi.normalResponse.oneCampaignOneModif, status: 200 });
+        });
+
+        it('getModificationsForCampaign should trigger safe mode in panic mode - normal mode', (done) => {
+            visitorInstance.getModificationsForCampaign('blntcamqmdvg04g371f0').then((response) => {
+                try {
+                    expect(response.data.campaigns).toEqual([]);
+                    expect(response.data.visitorId).toBe(visitorInstance.id);
+
+                    expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'getModificationsForCampaign' because the SDK is in panic mode !"
+                    );
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+        });
 
         it('getAllModifications should trigger safe mode in panic mode - normal mode', (done) => {
             visitorInstance
@@ -3144,6 +3195,82 @@ describe('FlagshipVisitor', () => {
                     done();
                 })
                 .catch((e) => done.fail(e));
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+        });
+
+        it('sendHits should trigger safe mode in panic mode', (done) => {
+            visitorInstance.sendHits([demoData.hit.event]).then((response) => {
+                try {
+                    expect(response).toEqual(undefined);
+
+                    expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'sendHits' because the SDK is in panic mode !"
+                    );
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+        });
+
+        it('sendHit should trigger safe mode in panic mode', (done) => {
+            visitorInstance.sendHit(demoData.hit.event).then((response) => {
+                try {
+                    expect(response).toEqual(undefined);
+
+                    expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'sendHit' because the SDK is in panic mode !"
+                    );
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
 
             try {
                 mockAxios.mockResponse();

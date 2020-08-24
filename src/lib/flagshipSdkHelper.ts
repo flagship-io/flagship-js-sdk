@@ -257,6 +257,13 @@ const flagshipSdkHelper = {
             default:
                 return false;
         }
+    },
+    generatePanicDecisionApiResponse: (visitorId: string): DecisionApiResponseData => {
+        return {
+            visitorId,
+            campaigns: [],
+            panic: true
+        };
     }
 };
 
