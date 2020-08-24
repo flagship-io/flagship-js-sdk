@@ -9,9 +9,9 @@ const mockGenerator: MockGenerator = {
     createPanicModeMock: (config, isPanic = false, callback = (PM): IFsPanicMode => PM): IFsPanicMode => {
         const output = new PanicMode(config);
 
-        if (isPanic) {
-            output.setPanicModeTo(true, { sendLogs: false });
-        }
+        // if (isPanic) {
+        //     output.setPanicModeTo(true, { sendLogs: false });
+        // }
 
         return callback(output);
     }

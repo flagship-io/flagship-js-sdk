@@ -85,6 +85,8 @@ const murmurAllocationCheck = (variations, acceptedRange, nbVisitor) => {
         ${variationRangeResult.map((v, index) => `v${index}=${v}`).join(' ')}
         result:
         ${variationRangeResult.map((v, index) => `v${index}=${checkCondition(v)}`).join(' ')}
+        max range accepted: ${acceptedRange}
+        range detected in this test: ${variationRangeResult.map((v, index) => `v${index}=${v}`)}
         `
     };
 };
