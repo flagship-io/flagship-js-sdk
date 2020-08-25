@@ -5,7 +5,6 @@ import { EventEmitter } from 'events';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import { FlagshipSdkConfig, IFlagshipBucketing, IFlagshipBucketingVisitor, IFlagshipVisitor, IFsPanicMode } from '../../types';
-import { BucketingApiResponse } from '../bucketing/types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
     checkCampaignsActivatedMultipleTimesOutput,
@@ -44,8 +43,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     fetchedModifications: DecisionApiCampaign[] | null;
 
-    sdkListener: EventEmitter;
-
     modificationsInternalStatus: ModificationsInternalStatus | null;
 
     panic: IFsPanicMode;
@@ -53,7 +50,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     constructor(
         envId: string,
         config: FlagshipSdkConfig,
-        sdkListener: EventEmitter,
         bucket: IFlagshipBucketing | null,
         id: string,
         context: FlagshipVisitorContext = {},
@@ -68,7 +64,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
         this.isAllModificationsFetched = false;
         this.bucket = null;
-        this.sdkListener = sdkListener;
 
         // initialize "fetchedModifications" and "modificationsDetails"
         if (config.initialModifications) {
@@ -80,19 +75,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         if (this.config.decisionMode === 'Bucketing') {
             this.bucket = new BucketingVisitor(this.envId, this.id, this.context, this.config, bucket);
-            sdkListener.on('bucketPollingSuccess', ({ payload: data, status }: { payload: BucketingApiResponse; status: number }) => {
-                if (status === 304) {
-                    // do nothing
-                } else if (status === 200) {
-                    if (!this.panic.enabled) {
-                        this.log.debug('bucketing polling with fresh data detected.');
-                    }
-                    (this.bucket as IFlagshipBucketingVisitor).updateCache(data);
-                    // NOTE: saveModificationsInCache MUST be done only when synchronizing !
-                } else {
-                    this.log.error(`unexpected status (="${status}") received. This polling will be ignored.`);
-                }
-            });
         }
     }
 
@@ -157,7 +139,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 );
                 return false;
             }
-            this.log.debug('triggerActivateIfNeeded - variation already activated');
+            this.log.debug(`triggerActivateIfNeeded - variation (vgId="${data.vgId}") already activated`);
             return true;
         };
 
@@ -786,59 +768,29 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 );
             } else if (this.config.decisionMode === 'Bucketing') {
                 let transformedBucketingData: DecisionApiResponseData = { visitorId: this.id, campaigns: [] };
-                if (this.bucket && this.bucket.computedData) {
+                this.bucket.updateCache();
+                if (this.bucket?.computedData) {
                     transformedBucketingData = { ...transformedBucketingData, campaigns: this.bucket.computedData.campaigns };
                     this.saveModificationsInCache(transformedBucketingData.campaigns);
-                    resolve(
-                        this.fetchAllModificationsPostProcess(transformedBucketingData, {
-                            ...defaultArgs,
-                            ...args
-                        }) as DecisionApiResponse
-                    );
-                } else {
-                    this.log.info('fetchAllModifications - no data in current bucket, waiting for bucket to start...');
-                    this.sdkListener.once('bucketPollingSuccess', ({ payload: data }) => {
-                        if (this.bucket.computedData) {
-                            transformedBucketingData = {
-                                ...transformedBucketingData,
-                                campaigns: ((this.bucket as IFlagshipBucketingVisitor).computedData as DecisionApiResponseData).campaigns
-                            };
-                            this.saveModificationsInCache(transformedBucketingData.campaigns);
-                            this.log.debug('fetchAllModifications - bucket start detected');
-
-                            if (activate) {
-                                this.log.debug(
-                                    `fetchAllModifications - activateNow enabled with bucketing mode. ${this.modificationsInternalStatus.length} campaign(s) will be activated.`
-                                );
-                                this.triggerActivateIfNeeded(undefined, true);
-                            }
-                        } else {
-                            this.log.error(
-                                `fetchAllModifications - bucket start detected but no data received from bucketing. It might due to an error (see previous logs).`
-                            );
-                        }
-
-                        resolve(
-                            this.fetchAllModificationsPostProcess(transformedBucketingData, {
-                                ...defaultArgs,
-                                ...args
-                            }) as DecisionApiResponse
+                    if (activate) {
+                        this.log.debug(
+                            `fetchAllModifications - activateNow enabled with bucketing mode. Following keys "${Object.keys(
+                                this.modificationsInternalStatus
+                            ).join(', ')}" will be activated.`
                         );
-                    });
-                    this.sdkListener.once('bucketPollingFailed', (error) => {
-                        if (this.fetchedModifications) {
-                            this.log.error(
-                                `fetchAllModifications - bucketing failed with error "${error}", keeping previous modifications in cache. Should not have any impact on the visitor.`
-                            );
-                        } else {
-                            this.log.fatal(`fetchAllModifications - bucketing failed with error "${error}"`);
-                        }
-
-                        this.saveModificationsInCache(null);
-
-                        reject(error);
-                    });
+                        // NOTE: triggerActivateIfNeeded trigger in post process
+                    }
+                } else {
+                    this.log.info(
+                        "fetchAllModifications - the visitor won't have modifications assigned as the bucketing still didn't received any data. Consider do a synchronization a bit later."
+                    );
                 }
+                return resolve(
+                    this.fetchAllModificationsPostProcess(transformedBucketingData, {
+                        ...defaultArgs,
+                        ...args
+                    }) as DecisionApiResponse
+                );
             } else {
                 flagshipSdkHelper
                     .postFlagshipApi(

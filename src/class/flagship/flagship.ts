@@ -63,23 +63,13 @@ class Flagship implements IFlagship {
                     `new visitor (id="${id}") decision API failed during initialization with error "${error}"`
             },
             Bucketing: {
-                newVisitorInfo: `new visitor (id="${id}") calling bucketing API for initialization (waiting to be ready...)`,
-                modificationSuccess: `new visitor (id="${id}") bucketing API finished (ready !)`,
-                modificationFailed: (error: Error): string =>
-                    `new visitor (id="${id}") bucket API failed during initialization with error "${error}"`
+                newVisitorInfo: `new visitor (id="${id}") check for existing bucketing data (waiting to be ready...)`,
+                modificationSuccess: `new visitor (id="${id}") (ready !)`
             }
         };
 
         this.log.info(`Creating new visitor (id="${id}")`);
-        const flagshipVisitorInstance = new FlagshipVisitor(
-            this.envId,
-            this.config,
-            this.eventEmitter,
-            this.bucket,
-            id,
-            context,
-            this.panic
-        );
+        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.bucket, id, context, this.panic);
         if (this.config.fetchNow || this.config.activateNow) {
             this.log.info(logBook[this.config.decisionMode].newVisitorInfo);
             flagshipVisitorInstance
@@ -90,7 +80,9 @@ class Flagship implements IFlagship {
                     flagshipVisitorInstance.emit('ready');
                 })
                 .catch((response) => {
-                    this.log.fatal(logBook[this.config.decisionMode].modificationFailed(response));
+                    if (this.config.decisionMode !== 'Bucketing') {
+                        this.log.fatal(logBook[this.config.decisionMode].modificationFailed(response));
+                    }
                     flagshipVisitorInstance.emit('ready');
                 });
         } else {

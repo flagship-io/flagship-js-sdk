@@ -66,7 +66,7 @@ export interface IFlagshipBucketingVisitor {
     visitorContext: FlagshipVisitorContext;
     global: IFlagshipBucketing;
     getEligibleCampaigns(): DecisionApiCampaign[];
-    updateCache(data: BucketingApiResponse): void;
+    updateCache(): boolean;
     updateVisitorContext(newContext: FlagshipVisitorContext): void;
 }
 
@@ -96,7 +96,6 @@ export interface IFlagshipVisitor extends EventEmitter {
     bucket: IFlagshipBucketingVisitor | null;
     fetchedModifications: DecisionApiCampaign[] | null;
     modificationsInternalStatus: ModificationsInternalStatus | null;
-    sdkListener: EventEmitter;
     activateModifications(
         modifications: Array<{
             key: string;

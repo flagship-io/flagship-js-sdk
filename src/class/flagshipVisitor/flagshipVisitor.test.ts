@@ -3012,7 +3012,11 @@ describe('FlagshipVisitor', () => {
         });
 
         it('synchronizeModifications should remove panic mode, if respones is back to normal - bucketing mode', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, decisionMode: 'Bucketing' });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...testConfig,
+                decisionMode: 'Bucketing',
+                pollingInterval: 2
+            });
             sdk.panic.setPanicModeTo(true);
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
@@ -3032,6 +3036,12 @@ describe('FlagshipVisitor', () => {
                         expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
                         expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
 
+                        // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications');
+                        expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(
+                            2,
+                            'fetchAllModifications - activateNow enabled with bucketing mode. Following keys "testCache, btn-color, btn-text, txt-color" will be activated.'
+                        );
+
                         expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
                         expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
                         expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -3042,12 +3052,6 @@ describe('FlagshipVisitor', () => {
                             1,
                             'panic mode is DISABLED. Everything is back to normal.'
                         );
-
-                        expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'bucketing polling with fresh data detected.');
-                        // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(
-                        //     2,
-                        //     "saveModificationsInCache - saving in cache those modifications: ..."
-                        // );
 
                         expect(visitorInstance.fetchedModifications).toEqual([
                             {
@@ -3069,15 +3073,14 @@ describe('FlagshipVisitor', () => {
                         ]);
 
                         expect(sdk.panic.enabled).toEqual(false);
+                        expect(mockAxios.post).toHaveBeenCalledTimes(4); // 2x activate, 2x events (init, synchro)
+                        expect(mockAxios.get).toHaveBeenCalledTimes(1); // get from bucketing
                         done();
                     })
                     .catch((e) => done.fail(e));
             });
 
             mockAxios.mockResponse({ data: demoData.bucketing.classical, status: 200 });
-
-            expect(mockAxios.post).toHaveBeenCalledTimes(2);
-            expect(mockAxios.get).toHaveBeenCalledTimes(1); // get from bucketing
         });
 
         it('synchronizeModifications should trigger safe mode in panic mode - decision api mode', (done) => {

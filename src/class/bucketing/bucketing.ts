@@ -77,7 +77,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                 if (!this.panic.enabled) {
                     if (status === 304) {
                         this.log.info(`callApi - current bucketing up to date (api status=304)`);
-                    } else {
+                    } else if (status === 200) {
                         if (!other.headers['last-modified']) {
                             this.log.warn(`callApi - http GET request (url="${url}") did not return attribute "last-modified"`);
                         } else {
@@ -85,6 +85,8 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                         }
                         this.log.info(`callApi - current bucketing updated`);
                         this.data = { ...bucketingData, lastModifiedDate: this.lastModifiedDate };
+                    } else {
+                        this.log.error(`callApi - unexpected status (="${status}") received. This polling will be ignored.`);
                     }
                 }
                 this.emit('launched', { status });
