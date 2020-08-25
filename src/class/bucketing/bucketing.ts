@@ -43,7 +43,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                     } else {
                         this.log.debug('on("launched") listener - bucketing stop detected.');
                     }
-                }, (this.config.pollingInterval as number) * 60 * 1000);
+                }, (this.config.pollingInterval as number) * 1000); // nbSeconds * 1000 ms
             } // no need to do logs on "else" statement because already done before
         });
 
