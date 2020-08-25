@@ -713,16 +713,12 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         // if callback not used, do default behavior
         if (!haveBeenCalled) {
-            if (data === null && previousFM && this.config.decisionMode === 'Bucketing') {
-                this.log.info('saveModificationsInCache - keeping previous cache since bucketing did not return data');
-            } else {
-                save(data);
-                this.log.debug(
-                    `saveModificationsInCache - saving in cache those modifications: "${
-                        this.fetchedModifications ? JSON.stringify(this.fetchedModifications) : 'null'
-                    }"`
-                );
-            }
+            save(data);
+            this.log.debug(
+                `saveModificationsInCache - saving in cache those modifications: "${
+                    this.fetchedModifications ? JSON.stringify(this.fetchedModifications) : 'null'
+                }"`
+            );
         }
     }
 
