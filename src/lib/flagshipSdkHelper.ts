@@ -136,10 +136,6 @@ const flagshipSdkHelper = {
                 presence: { message: 'is missing' },
                 type: { type: 'array', message: 'is not a array' }
             },
-            panic: {
-                presence: { message: 'is missing' },
-                type: { type: 'boolean', message: 'is not a boolean' }
-            },
             lastModifiedDate: {
                 presence: { message: 'is missing' },
                 type: { type: 'string', message: 'is not a string' }
