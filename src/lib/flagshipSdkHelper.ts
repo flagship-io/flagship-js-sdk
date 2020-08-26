@@ -95,24 +95,35 @@ const flagshipSdkHelper = {
             log.debug(`No unknown key detected :) - ${objectName}`);
         }
     },
+    checkTimeout: (value: number): number => {
+        return typeof value === 'number' && value > 0 ? value : defaultConfig.timeout;
+    },
     checkConfig: (unknownConfig: { [key: string]: any }, apiKey?: string): { cleanConfig: object; ignoredConfig: object } => {
-        const cleanObject: { [key: string]: string | boolean | null } = {};
+        const cleanObject: { [key: string]: string | boolean | number | null } = {};
         const dirtyObject: { [key: string]: string | boolean | null } = {};
         const validAttributesList: Array<string> = [];
         Object.entries(defaultConfig).forEach(([key]) => validAttributesList.push(key));
         const whiteListedAttributesList: Array<string> = Object.keys(otherSdkConfig); // specific config coming from other SDK.
-        Object.keys(unknownConfig).forEach((key) => {
-            const value = unknownConfig[key];
-            if (validAttributesList.includes(key)) {
+        Object.keys(unknownConfig).forEach((foreignKey) => {
+            const value = unknownConfig[foreignKey];
+            if (validAttributesList.includes(foreignKey)) {
                 if (typeof value === 'undefined' || value === null) {
-                    cleanObject[key] = defaultConfig[key as keyof FlagshipSdkConfig] as string | boolean | null;
+                    cleanObject[foreignKey] = defaultConfig[foreignKey as keyof FlagshipSdkConfig] as string | boolean | null;
                 } else {
-                    cleanObject[key] = value;
+                    switch (foreignKey) {
+                        case 'timeout':
+                            cleanObject[foreignKey] = flagshipSdkHelper.checkTimeout(value);
+                            break;
+
+                        default:
+                            cleanObject[foreignKey] = value;
+                            break;
+                    }
                 }
-            } else if (whiteListedAttributesList.includes(key)) {
+            } else if (whiteListedAttributesList.includes(foreignKey)) {
                 // do nothing
             } else {
-                dirtyObject[key] = value;
+                dirtyObject[foreignKey] = value;
             }
         });
 

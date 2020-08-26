@@ -29,7 +29,7 @@ export type FlagshipSdkConfig = {
     apiKey?: string | null;
     initialModifications?: DecisionApiCampaign[] | null;
     initialBucketing?: BucketingApiResponse | null;
-    murmurhashV3?: MurmurV3 | null;
+    timeout?: number;
 };
 
 export type FlagshipSdkInternalConfig = {

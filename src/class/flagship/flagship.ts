@@ -24,7 +24,7 @@ class Flagship implements IFlagship {
 
     panic: IFsPanicMode;
 
-    constructor(envId: string, apiKey?: string, config = {}) {
+    constructor(envId: string, apiKey?: string, config: { [key: string]: any } = {}) {
         const { cleanConfig: cleanCustomConfig, ignoredConfig } = flagshipSdkHelper.checkConfig(config, apiKey);
         this.config = { ...defaultConfig, ...cleanCustomConfig };
         this.log = loggerHelper.getLogger(this.config);
@@ -51,7 +51,15 @@ class Flagship implements IFlagship {
                 this.startBucketingPolling();
             }
         }
+
+        // logs adjustment made on settings
         flagshipSdkHelper.logIgnoredAttributesFromObject(ignoredConfig, this.log, 'custom flagship SDK config');
+
+        if (config.timeout && config.timeout !== this.config.timeout) {
+            this.log.warn(
+                `"timeout" setting is incorrect (value specified =>"${config.timeout}"). The default value (=${this.config.timeout} seconds) has been set instead.`
+            );
+        }
     }
 
     public newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor {
