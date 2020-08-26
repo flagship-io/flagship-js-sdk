@@ -34,6 +34,7 @@ const flagshipSdkHelper = {
             additionalHeaderParams['x-api-key'] = config.apiKey;
         }
         const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
+        const isCampaignUrl = url.includes('/campaigns');
         return axios
             .post(
                 url,
@@ -43,7 +44,8 @@ const flagshipSdkHelper = {
                     headers: {
                         ...queryParams.headers,
                         ...additionalHeaderParams
-                    }
+                    },
+                    timeout: isCampaignUrl ? config.timeout * 1000 : undefined
                 }
             )
             .then((response: DecisionApiResponse) => {

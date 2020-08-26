@@ -277,7 +277,8 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                    ...assertionHelper.getTimeout(`${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`, sdk.config)
                 }
             );
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
@@ -351,7 +352,8 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                    ...assertionHelper.getTimeout(`${mockEndpoint}${demoData.envId[0]}/campaigns?mode=normal`, sdk.config)
                 }
             );
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
@@ -380,7 +382,8 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                            ...assertionHelper.getTimeout(`${endPoint}activate`, sdk.config)
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -393,7 +396,8 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                            ...assertionHelper.getTimeout(`${endPoint}activate`, sdk.config)
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -406,7 +410,8 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                            ...assertionHelper.getTimeout(`${endPoint}activate`, sdk.config)
                         }
                     );
                     done();
@@ -426,7 +431,8 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                    ...assertionHelper.getTimeout(`${endPoint}${demoData.envId[0]}/campaigns?mode=normal`, sdk.config)
                 }
             );
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);

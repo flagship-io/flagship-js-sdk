@@ -38,7 +38,7 @@ class PanicMode implements IFsPanicMode {
     }
 
     public checkPanicMode(response: DecisionApiResponseData | BucketingApiResponse): void {
-        const answer = !!response.panic;
+        const answer = !!response?.panic;
         this.setPanicModeTo(answer, { sendLogs: answer !== this.enabled });
     }
 

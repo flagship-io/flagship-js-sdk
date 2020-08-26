@@ -441,9 +441,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -451,6 +452,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -473,9 +475,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -483,6 +486,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -508,9 +512,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockError(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -518,6 +523,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -540,9 +546,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -550,6 +557,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -578,9 +586,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -588,6 +597,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -597,10 +607,12 @@ describe('FlagshipVisitor', () => {
 
     describe('FetchAllModifications function', () => {
         beforeEach(() => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             spyActivateCampaign = jest.spyOn(visitorInstance, 'activateCampaign');
             initSpyLogs(visitorInstance);
         });
+
         it('should log an error when trying to hack args and the cache is null', (done) => {
             visitorInstance.fetchedModifications = null;
             const cacheResponse = visitorInstance.fetchAllModifications({ loadFromCache: true, force: true });
@@ -649,8 +661,9 @@ describe('FlagshipVisitor', () => {
 
         it('should return decision API response (mode=normal) when there is no optional argument set', () => {
             visitorInstance.fetchAllModifications();
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenCalledWith(
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -658,6 +671,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -816,9 +830,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: true,
@@ -826,6 +841,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -882,9 +898,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: true,
@@ -892,6 +909,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1144,9 +1162,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1154,6 +1173,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1178,9 +1198,10 @@ describe('FlagshipVisitor', () => {
                 }
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1188,6 +1209,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1223,9 +1245,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1233,6 +1256,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1261,9 +1285,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1271,6 +1296,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1291,9 +1317,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1301,6 +1328,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -1329,9 +1357,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1339,6 +1368,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1363,9 +1393,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1373,6 +1404,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -1400,9 +1432,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `https://decision.flagship.io/v2/${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `https://decision.flagship.io/v2/${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1410,6 +1443,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -1431,9 +1465,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1441,6 +1476,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
