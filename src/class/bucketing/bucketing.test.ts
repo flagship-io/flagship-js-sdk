@@ -1515,7 +1515,7 @@ describe('Bucketing initialization', () => {
 
         expect(helperSpy).toHaveBeenCalledTimes(1);
         expect(helperSpy.mock.results[0].value.replace(/\n|\r/g, '')).toEqual(
-            'Element:- "campaigns" Campaigns is missing.- "panic" Panic is missing.- "lastModifiedDate" Last modified date is missing.'
+            'Element:- "campaigns" Campaigns is missing.- "lastModifiedDate" Last modified date is missing.'
         );
         done();
     });
