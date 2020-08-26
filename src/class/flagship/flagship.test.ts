@@ -1,5 +1,5 @@
 import mockAxios from 'jest-mock-axios';
-import { internalConfig } from '../../config/default';
+import defaultConfig, { internalConfig } from '../../config/default';
 import { IFlagshipVisitor } from '../../types';
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
@@ -502,16 +502,9 @@ describe('FlagshipVisitor', () => {
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...emptyConfig });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             expect(visitorInstance.config).toEqual({
-                activateNow: false,
-                enableConsoleLogs: false,
-                fetchNow: true,
-                decisionMode: 'API',
-                apiKey: demoData.apiKey[0],
-                pollingInterval: null,
-                flagshipApi: internalConfig.apiV2,
-                initialBucketing: null,
-                initialModifications: null,
-                nodeEnv: 'production'
+                ...defaultConfig,
+                flagshipApi: 'https://decision.flagship.io/v2/',
+                apiKey: demoData.apiKey[0]
             });
             visitorInstance.once('ready', () => {
                 done();
