@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/flagship-js-sdk/static/css/main.2af8a648.chunk.css",
-    "main.js": "/flagship-js-sdk/static/js/main.b628cb53.chunk.js",
-    "main.js.map": "/flagship-js-sdk/static/js/main.b628cb53.chunk.js.map",
+    "main.js": "/flagship-js-sdk/static/js/main.1ea52899.chunk.js",
+    "main.js.map": "/flagship-js-sdk/static/js/main.1ea52899.chunk.js.map",
     "runtime-main.js": "/flagship-js-sdk/static/js/runtime-main.47281e6c.js",
     "runtime-main.js.map": "/flagship-js-sdk/static/js/runtime-main.47281e6c.js.map",
     "static/css/2.30f7bf04.chunk.css": "/flagship-js-sdk/static/css/2.30f7bf04.chunk.css",
-    "static/js/2.d073e8b1.chunk.js": "/flagship-js-sdk/static/js/2.d073e8b1.chunk.js",
-    "static/js/2.d073e8b1.chunk.js.map": "/flagship-js-sdk/static/js/2.d073e8b1.chunk.js.map",
+    "static/js/2.de3b2430.chunk.js": "/flagship-js-sdk/static/js/2.de3b2430.chunk.js",
+    "static/js/2.de3b2430.chunk.js.map": "/flagship-js-sdk/static/js/2.de3b2430.chunk.js.map",
     "index.html": "/flagship-js-sdk/index.html",
-    "precache-manifest.a90f9c29f953f357fbf08e5ac8bdd66b.js": "/flagship-js-sdk/precache-manifest.a90f9c29f953f357fbf08e5ac8bdd66b.js",
+    "precache-manifest.0ba51bdcad1484fa33fb13c389a60b50.js": "/flagship-js-sdk/precache-manifest.0ba51bdcad1484fa33fb13c389a60b50.js",
     "service-worker.js": "/flagship-js-sdk/service-worker.js",
     "static/css/2.30f7bf04.chunk.css.map": "/flagship-js-sdk/static/css/2.30f7bf04.chunk.css.map",
     "static/css/main.2af8a648.chunk.css.map": "/flagship-js-sdk/static/css/main.2af8a648.chunk.css.map",
@@ -18,8 +18,8 @@
   "entrypoints": [
     "static/js/runtime-main.47281e6c.js",
     "static/css/2.30f7bf04.chunk.css",
-    "static/js/2.d073e8b1.chunk.js",
+    "static/js/2.de3b2430.chunk.js",
     "static/css/main.2af8a648.chunk.css",
-    "static/js/main.b628cb53.chunk.js"
+    "static/js/main.1ea52899.chunk.js"
   ]
 }
