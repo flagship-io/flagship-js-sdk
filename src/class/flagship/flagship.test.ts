@@ -1,9 +1,11 @@
 import mockAxios from 'jest-mock-axios';
+import { internalConfig } from '../../config/default';
 import { IFlagshipVisitor } from '../../types';
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
 import Flagship from './flagship';
 import flagshipSdk from '../../index';
+import assertionHelper from '../../../test/helper/assertion';
 
 let sdk: Flagship;
 let visitorInstance: IFlagshipVisitor;
@@ -53,7 +55,7 @@ describe('FlagshipVisitor', () => {
     describe('newVisitor function', () => {
         it('should have .once("ready") triggered also when fetchNow=false', (done) => {
             const mockFn = jest.fn();
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: false });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: false });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.on('ready', () => {
                 try {
@@ -69,7 +71,7 @@ describe('FlagshipVisitor', () => {
         it('should have .on("saveCache") triggered when initializing with a fetchNow=true', (done) => {
             const mockFn = jest.fn();
             let modificationsWhichWillBeSavedInCache;
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.on('saveCache', (args) => {
                 try {
@@ -98,7 +100,7 @@ describe('FlagshipVisitor', () => {
         });
 
         it('should log fatal error when decision api failed during a fetchNow=true', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true });
             initSpyLogs(sdk);
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.once('ready', () => {
@@ -127,7 +129,7 @@ describe('FlagshipVisitor', () => {
         it('should have ability to return custom modifications with "saveCache" event', (done) => {
             const mockFn = jest.fn();
             const modificationsWhichWillBeSavedInCache = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns;
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.on('saveCache', (args) => {
                 try {
@@ -158,7 +160,7 @@ describe('FlagshipVisitor', () => {
         it('should return default modifications if user badly use "saveCache" event', (done) => {
             const mockFn = jest.fn();
             let modificationsWhichWillBeSavedInCache;
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             visitorInstance.on('saveCache', (args) => {
                 try {
@@ -193,9 +195,14 @@ describe('FlagshipVisitor', () => {
                 status: 200,
                 statusText: 'OK'
             };
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-            expect(visitorInstance.config).toMatchObject({ ...testConfig, fetchNow: true });
+            expect(visitorInstance.config).toMatchObject({
+                ...testConfig,
+                fetchNow: true,
+                apiKey: demoData.apiKey[0],
+                flagshipApi: internalConfig.apiV2
+            });
             visitorInstance.once('ready', () => {
                 done();
             });
@@ -204,44 +211,55 @@ describe('FlagshipVisitor', () => {
         });
 
         it('should create a Visitor with modifications already loaded and activated if config "activateNow=true"', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, activateNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, activateNow: true });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-            expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true });
+            expect(visitorInstance.config).toMatchObject({
+                ...testConfig,
+                activateNow: true,
+                apiKey: demoData.apiKey[0],
+                flagshipApi: internalConfig.apiV2
+            });
             visitorInstance.once('ready', () => {
                 try {
                     expect(visitorInstance.fetchedModifications).not.toBe(null);
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         2,
-                        'https://decision-api.flagship.io/v1/activate',
+                        `${internalConfig.apiV2}activate`,
                         {
                             vaid: 'blntcamqmdvg04g371hg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'blntcamqmdvg04g371h0',
                             vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         3,
-                        'https://decision-api.flagship.io/v1/activate',
+                        `${internalConfig.apiV2}activate`,
                         {
                             vaid: 'bmjdprsjan0g01uq2ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2csg',
                             vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         4,
-                        'https://decision-api.flagship.io/v1/activate',
+                        `${internalConfig.apiV2}activate`,
                         {
                             vaid: 'bmjdprsjan0g01uq1ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2ceg',
                             vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     done();
                 } catch (error) {
@@ -251,18 +269,30 @@ describe('FlagshipVisitor', () => {
             mockAxios.mockResponse(responseObj);
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `https://decision-api.flagship.io/v1/${demoData.envId[0]}/campaigns?mode=normal`,
-                { context: demoData.visitor.cleanContext, trigger_hit: true, visitor_id: demoData.visitor.id[0] },
-                { params: { exposeAllKeys: true } }
+                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                {
+                    context: demoData.visitor.cleanContext,
+                    trigger_hit: true,
+                    visitor_id: demoData.visitor.id[0]
+                },
+                {
+                    ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                }
             );
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
 
         it('should use correct endpoint when "flagshipApi" is set in config', (done) => {
             const mockEndpoint = 'https://decision-api.flagship.io/v999/';
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, activateNow: true, flagshipApi: mockEndpoint });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, activateNow: true, flagshipApi: mockEndpoint });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-            expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true, flagshipApi: mockEndpoint });
+            expect(visitorInstance.config).toMatchObject({
+                ...testConfig,
+                activateNow: true,
+                flagshipApi: mockEndpoint,
+                apiKey: demoData.apiKey[0]
+            });
             visitorInstance.once('ready', () => {
                 try {
                     expect(visitorInstance.fetchedModifications).not.toBe(null);
@@ -275,7 +305,9 @@ describe('FlagshipVisitor', () => {
                             caid: 'blntcamqmdvg04g371h0',
                             vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         3,
@@ -286,7 +318,9 @@ describe('FlagshipVisitor', () => {
                             caid: 'bmjdprsjan0g01uq2csg',
                             vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         4,
@@ -297,8 +331,9 @@ describe('FlagshipVisitor', () => {
                             caid: 'bmjdprsjan0g01uq2ceg',
                             vid: 'test-perf'
                         },
-
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     done();
                 } catch (error) {
@@ -311,19 +346,25 @@ describe('FlagshipVisitor', () => {
                 `${mockEndpoint}${demoData.envId[0]}/campaigns?mode=normal`,
                 {
                     context: demoData.visitor.cleanContext,
-
                     trigger_hit: true,
                     visitor_id: demoData.visitor.id[0]
                 },
-                { params: { exposeAllKeys: true } }
+                {
+                    ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                }
             );
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
 
         it('should add "x-api-key" in modifications queries when "apiKey" is set in config and api is not V1', (done) => {
-            const mockApiKey = 'toto';
+            const mockApiKey = demoData.apiKey[0];
             const endPoint = demoData.api.v2;
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, activateNow: true, apiKey: mockApiKey, flagshipApi: endPoint });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...testConfig,
+                activateNow: true,
+                flagshipApi: endPoint
+            });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             expect(visitorInstance.config).toMatchObject({ ...testConfig, activateNow: true, apiKey: mockApiKey, flagshipApi: endPoint });
             visitorInstance.once('ready', () => {
@@ -336,10 +377,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'blntcamqmdvg04g371hg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'blntcamqmdvg04g371h0',
-                            'x-api-key': 'toto',
                             vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         3,
@@ -348,10 +390,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'bmjdprsjan0g01uq2ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2csg',
-                            'x-api-key': 'toto',
                             vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         4,
@@ -360,10 +403,11 @@ describe('FlagshipVisitor', () => {
                             vaid: 'bmjdprsjan0g01uq1ctg',
                             cid: 'bn1ab7m56qolupi5sa0g',
                             caid: 'bmjdprsjan0g01uq2ceg',
-                            'x-api-key': 'toto',
                             vid: 'test-perf'
                         },
-                        {}
+                        {
+                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        }
                     );
                     done();
                 } catch (error) {
@@ -378,19 +422,21 @@ describe('FlagshipVisitor', () => {
                     context: demoData.visitor.cleanContext,
 
                     trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0],
-                    'x-api-key': 'toto'
+                    visitor_id: demoData.visitor.id[0]
                 },
-                { params: { exposeAllKeys: true } }
+                {
+                    ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                }
             );
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
 
         it('if happens, should report that "x-api-key" is missing when api v2 detected', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], {
+            sdk = flagshipSdk.start(demoData.envId[0], undefined, {
                 ...testConfig,
                 fetchNow: false,
-                flagshipApi: 'https://decision.flagship.io/v2/'
+                flagshipApi: internalConfig.apiV2
             });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             initSpyLogs(visitorInstance);
@@ -399,15 +445,20 @@ describe('FlagshipVisitor', () => {
                     visitorInstance
                         .synchronizeModifications()
                         .then(() => {
-                            expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+                            expect(spyFatalLogs).toHaveBeenCalledTimes(2);
                             expect(spyFatalLogs).toHaveBeenNthCalledWith(
                                 1,
                                 'initialization - flagshipApi v2 detected but required setting "apiKey" is missing !'
                             );
+                            expect(spyFatalLogs).toHaveBeenNthCalledWith(
+                                2,
+                                'initialization - flagshipApi v2 detected but required setting "apiKey" is missing !'
+                            );
+
                             done();
                         })
                         .catch((e) => {
-                            done.fail(`unexpected ${e}`);
+                            done.fail(`unexpected ${e.stack}`);
                         });
                 } catch (error) {
                     done.fail(error);
@@ -418,7 +469,7 @@ describe('FlagshipVisitor', () => {
         });
 
         it('should report error logs when a Visitor instance has bad context', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: false });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], {
                 nullKey: null,
                 undefinedKey: undefined,
@@ -441,7 +492,6 @@ describe('FlagshipVisitor', () => {
             };
             const emptyConfig = {
                 activateNow: false,
-                apiKey: undefined,
                 enableConsoleLogs: false,
                 enableErrorLayout: true, // simulate extra config from other SDK
                 enableSafeMode: false,
@@ -449,16 +499,17 @@ describe('FlagshipVisitor', () => {
                 flagshipApi: undefined,
                 nodeEnv: 'production'
             };
-            sdk = flagshipSdk.start(demoData.envId[0], { ...emptyConfig });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...emptyConfig });
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             expect(visitorInstance.config).toEqual({
                 activateNow: false,
-                apiKey: null,
                 enableConsoleLogs: false,
                 fetchNow: true,
                 decisionMode: 'API',
+                apiKey: demoData.apiKey[0],
                 pollingInterval: null,
-                flagshipApi: 'https://decision-api.flagship.io/v1/',
+                flagshipApi: internalConfig.apiV2,
+                initialBucketing: null,
                 initialModifications: null,
                 nodeEnv: 'production'
             });
@@ -471,7 +522,7 @@ describe('FlagshipVisitor', () => {
     });
     describe('bucketing', () => {
         it('should report an error if trying to start bucketing but decisionMode is not set to "Bucketing"', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: false });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: false });
             initSpyLogs(sdk);
             sdk.startBucketingPolling();
 
@@ -492,7 +543,11 @@ describe('FlagshipVisitor', () => {
     });
     it('should have setting "initialModifications" working correctly', (done) => {
         const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: false, initialModifications: defaultCacheData });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+            ...testConfig,
+            fetchNow: false,
+            initialModifications: defaultCacheData
+        });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         visitorInstance.on('ready', () => {
             try {
@@ -504,6 +559,26 @@ describe('FlagshipVisitor', () => {
             }
         });
     });
+
+    it('should have setting "initialModifications" working correctly with complex JSON', (done) => {
+        const defaultCacheData = demoData.decisionApi.normalResponse.complexJson.campaigns;
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+            ...testConfig,
+            fetchNow: false,
+            initialModifications: defaultCacheData
+        });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        visitorInstance.on('ready', () => {
+            try {
+                expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                expect(visitorInstance.fetchedModifications).toEqual(defaultCacheData);
+                done();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+    });
+
     it('should not consider setting "initialModifications" if not set correctly', (done) => {
         const defaultCacheData = [
             {
@@ -523,7 +598,7 @@ describe('FlagshipVisitor', () => {
                 }
             }
         ];
-        sdk = flagshipSdk.start(demoData.envId[0], {
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
             ...testConfig,
             enableConsoleLogs: true,
             fetchNow: false,
@@ -561,11 +636,31 @@ describe('FlagshipVisitor', () => {
     });
     it('should fetch decision api if "initialModifications" and "fetchNow" are set', (done) => {
         const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
-        sdk = flagshipSdk.start(demoData.envId[0], { ...testConfig, fetchNow: true, initialModifications: defaultCacheData });
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+            ...testConfig,
+            fetchNow: true,
+            initialModifications: defaultCacheData
+        });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         visitorInstance.on('ready', () => {
             try {
-                expect(mockAxios.post).toHaveBeenCalledTimes(1);
+                expect(mockAxios.post).toHaveBeenCalledTimes(2);
+
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`,
+                    {
+                        data: {
+                            ...visitorInstance.context
+                        },
+                        type: 'CONTEXT',
+                        visitor_id: demoData.visitor.id[0]
+                    },
+                    {
+                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    }
+                );
+
                 expect(visitorInstance.fetchedModifications).toEqual(
                     demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns
                 );

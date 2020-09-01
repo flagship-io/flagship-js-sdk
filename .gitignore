@@ -13,3 +13,5 @@ stats.json
 *.tgz
 
 IMPROVEMENTS.md
+
+.idea

@@ -1,11 +1,12 @@
 export default {
+    lastModifiedDate: 'Wed, 18 Mar 2020 23:29:16 GMT',
     campaigns: [
         {
             id: 'bptggipaqi903f3haq0g',
             type: 'ab',
             variationGroups: [
                 {
-                    id: 'bptggipaqi903f3haq1g',
+                    id: 'l7jaucjpddjdwdbfgg7',
                     targeting: {
                         targetingGroups: [
                             {
@@ -50,7 +51,7 @@ export default {
             type: 'ab',
             variationGroups: [
                 {
-                    id: 'bq4sf09oet0006cfihe0',
+                    id: 'vsc1rf8xs3bvu0rzs8b',
                     targeting: {
                         targetingGroups: [
                             {

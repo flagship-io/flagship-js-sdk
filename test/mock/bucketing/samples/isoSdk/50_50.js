@@ -1,12 +1,11 @@
 export default {
-    lastModifiedDate: 'Wed, 18 Mar 2020 23:29:16 GMT',
     campaigns: [
         {
-            id: 'bqtvkps9h7j02m34fj2g',
+            id: 'bs8r119sbs4016mehhhh',
             type: 'ab',
             variationGroups: [
                 {
-                    id: 'bqtvkps9h7j02m34fj3g',
+                    id: 'bs8r119sbs4016meiiii',
                     targeting: {
                         targetingGroups: [
                             {
@@ -22,24 +21,34 @@ export default {
                     },
                     variations: [
                         {
-                            id: 'bqtvkps9h7j02m34fj40',
+                            id: 'bs8r119sbs4016mejjjj',
                             modifications: {
                                 type: 'JSON',
                                 value: {
-                                    Buttoncolor: null
+                                    variation50: null
                                 }
                             },
                             reference: true
                         },
                         {
-                            id: 'bqtvkps9h7j02m34fj4g',
+                            id: 'bs8r119sbs4016mekkkk',
                             modifications: {
                                 type: 'JSON',
                                 value: {
-                                    Buttoncolor: 'Blue'
+                                    variation50: 1
                                 }
                             },
-                            allocation: 100
+                            allocation: 50
+                        },
+                        {
+                            id: 'bs8r119sbs4016mellll',
+                            modifications: {
+                                type: 'JSON',
+                                value: {
+                                    variation50: 2
+                                }
+                            },
+                            allocation: 50
                         }
                     ]
                 }

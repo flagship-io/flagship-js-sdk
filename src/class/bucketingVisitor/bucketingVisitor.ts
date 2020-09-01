@@ -1,6 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-import {MurmurHashV3} from 'react-native-murmurhash';
-import { FlagshipSdkConfig, IFlagshipBucketingVisitor } from '../../types';
+import { MurmurHashV3 } from 'react-native-murmurhash';
+import { FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipBucketing } from '../../types';
 import { FlagshipVisitorContext, DecisionApiCampaign, DecisionApiResponseData } from '../flagshipVisitor/types';
 import {
     BucketingVariation,
@@ -29,16 +29,20 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
 
     visitorContext: FlagshipVisitorContext;
 
+    global: IFlagshipBucketing;
+
     constructor(
         envId: string,
         visitorId: string,
         visitorContext: FlagshipVisitorContext,
         config: FlagshipSdkConfig,
-        bucketingData?: BucketingApiResponse | null
+        globalBucket: IFlagshipBucketing
     ) {
+        const bucketingData = globalBucket.data;
         this.config = config;
         this.visitorId = visitorId;
         this.visitorContext = visitorContext;
+        this.global = globalBucket;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - Bucketing (visitorId=${this.visitorId})`);
         this.envId = envId;
         this.data = bucketingData || null;
@@ -74,10 +78,10 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         this.visitorContext = flagshipSdkHelper.checkVisitorContext(newContext, this.log);
     }
 
-    private computeMurmurAlgorithm(variations: BucketingVariation[]): BucketingVariation | null {
+    private computeMurmurAlgorithm(variations: BucketingVariation[], variationGroupId: string): BucketingVariation | null {
         let assignedVariation: BucketingVariation | null = null;
         // generates a v3 hash
-        const murmurAllocation = MurmurHashV3(this.visitorId, undefined) % 100; // 2nd argument is set to 0 by default
+        const murmurAllocation = MurmurHashV3(variationGroupId + this.visitorId, undefined) % 100; // 2nd argument is set to 0 by default
         this.log.debug(`computeMurmurAlgorithm - murmur returned value="${murmurAllocation}"`);
 
         const variationTrafficCheck = variations.reduce((sum, v) => {
@@ -105,27 +109,6 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         }
 
         return assignedVariation;
-    }
-
-    private callEventEndpoint(): Promise<number> {
-        return new Promise((resolve, reject) => {
-            flagshipSdkHelper
-                .postFlagshipApi(this.config, this.log, `${this.config.flagshipApi}${this.envId}/events`, {
-                    visitor_id: this.visitorId,
-                    type: 'CONTEXT',
-                    data: {
-                        ...this.visitorContext
-                    }
-                })
-                .then((response) => {
-                    this.log.debug(`callEventEndpoint - returns status=${response.status}`);
-                    resolve(response.status);
-                })
-                .catch((error: Error) => {
-                    this.log.error(`callEventEndpoint - failed with error="${error}"`);
-                    reject(error);
-                });
-        });
     }
 
     public getEligibleCampaigns(): DecisionApiCampaign[] {
@@ -421,7 +404,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                     ...campaign,
                     variationGroups: campaign.variationGroups.filter((varGroup) => varGroup.id === matchingVgId)
                 }; // = campaign with only the desired variation group
-                const variationToAffectToVisitor = this.computeMurmurAlgorithm(cleanCampaign.variationGroups[0].variations);
+                const variationToAffectToVisitor = this.computeMurmurAlgorithm(cleanCampaign.variationGroups[0].variations, matchingVgId);
                 if (variationToAffectToVisitor !== null) {
                     result.push(BucketingVisitor.transformIntoDecisionApiPayload(variationToAffectToVisitor, campaign, matchingVgId));
                 } else {
@@ -433,9 +416,6 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                 log.debug(`Bucketing - campaign (id="${campaign.id}") NOT MATCHING visitor`);
             }
         });
-        if (result.length > 0) {
-            this.callEventEndpoint();
-        }
         return result;
     }
 }

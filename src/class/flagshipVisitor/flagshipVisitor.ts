@@ -75,7 +75,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
 
         if (this.config.decisionMode === 'Bucketing') {
-            this.bucket = new BucketingVisitor(this.envId, this.id, this.context, this.config, bucket && bucket.data);
+            this.bucket = new BucketingVisitor(this.envId, this.id, this.context, this.config, bucket);
             sdkListener.on('bucketPollingSuccess', ({ payload: data, status }: { payload: BucketingApiResponse; status: number }) => {
                 if (status === 304) {
                     // do nothing
@@ -525,17 +525,32 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public synchronizeModifications(activate = false): Promise<number> {
-        if (this.config.decisionMode === 'Bucketing' && this.bucket !== null) {
-            this.bucket.updateVisitorContext(this.context);
-        }
         return new Promise((resolve, reject) => {
+            const postSynchro = (output?: DecisionApiResponseData, response?: DecisionApiResponse): void => {
+                this.saveModificationsInCache((output && output.campaigns) || null);
+                this.callEventEndpoint();
+                resolve(response?.status || 200);
+            };
+
+            if (this.config.decisionMode === 'Bucketing') {
+                if (this.bucket !== null) {
+                    this.bucket.updateVisitorContext(this.context);
+                }
+
+                // this if condition is to avoid unresolved promise if we call this.fetchAllModifications after
+                if (!this.bucket || (this.bucket && !this.bucket.global.isPollingRunning && !this.bucket.computedData)) {
+                    this.log.info(
+                        'synchronizeModifications - you might synchronize modifications too early because bucketing is empty or did not start'
+                    );
+                    postSynchro();
+                    return;
+                }
+            }
             const fetchedModifPromise = this.fetchAllModifications({ activate, force: true }) as Promise<DecisionApiResponse>;
             fetchedModifPromise
                 .then((response: DecisionApiResponse) => {
-                    const castResponse = response as DecisionApiResponse;
-                    const output = flagshipSdkHelper.checkDecisionApiResponseFormat(castResponse, this.log);
-                    this.saveModificationsInCache((output && output.campaigns) || null);
-                    resolve(castResponse.status || 200);
+                    const output = flagshipSdkHelper.checkDecisionApiResponseFormat(response, this.log);
+                    postSynchro(output, response);
                 })
                 .catch((error: Error) => {
                     this.saveModificationsInCache(null);
@@ -740,19 +755,26 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 } else {
                     this.log.info('fetchAllModifications - no data in current bucket, waiting for bucket to start...');
                     this.sdkListener.once('bucketPollingSuccess', ({ payload: data }) => {
-                        (this.bucket as IFlagshipBucketingVisitor).updateCache(data);
-                        transformedBucketingData = {
-                            ...transformedBucketingData,
-                            campaigns: ((this.bucket as IFlagshipBucketingVisitor).computedData as DecisionApiResponseData).campaigns
-                        };
-                        this.saveModificationsInCache(transformedBucketingData.campaigns);
-                        this.log.debug('fetchAllModifications - bucket start detected');
-                        if (activate) {
-                            this.log.debug(
-                                `fetchAllModifications - activateNow enabled with bucketing mode. ${this.modificationsInternalStatus.length} campaign(s) will be activated.`
+                        if (this.bucket.computedData) {
+                            transformedBucketingData = {
+                                ...transformedBucketingData,
+                                campaigns: ((this.bucket as IFlagshipBucketingVisitor).computedData as DecisionApiResponseData).campaigns
+                            };
+                            this.saveModificationsInCache(transformedBucketingData.campaigns);
+                            this.log.debug('fetchAllModifications - bucket start detected');
+
+                            if (activate) {
+                                this.log.debug(
+                                    `fetchAllModifications - activateNow enabled with bucketing mode. ${this.modificationsInternalStatus.length} campaign(s) will be activated.`
+                                );
+                                this.triggerActivateIfNeeded(undefined, true);
+                            }
+                        } else {
+                            this.log.error(
+                                `fetchAllModifications - bucket start detected but no data received from bucketing. It might due to an error (see previous logs).`
                             );
-                            this.triggerActivateIfNeeded(undefined, true);
                         }
+
                         resolve(
                             this.fetchAllModificationsPostProcess(transformedBucketingData, {
                                 ...defaultArgs,
@@ -789,7 +811,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                         // query params:
                         {
                             params: {
-                                exposeAllKeys: true // hardcoded
+                                exposeAllKeys: true, // hardcoded
+                                sendContextEvent: false // hardcoded - tell decision api not to automatically manage events
                             }
                         }
                     )
@@ -1006,6 +1029,27 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     public sendHit(hitData: HitShape): Promise<void> {
         return this.sendHits([hitData]);
+    }
+
+    private callEventEndpoint(): Promise<number> {
+        return new Promise((resolve, reject) => {
+            flagshipSdkHelper
+                .postFlagshipApi(this.config, this.log, `${this.config.flagshipApi}${this.envId}/events`, {
+                    visitor_id: this.id,
+                    type: 'CONTEXT',
+                    data: {
+                        ...this.context
+                    }
+                })
+                .then((response) => {
+                    this.log.debug(`callEventEndpoint - returns status=${response.status}`);
+                    resolve(response.status);
+                })
+                .catch((error: Error) => {
+                    this.log.error(`callEventEndpoint - failed with error="${error}"`);
+                    reject(error);
+                });
+        });
     }
 }
 

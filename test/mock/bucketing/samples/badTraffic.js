@@ -1,11 +1,12 @@
 export default {
+    lastModifiedDate: 'Wed, 18 Mar 2020 23:29:16 GMT',
     campaigns: [
         {
             id: 'bptggipaqi903f3haq0g',
             type: 'ab',
             variationGroups: [
                 {
-                    id: 'bptggipaqi903f3haq1g',
+                    id: 'vfrgk91ebwf',
                     targeting: {
                         targetingGroups: [
                             {
@@ -13,7 +14,7 @@ export default {
                                     {
                                         operator: 'EQUALS',
                                         key: 'fs_users',
-                                        value: 'test-perf'
+                                        value: 'ktkzyb7z2'
                                     }
                                 ]
                             }

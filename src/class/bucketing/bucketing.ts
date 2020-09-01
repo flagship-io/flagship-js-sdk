@@ -26,16 +26,20 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         this.config = config;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - Bucketing`);
         this.envId = envId;
-        this.data = null;
+        this.data = (config.initialBucketing && flagshipSdkHelper.checkBucketingApiResponse(config.initialBucketing, this.log)) || null;
         this.isPollingRunning = false;
-        this.lastModifiedDate = null;
+        this.lastModifiedDate = (this.data && this.data.lastModifiedDate) || null;
 
         // init listeners
         this.on('launched', (/* {status} */) => {
             if (flagshipSdkHelper.checkPollingIntervalValue(this.config.pollingInterval) === 'ok' && this.isPollingRunning) {
                 this.log.debug(`startPolling - polling finished successfully. Next polling in ${this.config.pollingInterval} minute(s)`);
                 setTimeout(() => {
-                    this.pollingMechanism();
+                    if (this.isPollingRunning) {
+                        this.pollingMechanism();
+                    } else {
+                        this.log.debug('on("launched") listener - bucketing stop detected.');
+                    }
                 }, (this.config.pollingInterval as number) * 60 * 1000);
             } // no need to do logs on "else" statement because already done before
         });
@@ -77,7 +81,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                         this.lastModifiedDate = other.headers['last-modified'];
                     }
                     this.log.info(`callApi - current bucketing updated`);
-                    this.data = { ...bucketingData };
+                    this.data = { ...bucketingData, lastModifiedDate: this.lastModifiedDate, panic: !!bucketingData.panic };
                 }
                 this.emit('launched', { status });
                 return bucketingData;
@@ -86,6 +90,10 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                 this.log.fatal('An error occurred while fetching using bucketing...');
                 this.emit('error', response);
             });
+    }
+
+    public stopPolling(): void {
+        this.isPollingRunning = false;
     }
 
     private pollingMechanism(): void {

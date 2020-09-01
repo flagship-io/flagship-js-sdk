@@ -1,58 +1,53 @@
 export type BucketingApiResponse = {
-  campaigns: BucketingCampaign[];
-  panic: boolean;
+    campaigns: BucketingCampaign[];
+    panic: boolean;
+    lastModifiedDate: string;
 };
 
 export type BucketingCampaign = {
-  id: string;
-  type: string;
-  variationGroups: BucketingVariationGroups[];
+    id: string;
+    type: string;
+    variationGroups: BucketingVariationGroups[];
 };
 
 export type BucketingVariationGroups = {
-  id: string;
-  targeting: {
-    targetingGroups: BucketingTargetingGroups[];
-  };
-  variations: BucketingVariation[];
+    id: string;
+    targeting: {
+        targetingGroups: BucketingTargetingGroups[];
+    };
+    variations: BucketingVariation[];
 };
 
 export type BucketingVariation = {
-  id: string;
-  modifications: {
-    type: string;
-    value: { [key: string]: null | string };
-  };
-  allocation: number;
-  reference: boolean;
+    id: string;
+    modifications: {
+        type: string;
+        value: { [key: string]: null | string };
+    };
+    allocation: number;
+    reference: boolean;
 };
 
 export type BucketingTargetingGroups = {
-  targetings: BucketingTargetings[];
+    targetings: BucketingTargetings[];
 };
 
 export type BucketingTargetings = {
-  operator: BucketingOperator;
-  key: string | 'fs_all_users' | 'fs_users';
-  value: BucketingTypes;
+    operator: BucketingOperator;
+    key: string | 'fs_all_users' | 'fs_users';
+    value: BucketingTypes;
 };
 
 export type BucketingOperator =
-  | 'EQUALS'
-  | 'NOT_EQUALS'
-  | 'LOWER_THAN'
-  | 'LOWER_THAN_OR_EQUALS'
-  | 'GREATER_THAN'
-  | 'GREATER_THAN_OR_EQUALS'
-  | 'STARTS_WITH'
-  | 'ENDS_WITH'
-  | 'CONTAINS'
-  | 'NOT_CONTAINS';
+    | 'EQUALS'
+    | 'NOT_EQUALS'
+    | 'LOWER_THAN'
+    | 'LOWER_THAN_OR_EQUALS'
+    | 'GREATER_THAN'
+    | 'GREATER_THAN_OR_EQUALS'
+    | 'STARTS_WITH'
+    | 'ENDS_WITH'
+    | 'CONTAINS'
+    | 'NOT_CONTAINS';
 
-export type BucketingTypes =
-  | string
-  | string[]
-  | number
-  | number[]
-  | boolean
-  | boolean[];
+export type BucketingTypes = string | string[] | number | number[] | boolean | boolean[];

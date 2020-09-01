@@ -10,7 +10,8 @@ import {
     DecisionApiCampaign,
     GetModificationInfoOutput,
     DecisionApiResponseData,
-    DecisionApiSimpleResponse
+    DecisionApiSimpleResponse,
+    ModificationsInternalStatus
 } from './class/flagshipVisitor/types';
 import { BucketingApiResponse } from './class/bucketing/types';
 
@@ -26,11 +27,14 @@ export type FlagshipSdkConfig = {
     flagshipApi?: string;
     apiKey?: string | null;
     initialModifications?: DecisionApiCampaign[] | null;
+    initialBucketing?: BucketingApiResponse | null;
     murmurhashV3?: MurmurV3 | null;
 };
 
 export type FlagshipSdkInternalConfig = {
     bucketingEndpoint: string;
+    apiV1: string;
+    apiV2: string;
     pollingIntervalMinValue: number;
 };
 
@@ -50,6 +54,7 @@ export interface IFlagshipBucketingVisitor {
     config: FlagshipSdkConfig;
     visitorId: string;
     visitorContext: FlagshipVisitorContext;
+    global: IFlagshipBucketing;
     getEligibleCampaigns(): DecisionApiCampaign[];
     updateCache(data: BucketingApiResponse): void;
     updateVisitorContext(newContext: FlagshipVisitorContext): void;
@@ -64,6 +69,7 @@ export interface IFlagshipBucketing extends EventEmitter {
     lastModifiedDate: string | null;
     callApi(): Promise<BucketingApiResponse | void>;
     startPolling(): void;
+    stopPolling(): void;
     on(event: 'launched', listener: ({ status: number }) => void): this;
     on(event: 'error', listener: (args: Error) => void): this;
 }
@@ -77,6 +83,7 @@ export interface IFlagshipVisitor extends EventEmitter {
     isAllModificationsFetched: boolean;
     bucket: IFlagshipBucketingVisitor | null;
     fetchedModifications: DecisionApiCampaign[] | null;
+    modificationsInternalStatus: ModificationsInternalStatus | null;
     sdkListener: EventEmitter;
     activateModifications(
         modifications: Array<{
@@ -106,9 +113,10 @@ export interface IFlagship {
     eventEmitter: EventEmitter;
     bucket: IFlagshipBucketing | null;
     newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;
-    startBucketingPolling(): void;
+    startBucketingPolling(): { success: boolean; reason?: string };
+    stopBucketingPolling(): { success: boolean; reason?: string };
 }
 
 export interface FlagshipNodeSdk {
-    start(envId: string, config?: FlagshipSdkConfig): IFlagship;
+    start(envId: string, apiKeyOrSettings?: any, config?: FlagshipSdkConfig): IFlagship;
 }
