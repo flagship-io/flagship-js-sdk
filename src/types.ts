@@ -54,6 +54,7 @@ export interface IFlagshipBucketingVisitor {
     config: FlagshipSdkConfig;
     visitorId: string;
     visitorContext: FlagshipVisitorContext;
+    global: IFlagshipBucketing;
     getEligibleCampaigns(): DecisionApiCampaign[];
     updateCache(data: BucketingApiResponse): void;
     updateVisitorContext(newContext: FlagshipVisitorContext): void;

@@ -74,6 +74,7 @@ class Flagship implements IFlagship {
                 .getAllModifications(this.config.activateNow, { force: true })
                 .then(() => {
                     this.log.info(logBook[this.config.decisionMode].modificationSuccess);
+                    (flagshipVisitorInstance as any).callEventEndpoint();
                     flagshipVisitorInstance.emit('ready');
                 })
                 .catch((response) => {

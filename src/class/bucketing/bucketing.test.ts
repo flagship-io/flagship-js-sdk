@@ -11,6 +11,7 @@ import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import Bucketing from './bucketing';
 import { BucketingApiResponse } from './types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
+import assertionHelper from '../../../test/helper/assertion';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -151,6 +152,7 @@ describe('Bucketing used from visitor instance', () => {
     it('should not erase previous fetched modification (when exist) and bucket has failed', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
+        sdk.bucket.isPollingRunning = true; // mock
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns;
         initSpyLogs(visitorInstance);
@@ -274,6 +276,7 @@ describe('Bucketing used from visitor instance', () => {
     it('should warn when synchronizing and no fetch have been done before. + should wait a bucket polling', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
+        sdk.bucket.isPollingRunning = true; // mock
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
@@ -307,6 +310,7 @@ describe('Bucketing used from visitor instance', () => {
     it('should warn when receiving unexpected polling status code', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
+        sdk.bucket.isPollingRunning = true; // mock
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
         initSpyLogs(visitorInstance);
         expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
@@ -491,7 +495,6 @@ describe('Bucketing used from visitor instance', () => {
         mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
         mockAxios.mockResponse();
         mockAxios.mockResponse();
-        mockAxios.mockResponse();
         expect(mockAxios.get).toHaveBeenNthCalledWith(
             1,
             internalConfig.bucketingEndpoint.replace('@ENV_ID@', visitorInstance.envId),
@@ -514,42 +517,45 @@ describe('Bucketing used from visitor instance', () => {
                 expect(mockAxios.post).toHaveBeenCalledTimes(3);
 
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
-                    1,
+                    3,
                     `${visitorInstance.config.flagshipApi + visitorInstance.envId}/events`,
                     {
                         data: {
                             ...visitorInstance.context
                         },
                         type: 'CONTEXT',
-                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId,
-                        'x-api-key': demoData.apiKey[0]
+                        visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
                     },
-                    {}
+                    {
+                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    }
                 );
 
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
-                    2,
+                    1,
                     activateUrl,
                     {
                         caid: demoData.bucketing.functions.murmur.allocation[68].variationGroup,
                         cid: 'bn1ab7m56qolupi5sa0g',
                         vaid: 'bptggipaqi903f3haq2g',
-                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId,
-                        'x-api-key': demoData.apiKey[0]
+                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId
                     },
-                    {}
+                    {
+                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    }
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
-                    3,
+                    2,
                     activateUrl,
                     {
                         caid: demoData.bucketing.functions.murmur.allocation[17].variationGroup,
                         cid: 'bn1ab7m56qolupi5sa0g',
                         vaid: 'bq4sf09oet0006cfiheg',
-                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId, // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
-                        'x-api-key': demoData.apiKey[0]
+                        vid: demoData.bucketing.functions.murmur.allocation[68].visitorId // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
                     },
-                    {}
+                    {
+                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    }
                 );
 
                 done();

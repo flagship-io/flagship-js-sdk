@@ -22,16 +22,28 @@ const flagshipSdkHelper = {
         log: FsLogger,
         endpoint: string,
         params: { [key: string]: any },
-        queryParams: any = {}
+        queryParams: any = { headers: {} }
     ): Promise<any> => {
         const additionalParams: { [key: string]: string } = {};
+        const additionalHeaderParams: { [key: string]: string } = {};
+
         checkRequiredSettingsForApiV2(config, log);
         const isNotApiV1 = !config.flagshipApi.includes('/v1/');
         if (config.apiKey && isNotApiV1) {
-            additionalParams['x-api-key'] = config.apiKey;
+            additionalHeaderParams['x-api-key'] = config.apiKey;
         }
         const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
-        return axios.post(url, { ...params, ...additionalParams }, queryParams);
+        return axios.post(
+            url,
+            { ...params, ...additionalParams },
+            {
+                ...queryParams,
+                headers: {
+                    ...queryParams.headers,
+                    ...additionalHeaderParams
+                }
+            }
+        );
     },
     checkPollingIntervalValue: (pollingIntervalValue: any): 'ok' | 'underLimit' | 'notSupported' => {
         const valueType = typeof pollingIntervalValue;
