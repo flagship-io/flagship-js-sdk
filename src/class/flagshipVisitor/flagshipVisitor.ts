@@ -813,8 +813,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                         resolve(this.fetchAllModificationsPostProcess(response, { ...defaultArgs, ...args }) as DecisionApiResponse);
                     })
                     .catch((response: Error) => {
-                        this.saveModificationsInCache(null);
-                        this.log.fatal('fetchAllModifications - an error occurred while fetching...');
+                        this.log.fatal(`fetchAllModifications - an error occurred while fetching ${response?.message || '...'}`); // TODO: precise error
                         if (activate) {
                             this.log.fatal('fetchAllModifications - activate canceled due to errors...');
                         }

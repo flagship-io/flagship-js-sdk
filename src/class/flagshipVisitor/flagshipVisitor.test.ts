@@ -707,7 +707,8 @@ describe('FlagshipVisitor', () => {
                         expect(errorResponse).toEqual(errorObj);
                         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                         expect(spyFatalLogs).toHaveBeenCalledTimes(1);
-                        expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - an error occurred while fetching...');
+                        expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - an error occurred while fetching ...');
+                        expect(visitorInstance.fetchedModifications).toEqual(responseObj.data.campaigns); // expect not to be reset
                         done();
                     } catch (error) {
                         done.fail(error);
@@ -738,13 +739,10 @@ describe('FlagshipVisitor', () => {
                     try {
                         expect(errorResponse).toEqual(errorObj);
                         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
-                        expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - an error occurred while fetching...');
+                        expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - an error occurred while fetching ...');
                         expect(spyFatalLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - activate canceled due to errors...');
                         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                        expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                            1,
-                            'saveModificationsInCache - saving in cache those modifications: "null"'
-                        );
+                        expect(spyDebugLogs).toHaveBeenCalledTimes(0);
                         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                         done();
                     } catch (error) {
