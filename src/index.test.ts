@@ -45,27 +45,28 @@ describe('Flagship initialization', () => {
         const customConfig = {
             ...testConfig,
             fetchNow: false,
+            timeout: 'hello',
             nodeEnv: 'debug',
             enableConsoleLogs: true,
             unknownSettings: 'hello world'
         };
         const sdk = flagship.start(randomUUID, demoData.apiKey[0], customConfig);
         const splitElement1 = spyWarnLogs.mock.calls[0][0].split(' - ');
+        const splitElement2 = spyWarnLogs.mock.calls[1][0].split(' - ');
         expect(sdk.config).toEqual({
-            activateNow: false,
+            ...defaultConfig,
             apiKey: demoData.apiKey[0],
-            decisionMode: 'API',
             enableConsoleLogs: true,
             fetchNow: false,
-            pollingInterval: null,
             flagshipApi: internalConfig.apiV2,
-            initialModifications: null,
-            initialBucketing: null,
             nodeEnv: 'debug'
         });
-        expect(spyWarnLogs).toHaveBeenCalledTimes(1);
+        expect(spyWarnLogs).toHaveBeenCalledTimes(2);
 
         expect(splitElement1[2]).toEqual('Unknown key "unknownSettings" detected (with value="hello world"). This key has been ignored...');
+        expect(splitElement2[2]).toEqual(
+            '"timeout" setting is incorrect (value specified =>"hello"). The default value (=2 seconds) has been set instead.'
+        );
     });
 
     it('start should warn deprecated start even if apiKey is defined in the settings', () => {
@@ -81,15 +82,11 @@ describe('Flagship initialization', () => {
         const splitElement1 = spyWarnLogs.mock.calls[0][0].split(' - ');
         const splitElement2 = spyWarnLogs.mock.calls[1][0].split(' - ');
         expect(sdk.config).toEqual({
-            activateNow: false,
+            ...defaultConfig,
             apiKey: demoData.apiKey[0],
-            decisionMode: 'API',
             enableConsoleLogs: true,
             fetchNow: false,
-            pollingInterval: null,
             flagshipApi: 'https://decision-api.flagship.io/v1/',
-            initialBucketing: null,
-            initialModifications: null,
             nodeEnv: 'debug'
         });
         expect(spyWarnLogs).toHaveBeenCalledTimes(2);

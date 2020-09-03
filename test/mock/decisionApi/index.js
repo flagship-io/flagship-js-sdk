@@ -7,6 +7,7 @@ import oneCampaignWithFurtherModifs from './data/oneCampaignWithFurtherModifs';
 import oneCampaignOneModif from './data/oneCampaignOneModif';
 import oneCampaignOneModifWithAnUpdate from './data/oneCampaignOneModifWithAnUpdate';
 import complexJson from './data/complexJson';
+import panicMode from './data/panicMode';
 
 export default {
     normalResponse: {
@@ -16,7 +17,8 @@ export default {
         oneModifInMoreThanOneCampaign,
         oneCampaignWithFurtherModifs,
         manyModifInManyCampaigns,
-        noModif
+        noModif,
+        panicMode
     },
     badResponse: {
         twoCampaignsWithSameId,

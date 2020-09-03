@@ -1,5 +1,19 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.1.1
+
+### New features 🎉
+
+-   [Server side] In bucketing mode, a performance optimization has been made to avoid the use of events listener between each visitor created and the bucketing.
+
+-   Panic mode supported. When you've enabled panic mode through the web dashboard, the SDK will detect it and be in safe mode. Logs will appear to warns you and default values for modifications will be return.
+
+-   `timeout` setting added. It specify the timeout duration when fetching campaigns via API mode (`decisionMode = "API"`), defined in **seconds**. Minimal value should be greater than 0. More to come on this setting soon...
+
+### Breaking changes #1 ⚠️
+
+-   `pollingInterval` setting is now a period interval defined in **seconds** (not minutes). Minimal value is 1 second.
+
 ## ➡️ Version 2.1.0
 
 ### New features 🎉

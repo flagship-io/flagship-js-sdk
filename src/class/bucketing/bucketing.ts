@@ -3,7 +3,7 @@ import Axios, { AxiosResponse } from 'axios';
 import { EventEmitter } from 'events';
 
 import { internalConfig } from '../../config/default';
-import { FlagshipSdkConfig, IFlagshipBucketing } from '../../types';
+import { FlagshipSdkConfig, IFlagshipBucketing, IFsPanicMode } from '../../types';
 import loggerHelper from '../../lib/loggerHelper';
 import { BucketingApiResponse } from './types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
@@ -21,8 +21,11 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
 
     lastModifiedDate: string | null;
 
-    constructor(envId: string, config: FlagshipSdkConfig) {
+    panic: IFsPanicMode;
+
+    constructor(envId: string, config: FlagshipSdkConfig, panic: IFsPanicMode) {
         super();
+        this.panic = panic;
         this.config = config;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - Bucketing`);
         this.envId = envId;
@@ -40,7 +43,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
                     } else {
                         this.log.debug('on("launched") listener - bucketing stop detected.');
                     }
-                }, (this.config.pollingInterval as number) * 60 * 1000);
+                }, (this.config.pollingInterval as number) * 1000); // nbSeconds * 1000 ms
             } // no need to do logs on "else" statement because already done before
         });
 
@@ -70,18 +73,21 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         const url = internalConfig.bucketingEndpoint.replace('@ENV_ID@', this.envId);
         return Axios.get(url, axiosConfig)
             .then(({ data: bucketingData, status, ...other }: AxiosResponse<BucketingApiResponse>) => {
-                if (bucketingData.panic) {
-                    this.log.warn('Panic mode detected, running SDK in safe mode...');
-                } else if (status === 304) {
-                    this.log.info(`callApi - current bucketing up to date (api status=304)`);
-                } else {
-                    if (!other.headers['last-modified']) {
-                        this.log.warn(`callApi - http GET request (url="${url}") did not return attribute "last-modified"`);
+                this.panic.checkPanicMode(bucketingData);
+                if (!this.panic.enabled) {
+                    if (status === 304) {
+                        this.log.info(`callApi - current bucketing up to date (api status=304)`);
+                    } else if (status === 200) {
+                        if (!other.headers['last-modified']) {
+                            this.log.warn(`callApi - http GET request (url="${url}") did not return attribute "last-modified"`);
+                        } else {
+                            this.lastModifiedDate = other.headers['last-modified'];
+                        }
+                        this.log.info(`callApi - current bucketing updated`);
+                        this.data = { ...bucketingData, lastModifiedDate: this.lastModifiedDate };
                     } else {
-                        this.lastModifiedDate = other.headers['last-modified'];
+                        this.log.error(`callApi - unexpected status (="${status}") received. This polling will be ignored.`);
                     }
-                    this.log.info(`callApi - current bucketing updated`);
-                    this.data = { ...bucketingData, lastModifiedDate: this.lastModifiedDate, panic: !!bucketingData.panic };
                 }
                 this.emit('launched', { status });
                 return bucketingData;
@@ -116,7 +122,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
             default:
                 this.isPollingRunning = false;
                 this.log.error(
-                    `startPolling - The "pollingInterval" setting is below the limit (${internalConfig.pollingIntervalMinValue} minute). The setting will be ignored and the bucketing api will be called only once for initialization.`
+                    `startPolling - The "pollingInterval" setting is below the limit (${internalConfig.pollingIntervalMinValue} second). The setting will be ignored and the bucketing api will be called only once for initialization.`
                 );
                 this.callApi();
         }

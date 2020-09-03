@@ -22,6 +22,7 @@ export type DecisionApiSimpleResponse = {
 export type DecisionApiResponseData = {
     visitorId: string;
     campaigns: DecisionApiCampaign[];
+    panic?: boolean;
 };
 
 export type GetModificationInfoOutput = {
