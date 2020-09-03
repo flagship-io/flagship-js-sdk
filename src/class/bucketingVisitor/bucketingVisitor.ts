@@ -67,10 +67,15 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         };
     }
 
-    public updateCache(data: BucketingApiResponse): void {
-        this.log.debug('Updating cache.');
-        this.data = data;
-        this.computedData = { visitorId: this.visitorId, campaigns: this.getEligibleCampaigns() };
+    public updateCache(): boolean {
+        if (this.data !== this.global.data) {
+            this.log.debug('Updating cache.');
+            this.data = this.global.data;
+            this.computedData = { visitorId: this.visitorId, campaigns: this.getEligibleCampaigns() };
+
+            return true; // an update has been done
+        }
+        return true; // no updates needed
     }
 
     public updateVisitorContext(newContext: FlagshipVisitorContext): void {

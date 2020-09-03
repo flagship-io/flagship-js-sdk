@@ -14,6 +14,7 @@ import {
     ModificationsInternalStatus
 } from './class/flagshipVisitor/types';
 import { BucketingApiResponse } from './class/bucketing/types';
+import { SetPanicModeToOptions } from './class/panicMode/types';
 
 export type MurmurV3 = (value: string, seed?: number) => number;
 
@@ -28,7 +29,7 @@ export type FlagshipSdkConfig = {
     apiKey?: string | null;
     initialModifications?: DecisionApiCampaign[] | null;
     initialBucketing?: BucketingApiResponse | null;
-    murmurhashV3?: MurmurV3 | null;
+    timeout?: number;
 };
 
 export type FlagshipSdkInternalConfig = {
@@ -46,6 +47,15 @@ export type SaveCacheArgs = {
     saveInCacheModifications(modificationsToSaveInCache: DecisionApiCampaign[] | null): void;
 };
 
+export interface IFsPanicMode {
+    enabled: boolean;
+    beginDate: Date | null;
+    log: FsLogger;
+    setPanicModeTo(value: boolean, options?: SetPanicModeToOptions): void;
+    checkPanicMode(response: DecisionApiResponseData | BucketingApiResponse): void;
+    shouldRunSafeMode(functionName: string, options?: { logType: 'debug' | 'error' }): boolean;
+}
+
 export interface IFlagshipBucketingVisitor {
     data: BucketingApiResponse | null;
     computedData: DecisionApiResponseData | null;
@@ -56,7 +66,7 @@ export interface IFlagshipBucketingVisitor {
     visitorContext: FlagshipVisitorContext;
     global: IFlagshipBucketing;
     getEligibleCampaigns(): DecisionApiCampaign[];
-    updateCache(data: BucketingApiResponse): void;
+    updateCache(): boolean;
     updateVisitorContext(newContext: FlagshipVisitorContext): void;
 }
 
@@ -64,6 +74,7 @@ export interface IFlagshipBucketing extends EventEmitter {
     data: BucketingApiResponse | null;
     log: FsLogger;
     envId: string;
+    panic: IFsPanicMode;
     isPollingRunning: boolean;
     config: FlagshipSdkConfig;
     lastModifiedDate: string | null;
@@ -79,12 +90,12 @@ export interface IFlagshipVisitor extends EventEmitter {
     id: string;
     log: FsLogger;
     envId: string;
+    panic: IFsPanicMode;
     context: FlagshipVisitorContext;
     isAllModificationsFetched: boolean;
     bucket: IFlagshipBucketingVisitor | null;
     fetchedModifications: DecisionApiCampaign[] | null;
     modificationsInternalStatus: ModificationsInternalStatus | null;
-    sdkListener: EventEmitter;
     activateModifications(
         modifications: Array<{
             key: string;
@@ -109,6 +120,7 @@ export interface IFlagshipVisitor extends EventEmitter {
 export interface IFlagship {
     config: FlagshipSdkConfig;
     log: FsLogger;
+    panic: IFsPanicMode;
     envId: string;
     eventEmitter: EventEmitter;
     bucket: IFlagshipBucketing | null;

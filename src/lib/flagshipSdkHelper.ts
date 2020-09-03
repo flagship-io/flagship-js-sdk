@@ -3,7 +3,7 @@ import { validate } from 'validate.js';
 import axios from 'axios';
 import { demoPollingInterval } from '../config/test';
 import { BucketingApiResponse } from '../class/bucketing/types';
-import { FlagshipSdkConfig } from '../types';
+import { FlagshipSdkConfig, IFsPanicMode } from '../types';
 
 import defaultConfig, { internalConfig } from '../config/default';
 import { FlagshipVisitorContext, DecisionApiResponseData, DecisionApiResponse, DecisionApiCampaign } from '../class/flagshipVisitor/types';
@@ -18,6 +18,7 @@ const checkRequiredSettingsForApiV2 = (config: FlagshipSdkConfig, log: FsLogger)
 
 const flagshipSdkHelper = {
     postFlagshipApi: (
+        panic: IFsPanicMode,
         config: FlagshipSdkConfig,
         log: FsLogger,
         endpoint: string,
@@ -33,17 +34,24 @@ const flagshipSdkHelper = {
             additionalHeaderParams['x-api-key'] = config.apiKey;
         }
         const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
-        return axios.post(
-            url,
-            { ...params, ...additionalParams },
-            {
-                ...queryParams,
-                headers: {
-                    ...queryParams.headers,
-                    ...additionalHeaderParams
+        const isCampaignUrl = url.includes('/campaigns');
+        return axios
+            .post(
+                url,
+                { ...params, ...additionalParams },
+                {
+                    ...queryParams,
+                    headers: {
+                        ...queryParams.headers,
+                        ...additionalHeaderParams
+                    },
+                    timeout: isCampaignUrl ? config.timeout * 1000 : undefined
                 }
-            }
-        );
+            )
+            .then((response: DecisionApiResponse) => {
+                panic.checkPanicMode(response.data);
+                return response;
+            });
     },
     checkPollingIntervalValue: (pollingIntervalValue: any): 'ok' | 'underLimit' | 'notSupported' => {
         const valueType = typeof pollingIntervalValue;
@@ -89,24 +97,35 @@ const flagshipSdkHelper = {
             log.debug(`No unknown key detected :) - ${objectName}`);
         }
     },
+    checkTimeout: (value: number): number => {
+        return typeof value === 'number' && value > 0 ? value : defaultConfig.timeout;
+    },
     checkConfig: (unknownConfig: { [key: string]: any }, apiKey?: string): { cleanConfig: object; ignoredConfig: object } => {
-        const cleanObject: { [key: string]: string | boolean | null } = {};
+        const cleanObject: { [key: string]: string | boolean | number | null } = {};
         const dirtyObject: { [key: string]: string | boolean | null } = {};
         const validAttributesList: Array<string> = [];
         Object.entries(defaultConfig).forEach(([key]) => validAttributesList.push(key));
         const whiteListedAttributesList: Array<string> = Object.keys(otherSdkConfig); // specific config coming from other SDK.
-        Object.keys(unknownConfig).forEach((key) => {
-            const value = unknownConfig[key];
-            if (validAttributesList.includes(key)) {
+        Object.keys(unknownConfig).forEach((foreignKey) => {
+            const value = unknownConfig[foreignKey];
+            if (validAttributesList.includes(foreignKey)) {
                 if (typeof value === 'undefined' || value === null) {
-                    cleanObject[key] = defaultConfig[key as keyof FlagshipSdkConfig] as string | boolean | null;
+                    cleanObject[foreignKey] = defaultConfig[foreignKey as keyof FlagshipSdkConfig] as string | boolean | null;
                 } else {
-                    cleanObject[key] = value;
+                    switch (foreignKey) {
+                        case 'timeout':
+                            cleanObject[foreignKey] = flagshipSdkHelper.checkTimeout(value);
+                            break;
+
+                        default:
+                            cleanObject[foreignKey] = value;
+                            break;
+                    }
                 }
-            } else if (whiteListedAttributesList.includes(key)) {
+            } else if (whiteListedAttributesList.includes(foreignKey)) {
                 // do nothing
             } else {
-                dirtyObject[key] = value;
+                dirtyObject[foreignKey] = value;
             }
         });
 
@@ -129,10 +148,6 @@ const flagshipSdkHelper = {
             campaigns: {
                 presence: { message: 'is missing' },
                 type: { type: 'array', message: 'is not a array' }
-            },
-            panic: {
-                presence: { message: 'is missing' },
-                type: { type: 'boolean', message: 'is not a boolean' }
             },
             lastModifiedDate: {
                 presence: { message: 'is missing' },
@@ -251,6 +266,13 @@ const flagshipSdkHelper = {
             default:
                 return false;
         }
+    },
+    generatePanicDecisionApiResponse: (visitorId: string): DecisionApiResponseData => {
+        return {
+            visitorId,
+            campaigns: [],
+            panic: true
+        };
     }
 };
 

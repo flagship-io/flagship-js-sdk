@@ -16,6 +16,8 @@ let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
 let spyActivateCampaign;
 let spyGenerateCustomTypeParamsOf;
+let panicModeSpy;
+let visitorSpy;
 let responseObject;
 let spyWarnLogs;
 let spyErrorLogs;
@@ -25,12 +27,28 @@ let spyDebugLogs;
 let defaultDecisionApiResponse: DecisionApiResponseData;
 let defaultActivateModificationResponse;
 
-const initSpyLogs = (vInstance): void => {
+type initSpyLogsOutput = {
+    spyWarnLogs: jest.SpyInstance<any, unknown[]>;
+    spyErrorLogs: jest.SpyInstance<any, unknown[]>;
+    spyFatalLogs: jest.SpyInstance<any, unknown[]>;
+    spyInfoLogs: jest.SpyInstance<any, unknown[]>;
+    spyDebugLogs: jest.SpyInstance<any, unknown[]>;
+};
+
+const initSpyLogs = (vInstance): initSpyLogsOutput => {
     spyFatalLogs = jest.spyOn(vInstance.log, 'fatal');
     spyWarnLogs = jest.spyOn(vInstance.log, 'warn');
     spyInfoLogs = jest.spyOn(vInstance.log, 'info');
     spyDebugLogs = jest.spyOn(vInstance.log, 'debug');
     spyErrorLogs = jest.spyOn(vInstance.log, 'error');
+
+    return {
+        spyWarnLogs,
+        spyErrorLogs,
+        spyFatalLogs,
+        spyInfoLogs,
+        spyDebugLogs
+    };
 };
 
 let eventMockResponse: HttpResponse;
@@ -423,9 +441,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -433,6 +452,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -455,9 +475,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -465,6 +486,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -490,9 +512,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockError(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -500,6 +523,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -522,9 +546,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -532,6 +557,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -560,9 +586,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -570,6 +597,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -579,10 +607,12 @@ describe('FlagshipVisitor', () => {
 
     describe('FetchAllModifications function', () => {
         beforeEach(() => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
             visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
             spyActivateCampaign = jest.spyOn(visitorInstance, 'activateCampaign');
             initSpyLogs(visitorInstance);
         });
+
         it('should log an error when trying to hack args and the cache is null', (done) => {
             visitorInstance.fetchedModifications = null;
             const cacheResponse = visitorInstance.fetchAllModifications({ loadFromCache: true, force: true });
@@ -631,8 +661,9 @@ describe('FlagshipVisitor', () => {
 
         it('should return decision API response (mode=normal) when there is no optional argument set', () => {
             visitorInstance.fetchAllModifications();
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenCalledWith(
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -640,6 +671,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -675,7 +707,8 @@ describe('FlagshipVisitor', () => {
                         expect(errorResponse).toEqual(errorObj);
                         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                         expect(spyFatalLogs).toHaveBeenCalledTimes(1);
-                        expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - an error occurred while fetching...');
+                        expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - an error occurred while fetching ...');
+                        expect(visitorInstance.fetchedModifications).toEqual(responseObj.data.campaigns); // expect not to be reset
                         done();
                     } catch (error) {
                         done.fail(error);
@@ -706,13 +739,10 @@ describe('FlagshipVisitor', () => {
                     try {
                         expect(errorResponse).toEqual(errorObj);
                         expect(spyErrorLogs).toHaveBeenCalledTimes(0);
-                        expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - an error occurred while fetching...');
+                        expect(spyFatalLogs).toHaveBeenNthCalledWith(1, 'fetchAllModifications - an error occurred while fetching ...');
                         expect(spyFatalLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - activate canceled due to errors...');
                         expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                        expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                            1,
-                            'saveModificationsInCache - saving in cache those modifications: "null"'
-                        );
+                        expect(spyDebugLogs).toHaveBeenCalledTimes(0);
                         expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                         done();
                     } catch (error) {
@@ -798,9 +828,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: true,
@@ -808,6 +839,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -864,9 +896,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: true,
@@ -874,6 +907,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1126,9 +1160,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1136,6 +1171,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1160,9 +1196,10 @@ describe('FlagshipVisitor', () => {
                 }
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1170,6 +1207,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1205,9 +1243,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1215,6 +1254,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1243,9 +1283,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1253,6 +1294,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1273,9 +1315,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1283,6 +1326,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -1311,9 +1355,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1321,6 +1366,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -1345,9 +1391,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1355,6 +1402,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -1382,9 +1430,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `https://decision.flagship.io/v2/${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `https://decision.flagship.io/v2/${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1392,6 +1441,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
             );
@@ -1413,9 +1463,10 @@ describe('FlagshipVisitor', () => {
                 done();
             });
             mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
             expect(mockAxios.post).toHaveBeenNthCalledWith(
                 1,
-                `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
+                url,
                 {
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
@@ -1423,6 +1474,7 @@ describe('FlagshipVisitor', () => {
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
 
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
                 }
@@ -2669,11 +2721,11 @@ describe('FlagshipVisitor', () => {
                                 );
                                 done();
                             } catch (e) {
-                                done.fail(e.stack);
+                                done.fail(e);
                             }
                         })
                         .catch((e) => {
-                            done.fail(e.stack);
+                            done.fail(e);
                         });
                     mockAxios.mockResponse(defaultDecisionApiResponse);
                 });
@@ -2710,13 +2762,12 @@ describe('FlagshipVisitor', () => {
                                     }
                                 );
 
-                                expect(spyDebugLogs).toBeCalledTimes(1);
+                                expect(spyDebugLogs).toBeCalledTimes(0);
                                 expect(spyInfoLogs).toBeCalledTimes(1);
                                 expect(spyWarnLogs).toBeCalledTimes(0);
                                 expect(spyErrorLogs).toBeCalledTimes(0);
                                 expect(spyFatalLogs).toBeCalledTimes(0);
 
-                                // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, ''); // saveModificationsInCache - saving in cache those modifications "null"
                                 expect(spyInfoLogs).toHaveBeenNthCalledWith(
                                     1,
                                     'synchronizeModifications - you might synchronize modifications too early because bucketing is empty or did not start'
@@ -2724,15 +2775,15 @@ describe('FlagshipVisitor', () => {
 
                                 done();
                             } catch (e) {
-                                done.fail(e.stack);
+                                done.fail(e);
                             }
                         })
                         .catch((e) => {
-                            done.fail(e.stack);
+                            done.fail(e);
                         });
                 });
             } catch (error) {
-                done.fail(error.stack);
+                done.fail(error);
             }
         });
         it('should notify when call event endpoint fail', (done) => {
@@ -2783,6 +2834,554 @@ describe('FlagshipVisitor', () => {
                 mockAxios.mockResponse(eventMockResponse);
             } catch (error) {
                 done.fail(error.stack);
+            }
+        });
+    });
+
+    describe('panic mode function behavior', () => {
+        beforeEach(() => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
+            sdk.panic.setPanicModeTo(true);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+            defaultDecisionApiResponse = {
+                data: demoData.decisionApi.normalResponse.oneCampaignWithFurtherModifs,
+                status: 200,
+                statusText: 'OK'
+            };
+            visitorSpy = initSpyLogs(visitorInstance);
+            panicModeSpy = initSpyLogs(sdk.panic);
+            eventMockResponse = { status: 204, data: {} };
+        });
+        afterEach(() => {
+            bucketingApiMockResponse = null;
+            mockAxios.reset();
+        });
+
+        it('activateModifications should trigger safe mode in panic mode', () => {
+            visitorInstance.activateModifications([
+                {
+                    key: 'modif1'
+                }
+            ]);
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+
+            expect(mockAxios.post).toHaveBeenCalledTimes(0);
+            expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+            expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+            expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                1,
+                "Can't execute 'activateModifications' because the SDK is in panic mode !"
+            );
+        });
+
+        it('getModifications should trigger safe mode in panic mode', () => {
+            const output = visitorInstance.getModifications(
+                demoData.flagshipVisitor.getModifications.args.requestOneUnexistingKeyWithActivate
+            );
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+
+            expect(output.testUnexistingKey).toEqual('NOOOOO');
+
+            expect(mockAxios.post).toHaveBeenCalledTimes(0);
+            expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+            expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+            expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                1,
+                "Can't execute 'getModifications' because the SDK is in panic mode !"
+            );
+        });
+
+        it('getModificationInfo should trigger safe mode in panic mode', (done) => {
+            visitorInstance
+                .getModificationInfo('testUnexistingKey')
+                .then((output) => {
+                    expect(output).toEqual(null);
+                    expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'getModificationInfo' because the SDK is in panic mode !"
+                    );
+                    done();
+                })
+                .catch((e) => {
+                    done.fail(`oops ${e.stack}`);
+                });
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+        });
+
+        it('updateContext should trigger safe mode in panic mode', () => {
+            visitorInstance.updateContext({
+                hero: 'batman'
+            });
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+
+            expect(mockAxios.post).toHaveBeenCalledTimes(0);
+            expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+            expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+            expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+            expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+            expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                1,
+                "Can't execute 'updateContext' because the SDK is in panic mode !"
+            );
+        });
+
+        it('synchronizeModifications should trigger safe mode in panic mode - bucketing mode', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, decisionMode: 'Bucketing' });
+            sdk.panic.setPanicModeTo(true);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
+
+            visitorSpy = initSpyLogs(visitorInstance);
+            panicModeSpy = initSpyLogs(sdk.panic);
+
+            visitorInstance
+                .synchronizeModifications(true)
+                .then((status) => {
+                    expect(status).toEqual(400);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'callEventEndpoint' because the SDK is in panic mode !"
+                    );
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'synchronizeModifications' because the SDK is in panic mode !"
+                    );
+
+                    expect(visitorInstance.fetchedModifications).toEqual(
+                        demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns
+                    ); // It does not remove fetched modifications but when still will returns default values when request "getModifications()"
+
+                    done();
+                })
+                .catch((e) => done.fail(e));
+
+            mockAxios.mockResponse({ data: demoData.bucketing.panic, status: 200 });
+
+            expect(mockAxios.post).toHaveBeenCalledTimes(0);
+            expect(mockAxios.get).toHaveBeenCalledTimes(1); // get from bucketing
+        });
+
+        it('synchronizeModifications should remove panic mode, if respones is back to normal - bucketing mode', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...testConfig,
+                decisionMode: 'Bucketing',
+                pollingInterval: 2
+            });
+            sdk.panic.setPanicModeTo(true);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
+
+            visitorSpy = initSpyLogs(visitorInstance);
+            panicModeSpy = initSpyLogs(sdk.panic);
+
+            sdk.eventEmitter.on('bucketPollingSuccess', () => {
+                visitorInstance
+                    .synchronizeModifications(true)
+                    .then((status) => {
+                        expect(status).toEqual(200);
+
+                        expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                        expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                        expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                        expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                        expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+
+                        // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications');
+                        expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(
+                            2,
+                            'fetchAllModifications - activateNow enabled with bucketing mode. Following keys "testCache, btn-color, btn-text, txt-color" will be activated.'
+                        );
+
+                        expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                        expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                        expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                        expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                        expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                        expect(panicModeSpy.spyInfoLogs).toHaveBeenNthCalledWith(
+                            1,
+                            'panic mode is DISABLED. Everything is back to normal.'
+                        );
+
+                        expect(visitorInstance.fetchedModifications).toEqual([
+                            {
+                                id: 'bptggipaqi903f3haq0g',
+                                variation: { id: 'bptggipaqi903f3haq20', modifications: { type: 'JSON', value: { testCache: null } } },
+                                variationGroupId: 'l7jaucjpddjdwdbfgg7'
+                            },
+                            {
+                                id: 'bq4sf09oet0006cfihd0',
+                                variation: {
+                                    id: 'bq4sf09oet0006cfiheg',
+                                    modifications: {
+                                        type: 'JSON',
+                                        value: { 'btn-color': 'red', 'btn-text': 'Buy now !', 'txt-color': '#fff' }
+                                    }
+                                },
+                                variationGroupId: 'vsc1rf8xs3bvu0rzs8b'
+                            }
+                        ]);
+
+                        expect(sdk.panic.enabled).toEqual(false);
+                        expect(mockAxios.post).toHaveBeenCalledTimes(4); // 2x activate, 2x events (init, synchro)
+                        expect(mockAxios.get).toHaveBeenCalledTimes(1); // get from bucketing
+                        done();
+                    })
+                    .catch((e) => done.fail(e));
+            });
+
+            mockAxios.mockResponse({ data: demoData.bucketing.classical, status: 200 });
+        });
+
+        it('synchronizeModifications should trigger safe mode in panic mode - decision api mode', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, decisionMode: 'API' });
+            sdk.panic.setPanicModeTo(true);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
+            visitorSpy = initSpyLogs(visitorInstance);
+            panicModeSpy = initSpyLogs(sdk.panic);
+
+            visitorInstance
+                .synchronizeModifications(true)
+                .then((status) => {
+                    expect(status).toEqual(200);
+                    expect(visitorInstance.fetchedModifications).toEqual([]);
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'callEventEndpoint' because the SDK is in panic mode !"
+                    );
+                })
+                .catch((e) => done.fail(e))
+                .finally(() => {
+                    expect(mockAxios.post).toHaveBeenCalledTimes(1);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                    done();
+                });
+
+            mockAxios.mockResponse({ data: demoData.decisionApi.normalResponse.panicMode, status: 200 });
+        });
+
+        it('synchronizeModifications should remove safe mode, if it was in panic mode  and decision api returns normal response', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, decisionMode: 'API' });
+            sdk.panic.setPanicModeTo(true);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            visitorInstance.fetchedModifications = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
+            visitorSpy = initSpyLogs(visitorInstance);
+            panicModeSpy = initSpyLogs(sdk.panic);
+
+            visitorInstance
+                .synchronizeModifications(true)
+                .then((status) => {
+                    expect(status).toEqual(200);
+                    expect(visitorInstance.fetchedModifications).toEqual(demoData.decisionApi.normalResponse.oneCampaignOneModif.campaigns);
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenNthCalledWith(1, 'panic mode is DISABLED. Everything is back to normal.');
+
+                    // expect(mockAxios.post).toHaveBeenNthCalledWith(1, ''); // https://decision.flagship.io/v2/bn1ab7m56qolupi5sa0g/campaigns?mode=normal
+                    // expect(mockAxios.post).toHaveBeenNthCalledWith(2, ''); // https://decision.flagship.io/v2/activate
+                    // expect(mockAxios.post).toHaveBeenNthCalledWith(3, ''); // https://decision.flagship.io/v2/bn1ab7m56qolupi5sa0g/events
+
+                    expect(mockAxios.post).toHaveBeenCalledTimes(3);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                    expect(sdk.panic.enabled).toEqual(false);
+
+                    done();
+                })
+                .catch((e) => done.fail(e))
+                .finally(() => {});
+
+            mockAxios.mockResponse({ data: demoData.decisionApi.normalResponse.oneCampaignOneModif, status: 200 });
+        });
+
+        it('getModificationsForCampaign should trigger safe mode in panic mode - normal mode', (done) => {
+            visitorInstance.getModificationsForCampaign('blntcamqmdvg04g371f0').then((response) => {
+                try {
+                    expect(response.data.campaigns).toEqual([]);
+                    expect(response.data.visitorId).toBe(visitorInstance.id);
+
+                    expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'getModificationsForCampaign' because the SDK is in panic mode !"
+                    );
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+        });
+
+        it('getAllModifications should trigger safe mode in panic mode - normal mode', (done) => {
+            visitorInstance
+                .getAllModifications(true, { force: true, simpleMode: false })
+                .then((response) => {
+                    expect(response).toEqual({ status: 400, data: [] });
+                    expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'getAllModifications' because the SDK is in panic mode !"
+                    );
+                    done();
+                })
+                .catch((e) => done.fail(e));
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+        });
+
+        it('getAllModifications should trigger safe mode in panic mode - simple mode', (done) => {
+            visitorInstance
+                .getAllModifications(true, { force: true, simpleMode: true })
+                .then((response) => {
+                    expect(response).toEqual({});
+                    expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'getAllModifications' because the SDK is in panic mode !"
+                    );
+                    done();
+                })
+                .catch((e) => done.fail(e));
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+        });
+
+        it('sendHits should trigger safe mode in panic mode', (done) => {
+            visitorInstance.sendHits([demoData.hit.event]).then((response) => {
+                try {
+                    expect(response).toEqual(undefined);
+
+                    expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'sendHits' because the SDK is in panic mode !"
+                    );
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
+            }
+        });
+
+        it('sendHit should trigger safe mode in panic mode', (done) => {
+            visitorInstance.sendHit(demoData.hit.event).then((response) => {
+                try {
+                    expect(response).toEqual(undefined);
+
+                    expect(mockAxios.post).toHaveBeenCalledTimes(0);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                    expect(panicModeSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(panicModeSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                    expect(panicModeSpy.spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        "Can't execute 'sendHit' because the SDK is in panic mode !"
+                    );
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
+
+            try {
+                mockAxios.mockResponse();
+            } catch (error) {
+                expect(error.message).toEqual('No request to respond to!');
             }
         });
     });

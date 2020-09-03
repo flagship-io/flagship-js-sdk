@@ -4,6 +4,10 @@
 
 ### New features 🎉
 
+-   [Server side] In bucketing mode, a performance optimization has been made to avoid the use of events listener between each visitor created and the bucketing.
+
+-   Panic mode supported. When you've enabled panic mode through the web dashboard, the SDK will detect it and be in safe mode. Logs will appear to warns you and default values for modifications will be return.
+
 -   New setting `initialBucketing`. It takes the data received from the flagship bucketing api endpoint. Can be useful when you save this data in cache.
 
 -   Add `flagshipSdk.stopBucketingPolling()` function. It allows to stop the bucketing polling whenever you want.
@@ -61,6 +65,10 @@ Be aware that `apiKey` will be mandatory in the next major release as it will us
 ### Breaking changes #3 ⚠️
 
 -   `fetchNow` setting is now `true` by default.
+
+### Breaking changes #4 ⚠️
+
+-   `pollingInterval` setting is now a period interval defined in **seconds** (not minutes). Minimal value is 1 second.
 
 ## ➡️ Version 2.0.4
 
