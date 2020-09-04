@@ -518,7 +518,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     resolve(polishOutput(campaigns.filter((cpgn) => cpgn.id === detailsModifications[key].campaignId[0])[0]));
                 })
                 .catch((error: Error) => {
-                    this.saveModificationsInCache(null);
                     reject(error);
                 });
         });
@@ -563,7 +562,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     postSynchro(output, response);
                 })
                 .catch((error: Error) => {
-                    this.saveModificationsInCache(null);
                     reject(error);
                 });
         });
