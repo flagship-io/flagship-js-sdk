@@ -53,7 +53,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         bucket: IFlagshipBucketing | null,
         id: string,
         context: FlagshipVisitorContext = {},
-        panic: IFsPanicMode
+        panic: IFsPanicMode,
+        previousVisitorInstance: IFlagshipVisitor = null
     ) {
         super();
         this.panic = panic;

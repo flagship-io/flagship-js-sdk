@@ -104,6 +104,37 @@ class Flagship implements IFlagship {
         return flagshipVisitorInstance;
     }
 
+    // Pre-req: envId + visitorId + visitorContext must be thee
+    private updateVisitor(visitorInstance: IFlagshipVisitor): IFlagshipVisitor {
+
+        this.log.debug(`Updating visitor (id="${visitorInstance.id}")`);
+        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.bucket, id, context, this.panic);
+        if (this.config.fetchNow || this.config.activateNow) {
+            // this.log.info(logBook[this.config.decisionMode].newVisitorInfo);
+            flagshipVisitorInstance
+                .getAllModifications(this.config.activateNow, { force: true })
+                .then(() => {
+                    // this.log.info(logBook[this.config.decisionMode].modificationSuccess);
+                    (flagshipVisitorInstance as any).callEventEndpoint();
+                    flagshipVisitorInstance.emit('ready');
+                })
+                .catch((response) => {
+                    if (this.config.decisionMode !== 'Bucketing') {
+                        // this.log.fatal(logBook[this.config.decisionMode].modificationFailed(response));
+                    }
+                    flagshipVisitorInstance.emit('ready');
+                });
+        } else {
+            // Before emit('ready'), make sure there is listener to it
+            flagshipVisitorInstance.once('newListener', (event, listener) => {
+                if (event === 'ready') {
+                    listener();
+                }
+            });
+        }
+        return flagshipVisitorInstance;
+    }
+
     public startBucketingPolling(): { success: boolean; reason?: string } {
         if (this.bucket !== null && !this.bucket.isPollingRunning) {
             this.bucket.startPolling();
