@@ -63,11 +63,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
         this.envId = envId;
         this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
-        this.isAllModificationsFetched = false;
+        this.isAllModificationsFetched = previousVisitorInstance ? previousVisitorInstance.isAllModificationsFetched : false;
         this.bucket = null;
 
         // initialize "fetchedModifications" and "modificationsDetails"
-        if (config.initialModifications) {
+        if (previousVisitorInstance) {
+            this.fetchedModifications = previousVisitorInstance ? previousVisitorInstance.fetchedModifications : null;
+            this.modificationsInternalStatus = previousVisitorInstance ? previousVisitorInstance.modificationsInternalStatus : null;
+        } else if (config.initialModifications) {
             this.saveModificationsInCache(config.initialModifications);
         } else {
             this.fetchedModifications = null;
