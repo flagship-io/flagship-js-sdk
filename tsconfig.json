@@ -8,6 +8,7 @@
         "declaration": true,
         "target": "es5"
     },
+    "types": ["mocha", "jest"],
     "include": ["./src/**/*"],
     "exclude": ["node_modules", "**/*.test.ts"],
     "lib": ["es6", "es2017.object"]
