@@ -492,7 +492,7 @@ describe('FlagshipVisitor', () => {
                 }
             );
         });
-        it('should always init "fetchedModifications" to "null" if decision API failed', (done) => {
+        it('should always NOT reset "fetchedModifications" to "null" if decision API failed', (done) => {
             const responseObj = {
                 data: 'Oh no, error is coming !',
                 status: '422',
@@ -505,7 +505,7 @@ describe('FlagshipVisitor', () => {
             expect(visitorInstance.fetchedModifications).toEqual({ someStuff: 1234 }); // Just checking...
             visitorInstance.synchronizeModifications().catch(() => {
                 try {
-                    expect(visitorInstance.fetchedModifications).toBe(null);
+                    expect(visitorInstance.fetchedModifications).toMatchObject({ someStuff: 1234 });
                 } catch (error) {
                     done.fail(error);
                 }

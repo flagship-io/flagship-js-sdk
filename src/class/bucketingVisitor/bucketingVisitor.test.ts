@@ -656,7 +656,7 @@ describe('BucketingVisitor - murmur algorithm', () => {
 
     it('should return about 50/50 scenario with 10 000 visitors', (done) => {
         const nbVisitor = 10000;
-        const acceptedRange = 0.8; // percent
+        const acceptedRange = 1.62; // percent (should fail 1/100)
         const output = murmurAllocationCheck(demoData.bucketing.functions.murmur.defaultArgs, acceptedRange, nbVisitor);
         if (!output.isTestOk) {
             done.fail(output.debug);

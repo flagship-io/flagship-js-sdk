@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.1.2
+
+### New features 🎉
+
+-   Contains minor optimizations for [REACT SDK](https://github.com/abtasty/flagship-react-sdk) (updateVisitor).
+
 ## ➡️ Version 2.1.1
 
 ### New features 🎉
