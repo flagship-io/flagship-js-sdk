@@ -680,7 +680,7 @@ describe('FlagshipVisitor', () => {
                     // change a bit the settings
                     sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true, timeout: 1 });
                     initSpyLogs(sdk);
-                    const freshVisitor = sdk.updateVisitor(visitorInstance);
+                    const freshVisitor = sdk.updateVisitor(visitorInstance, demoData.visitor.cleanContext);
                     freshVisitor.once('ready', () => {
                         try {
                             expect(spyDebugLogs).toHaveBeenCalledTimes(1);
@@ -732,7 +732,7 @@ describe('FlagshipVisitor', () => {
                     // change a bit the settings
                     sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true, timeout: 1 });
                     initSpyLogs(sdk);
-                    const freshVisitor = sdk.updateVisitor(visitorInstance);
+                    const freshVisitor = sdk.updateVisitor(visitorInstance, demoData.visitor.cleanContext);
                     mockAxios.mockResponse(responseObj);
                     freshVisitor.once('ready', () => {
                         try {
@@ -745,7 +745,7 @@ describe('FlagshipVisitor', () => {
                             expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'updateVisitor - updating visitor (id="test-perf")');
                             expect(spyDebugLogs).toHaveBeenNthCalledWith(
                                 2,
-                                'updateVisitor - visitor(id="test-perf") does not have modifications + (fetchNow=true || activateNow=false) detected, trying a synchronize...'
+                                'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true || activateNow=false) detected, trying a synchronize...'
                             );
 
                             expect(freshVisitor.fetchedModifications).toEqual(responseObj.data.campaigns);
@@ -788,7 +788,7 @@ describe('FlagshipVisitor', () => {
                 // change a bit the settings
                 sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true, timeout: 1 });
                 initSpyLogs(sdk);
-                const freshVisitor = sdk.updateVisitor(visitorInstance);
+                const freshVisitor = sdk.updateVisitor(visitorInstance, demoData.visitor.cleanContext);
                 mockAxios.mockError('fail again');
                 freshVisitor.once('ready', () => {
                     try {
@@ -801,7 +801,7 @@ describe('FlagshipVisitor', () => {
                         expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'updateVisitor - updating visitor (id="test-perf")');
                         expect(spyDebugLogs).toHaveBeenNthCalledWith(
                             2,
-                            'updateVisitor - visitor(id="test-perf") does not have modifications + (fetchNow=true || activateNow=false) detected, trying a synchronize...'
+                            'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true || activateNow=false) detected, trying a synchronize...'
                         );
 
                         expect(freshVisitor.fetchedModifications).toEqual(null);
@@ -835,6 +835,63 @@ describe('FlagshipVisitor', () => {
         mockAxios.mockError('fail');
     });
 
+    it('should do call to "/campaigns" if context has changed (fetchNow=true) when updating the visitor but second call fail again', (done) => {
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true });
+        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+        initSpyLogs(sdk);
+        const nextStep = (): void => {
+            try {
+                // change a bit the settings
+                sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true, timeout: 1 });
+                initSpyLogs(sdk);
+                const freshVisitor = sdk.updateVisitor(visitorInstance, { ...demoData.visitor.cleanContext, pos: { deep: 'context' } });
+                mockAxios.mockResponse(responseObj);
+                mockAxios.mockResponse(responseObj);
+                freshVisitor.once('ready', () => {
+                    try {
+                        expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                        expect(spyWarnConsoleLogs).toHaveBeenCalledTimes(0);
+                        expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                        expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                        expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+                        expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'updateVisitor - updating visitor (id="test-perf")');
+                        expect(spyDebugLogs).toHaveBeenNthCalledWith(
+                            2,
+                            'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true || activateNow=false) detected, trying a synchronize...'
+                        );
+
+                        expect(freshVisitor.config.timeout).toEqual(1);
+                        expect(mockAxios.post).toHaveBeenCalledTimes(4); // '/campaigns' (two success) + 2x events
+                        done();
+                    } catch (error) {
+                        done.fail(error);
+                    }
+                });
+            } catch (error) {
+                done.fail(error);
+            }
+        };
+
+        visitorInstance.once('ready', () => {
+            try {
+                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+                expect(spyWarnConsoleLogs).toHaveBeenCalledTimes(0);
+                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+
+                expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'new visitor (id="test-perf") decision API finished (ready !)');
+
+                expect(mockAxios.post).toHaveBeenCalledTimes(2); // '/campaigns' + events
+                nextStep();
+            } catch (error) {
+                done.fail(error);
+            }
+        });
+        mockAxios.mockResponse(responseObj);
+    });
+
     it('should ignore initialModifications when updating a visitor', (done) => {
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true });
         visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
@@ -849,7 +906,7 @@ describe('FlagshipVisitor', () => {
                     initialModifications: demoData.decisionApi.normalResponse.complexJson.campaigns
                 });
                 initSpyLogs(sdk);
-                const freshVisitor = sdk.updateVisitor(visitorInstance);
+                const freshVisitor = sdk.updateVisitor(visitorInstance, demoData.visitor.cleanContext);
                 freshVisitor.once('ready', () => {
                     try {
                         expect(spyDebugLogs).toHaveBeenCalledTimes(1);

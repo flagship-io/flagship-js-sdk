@@ -10,6 +10,7 @@ import { BucketingApiResponse } from '../bucketing/types';
 import FlagshipVisitor from '../flagshipVisitor/flagshipVisitor';
 import { FlagshipVisitorContext } from '../flagshipVisitor/types';
 import PanicMode from '../panicMode/panicMode';
+import utilsHelper from '../../lib/utils';
 
 class Flagship implements IFlagship {
     config: FlagshipSdkConfig;
@@ -104,21 +105,29 @@ class Flagship implements IFlagship {
         return flagshipVisitorInstance;
     }
 
-    // Pre-req: envId + visitorId + visitorContext must be thee
-    private updateVisitor(visitorInstance: IFlagshipVisitor): IFlagshipVisitor {
+    // Pre-req: envId + visitorId must be the same
+    /**
+     * @returns {IFlagshipVisitor}
+     * @description Used internally only. Don't use it outside the SDK !
+     */
+    public updateVisitor(visitorInstance: IFlagshipVisitor, context: FlagshipVisitorContext): IFlagshipVisitor {
         this.log.debug(`updateVisitor - updating visitor (id="${visitorInstance.id}")`);
         const flagshipVisitorInstance = new FlagshipVisitor(
             this.envId,
             this.config,
             this.bucket,
             visitorInstance.id,
-            visitorInstance.context,
+            context,
             this.panic,
             visitorInstance
         );
-        if ((flagshipVisitorInstance.fetchedModifications === null && this.config.fetchNow) || this.config.activateNow) {
+        if (
+            ((!utilsHelper.deepCompare(visitorInstance.context, context) || flagshipVisitorInstance.fetchedModifications === null) &&
+                this.config.fetchNow) ||
+            this.config.activateNow
+        ) {
             this.log.debug(
-                `updateVisitor - visitor(id="${visitorInstance.id}") does not have modifications + (fetchNow=${this.config.fetchNow} || activateNow=${this.config.activateNow}) detected, trying a synchronize...`
+                `updateVisitor - visitor(id="${visitorInstance.id}") does not have modifications or context has changed + (fetchNow=${this.config.fetchNow} || activateNow=${this.config.activateNow}) detected, trying a synchronize...`
             );
             flagshipVisitorInstance
                 .synchronizeModifications(this.config.activateNow)
