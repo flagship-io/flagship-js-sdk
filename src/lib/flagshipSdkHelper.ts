@@ -18,11 +18,19 @@ const checkRequiredSettingsForApiV2 = (config: FlagshipSdkConfig, log: FsLogger)
 
 const flagshipSdkHelper = {
     postFlagshipApi: (
-        panic: IFsPanicMode,
-        config: FlagshipSdkConfig,
-        log: FsLogger,
-        endpoint: string,
-        params: { [key: string]: any },
+        {
+            panic,
+            config,
+            log,
+            endpoint,
+            params
+        }: {
+            panic: IFsPanicMode;
+            config: FlagshipSdkConfig;
+            log: FsLogger;
+            endpoint: string;
+            params?: { [key: string]: any };
+        },
         queryParams: any = { headers: {} }
     ): Promise<any> => {
         const additionalParams: { [key: string]: string } = {};

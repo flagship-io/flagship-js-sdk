@@ -89,11 +89,17 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     ): Promise<{ status: number } | Error> {
         return new Promise<{ status: number } | Error>((resolve, reject) => {
             flagshipSdkHelper
-                .postFlagshipApi(this.panic, this.config, this.log, `${this.config.flagshipApi}activate`, {
-                    vid: this.id,
-                    cid: this.envId,
-                    caid: variationGroupId,
-                    vaid: variationId
+                .postFlagshipApi({
+                    panic: this.panic,
+                    config: this.config,
+                    log: this.log,
+                    endpoint: `${this.config.flagshipApi}activate`,
+                    params: {
+                        vid: this.id,
+                        cid: this.envId,
+                        caid: variationGroupId,
+                        vaid: variationId
+                    }
                 })
                 .then((response: DecisionApiResponse) => {
                     let successLog = `VariationId "${variationId}" successfully activate with status code:${response.status}`;
@@ -792,15 +798,17 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             } else {
                 flagshipSdkHelper
                     .postFlagshipApi(
-                        this.panic,
-                        this.config,
-                        this.log,
-                        url,
                         {
-                            visitor_id: this.id,
-                            trigger_hit: activate, // TODO: to unit test
-                            // sendContextEvent: false, // NOTE: not set because endpoint "/events" is called only with bucketing mode
-                            context: this.context
+                            panic: this.panic,
+                            config: this.config,
+                            log: this.log,
+                            endpoint: url,
+                            params: {
+                                visitor_id: this.id,
+                                trigger_hit: activate, // TODO: to unit test
+                                // sendContextEvent: false, // NOTE: not set because endpoint "/events" is called only with bucketing mode
+                                context: this.context
+                            }
                         },
                         // query params:
                         {
@@ -1036,11 +1044,17 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
         return new Promise((resolve, reject) => {
             flagshipSdkHelper
-                .postFlagshipApi(this.panic, this.config, this.log, `${this.config.flagshipApi}${this.envId}/events`, {
-                    visitor_id: this.id,
-                    type: 'CONTEXT',
-                    data: {
-                        ...this.context
+                .postFlagshipApi({
+                    panic: this.panic,
+                    config: this.config,
+                    log: this.log,
+                    endpoint: `${this.config.flagshipApi}${this.envId}/events`,
+                    params: {
+                        visitor_id: this.id,
+                        type: 'CONTEXT',
+                        data: {
+                            ...this.context
+                        }
                     }
                 })
                 .then((response) => {
