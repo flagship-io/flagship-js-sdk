@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 /* eslint-disable @typescript-eslint/interface-name-prefix */
+import { CancelTokenSource } from 'axios';
 import {
     FlagshipVisitorContext,
     FsModifsRequestedList,
@@ -30,6 +31,12 @@ export type FlagshipSdkConfig = {
     initialModifications?: DecisionApiCampaign[] | null;
     initialBucketing?: BucketingApiResponse | null;
     timeout?: number;
+    internal?: {
+        react?: {};
+        reactNative?: {
+            httpCallback: (axiosCallback: () => Promise<any>, cancelTokenSource: CancelTokenSource) => Promise<any>;
+        };
+    };
 };
 
 export type FlagshipSdkInternalConfig = {

@@ -1,20 +1,21 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
+import axios, { CancelTokenSource } from 'axios';
 import { validate } from 'validate.js';
-import axios from 'axios';
-import { demoPollingInterval } from '../config/test';
+
 import { BucketingApiResponse } from '../class/bucketing/types';
-import { FlagshipSdkConfig, IFsPanicMode } from '../types';
-
+import { DecisionApiCampaign, DecisionApiResponse, DecisionApiResponseData, FlagshipVisitorContext } from '../class/flagshipVisitor/types';
 import defaultConfig, { internalConfig } from '../config/default';
-import { FlagshipVisitorContext, DecisionApiResponseData, DecisionApiResponse, DecisionApiCampaign } from '../class/flagshipVisitor/types';
-
 import otherSdkConfig from '../config/otherSdk';
+import { demoPollingInterval } from '../config/test';
+import { FlagshipSdkConfig, IFsPanicMode } from '../types';
 
 const checkRequiredSettingsForApiV2 = (config: FlagshipSdkConfig, log: FsLogger): void => {
     if (config.flagshipApi && config.flagshipApi.includes('/v2/') && !config.apiKey) {
         log.fatal('initialization - flagshipApi v2 detected but required setting "apiKey" is missing !');
     }
 };
+
+export type postFlagshipApiCallback = (axiosCallback: () => Promise<any>, cancelTokenSource: CancelTokenSource) => Promise<any>;
 
 const flagshipSdkHelper = {
     postFlagshipApi: (
@@ -23,12 +24,14 @@ const flagshipSdkHelper = {
             config,
             log,
             endpoint,
+            callback,
             params
         }: {
             panic: IFsPanicMode;
             config: FlagshipSdkConfig;
             log: FsLogger;
             endpoint: string;
+            callback?: postFlagshipApiCallback;
             params?: { [key: string]: any };
         },
         queryParams: any = { headers: {} }
@@ -42,23 +45,31 @@ const flagshipSdkHelper = {
             additionalHeaderParams['x-api-key'] = config.apiKey;
         }
         const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
-        return axios
-            .post(
-                url,
-                { ...params, ...additionalParams },
-                {
-                    ...queryParams,
-                    headers: {
-                        ...queryParams.headers,
-                        ...additionalHeaderParams
-                    },
-                    timeout: url.includes('/campaigns') ? config.timeout * 1000 : undefined
-                }
-            )
-            .then((response: DecisionApiResponse) => {
-                panic.checkPanicMode(response.data);
-                return response;
-            });
+        const cancelTokenSource = axios.CancelToken.source();
+        const axiosFct = (): Promise<any> =>
+            axios
+                .post(
+                    url,
+                    { ...params, ...additionalParams },
+                    {
+                        ...queryParams,
+                        cancelToken: cancelTokenSource.token,
+                        headers: {
+                            ...queryParams.headers,
+                            ...additionalHeaderParams
+                        },
+                        timeout: url.includes('/campaigns') ? config.timeout * 1000 : undefined
+                    }
+                )
+                .then((response: DecisionApiResponse) => {
+                    panic.checkPanicMode(response.data);
+                    return response;
+                });
+
+        if (callback) {
+            return callback(axiosFct, cancelTokenSource);
+        }
+        return axiosFct();
     },
     checkPollingIntervalValue: (pollingIntervalValue: any): 'ok' | 'underLimit' | 'notSupported' => {
         const valueType = typeof pollingIntervalValue;
