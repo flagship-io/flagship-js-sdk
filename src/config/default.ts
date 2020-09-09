@@ -11,7 +11,13 @@ const defaultConfig: FlagshipSdkConfig = {
     apiKey: null, // TODO: remove next major release
     timeout: 2, // seconds
     initialBucketing: null,
-    initialModifications: null
+    initialModifications: null,
+    internal: {
+        react: null,
+        reactNative: {
+            httpCallback: null
+        }
+    }
 };
 
 export const internalConfig: FlagshipSdkInternalConfig = {
