@@ -1,6 +1,6 @@
 import mockAxios from 'jest-mock-axios';
 import defaultConfig, { internalConfig } from '../../config/default';
-import { IFlagshipVisitor, IFlagship } from '../../types';
+import { IFlagshipVisitor, IFlagship, FlagshipSdkConfig } from '../../types';
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
 import flagshipSdk from '../../index';
@@ -539,6 +539,7 @@ describe('FlagshipVisitor', () => {
             done();
         });
     });
+
     it('should have setting "initialModifications" working correctly', (done) => {
         const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
@@ -670,6 +671,7 @@ describe('FlagshipVisitor', () => {
 
         mockAxios.mockResponse(responseObj);
     });
+
     describe('updateVisitor function [REACT behavior]', () => {
         it('should not display logs when updating the visitor', (done) => {
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true });
@@ -947,5 +949,106 @@ describe('FlagshipVisitor', () => {
             }
         });
         mockAxios.mockResponse(responseObj);
+    });
+
+    describe('React native behavior test', () => {
+        it('simulate custom timeout', (done) => {
+            const mockFn = jest.fn();
+            const RN_Timeout = 1.5;
+            const RN_Callback = (axiosFct, cancelToken): Promise<any> => {
+                return new Promise((resolve, reject) => {
+                    axiosFct().then((data) => {
+                        mockFn();
+                        resolve(data);
+                    });
+                    setTimeout(() => {
+                        cancelToken.cancel();
+                        reject(new Error(`Request has timed out (after ${RN_Timeout * 1000}ms).`));
+                    }, RN_Timeout);
+                });
+            };
+            const RN_Settings: FlagshipSdkConfig = {
+                ...testConfig,
+                timeout: RN_Timeout,
+                fetchNow: true,
+                internal: {
+                    reactNative: {
+                        httpCallback: RN_Callback
+                    }
+                }
+            };
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], RN_Settings);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            initSpyLogs(sdk);
+            visitorInstance.once('ready', () => {
+                try {
+                    expect(mockFn).toHaveBeenCalled();
+                    expect(visitorInstance.fetchedModifications).toEqual(responseObj.data.campaigns);
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+                    expect(spyWarnConsoleLogs).toHaveBeenCalledTimes(0);
+                    expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+
+                    expect(spyInfoLogs).toHaveBeenNthCalledWith(1, 'new visitor (id="test-perf") decision API finished (ready !)');
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
+            mockAxios.mockResponse(responseObj);
+        });
+        it('simulate custom timeout when occurred', (done) => {
+            const mockFn = jest.fn();
+            const RN_Timeout = 0.01;
+            const RN_Callback = (axiosFct, cancelToken, { timeout }): Promise<any> => {
+                return new Promise((resolve, reject) => {
+                    axiosFct().then((data) => {
+                        setTimeout(() => resolve(data), 1000);
+                    });
+                    setTimeout(() => {
+                        mockFn();
+
+                        cancelToken.cancel();
+                        reject(new Error(`Request has timed out (after ${timeout * 1000}ms).`));
+                    }, timeout);
+                });
+            };
+            const RN_Settings: FlagshipSdkConfig = {
+                ...testConfig,
+                timeout: RN_Timeout,
+                fetchNow: true,
+                internal: {
+                    reactNative: {
+                        httpCallback: RN_Callback
+                    }
+                }
+            };
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], RN_Settings);
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            initSpyLogs(sdk);
+            visitorInstance.once('ready', () => {
+                try {
+                    expect(mockFn).toHaveBeenCalled();
+                    expect(visitorInstance.fetchedModifications).toEqual(null);
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+                    expect(spyWarnConsoleLogs).toHaveBeenCalledTimes(0);
+                    expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spyFatalLogs).toHaveBeenCalledTimes(1);
+                    expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+                    expect(spyFatalLogs).toHaveBeenNthCalledWith(
+                        1,
+                        'new visitor (id="test-perf") decision API failed during initialization with error "Error: Request has timed out (after 10ms)."'
+                    );
+
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
+            mockAxios.mockResponse(responseObj);
+        });
     });
 });
