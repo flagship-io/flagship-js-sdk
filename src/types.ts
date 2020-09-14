@@ -19,6 +19,12 @@ import { SetPanicModeToOptions } from './class/panicMode/types';
 
 export type MurmurV3 = (value: string, seed?: number) => number;
 
+export type PostFlagshipApiCallback = (
+    axiosCallback: () => Promise<any>,
+    cancelTokenSource: CancelTokenSource,
+    config: FlagshipSdkConfig
+) => Promise<any>;
+
 export type FlagshipSdkConfig = {
     fetchNow?: boolean;
     pollingInterval?: number | null;
@@ -34,7 +40,7 @@ export type FlagshipSdkConfig = {
     internal?: {
         react?: {};
         reactNative?: {
-            httpCallback: (axiosCallback: () => Promise<any>, cancelTokenSource: CancelTokenSource) => Promise<any>;
+            httpCallback?: PostFlagshipApiCallback;
         };
     };
 };

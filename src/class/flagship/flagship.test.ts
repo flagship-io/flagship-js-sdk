@@ -1002,7 +1002,7 @@ describe('FlagshipVisitor', () => {
         it('simulate custom timeout when occurred', (done) => {
             const mockFn = jest.fn();
             const RN_Timeout = 0.01;
-            const RN_Callback = (axiosFct, cancelToken): Promise<any> => {
+            const RN_Callback = (axiosFct, cancelToken, { timeout }): Promise<any> => {
                 return new Promise((resolve, reject) => {
                     axiosFct().then((data) => {
                         setTimeout(() => resolve(data), 1000);
@@ -1011,8 +1011,8 @@ describe('FlagshipVisitor', () => {
                         mockFn();
 
                         cancelToken.cancel();
-                        reject(new Error(`Request has timed out (after ${RN_Timeout * 1000}ms).`));
-                    }, RN_Timeout);
+                        reject(new Error(`Request has timed out (after ${timeout * 1000}ms).`));
+                    }, timeout);
                 });
             };
             const RN_Settings: FlagshipSdkConfig = {

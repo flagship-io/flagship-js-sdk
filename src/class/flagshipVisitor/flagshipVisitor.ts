@@ -2,9 +2,16 @@ import { FsLogger } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
 import { EventEmitter } from 'events';
 
-import flagshipSdkHelper, { postFlagshipApiCallback } from '../../lib/flagshipSdkHelper';
+import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
-import { FlagshipSdkConfig, IFlagshipBucketing, IFlagshipBucketingVisitor, IFlagshipVisitor, IFsPanicMode } from '../../types';
+import {
+    FlagshipSdkConfig,
+    IFlagshipBucketing,
+    IFlagshipBucketingVisitor,
+    IFlagshipVisitor,
+    IFsPanicMode,
+    PostFlagshipApiCallback
+} from '../../types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
     checkCampaignsActivatedMultipleTimesOutput,
@@ -742,7 +749,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         campaignCustomID?: string | null;
         force?: boolean;
         loadFromCache?: boolean;
-        httpCallback?: postFlagshipApiCallback;
+        httpCallback?: PostFlagshipApiCallback;
     }): Promise<DecisionApiResponse> | DecisionApiResponseData {
         const defaultArgs = {
             activate: false,

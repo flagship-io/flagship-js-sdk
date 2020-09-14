@@ -1,5 +1,5 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-import axios, { CancelTokenSource } from 'axios';
+import axios from 'axios';
 import { validate } from 'validate.js';
 
 import { BucketingApiResponse } from '../class/bucketing/types';
@@ -7,15 +7,13 @@ import { DecisionApiCampaign, DecisionApiResponse, DecisionApiResponseData, Flag
 import defaultConfig, { internalConfig } from '../config/default';
 import otherSdkConfig from '../config/otherSdk';
 import { demoPollingInterval } from '../config/test';
-import { FlagshipSdkConfig, IFsPanicMode } from '../types';
+import { FlagshipSdkConfig, IFsPanicMode, PostFlagshipApiCallback } from '../types';
 
 const checkRequiredSettingsForApiV2 = (config: FlagshipSdkConfig, log: FsLogger): void => {
     if (config.flagshipApi && config.flagshipApi.includes('/v2/') && !config.apiKey) {
         log.fatal('initialization - flagshipApi v2 detected but required setting "apiKey" is missing !');
     }
 };
-
-export type postFlagshipApiCallback = (axiosCallback: () => Promise<any>, cancelTokenSource: CancelTokenSource) => Promise<any>;
 
 const flagshipSdkHelper = {
     postFlagshipApi: (
@@ -31,7 +29,7 @@ const flagshipSdkHelper = {
             config: FlagshipSdkConfig;
             log: FsLogger;
             endpoint: string;
-            callback?: postFlagshipApiCallback;
+            callback?: PostFlagshipApiCallback;
             params?: { [key: string]: any };
         },
         queryParams: any = { headers: {} }
@@ -67,7 +65,7 @@ const flagshipSdkHelper = {
                 });
 
         if (callback) {
-            return callback(axiosFct, cancelTokenSource);
+            return callback(axiosFct, cancelTokenSource, config);
         }
         return axiosFct();
     },
