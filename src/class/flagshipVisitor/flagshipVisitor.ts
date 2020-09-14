@@ -4,7 +4,14 @@ import { EventEmitter } from 'events';
 
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
-import { FlagshipSdkConfig, IFlagshipBucketing, IFlagshipBucketingVisitor, IFlagshipVisitor, IFsPanicMode } from '../../types';
+import {
+    FlagshipSdkConfig,
+    IFlagshipBucketing,
+    IFlagshipBucketingVisitor,
+    IFlagshipVisitor,
+    IFsPanicMode,
+    PostFlagshipApiCallback
+} from '../../types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
     checkCampaignsActivatedMultipleTimesOutput,
@@ -89,11 +96,17 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     ): Promise<{ status: number } | Error> {
         return new Promise<{ status: number } | Error>((resolve, reject) => {
             flagshipSdkHelper
-                .postFlagshipApi(this.panic, this.config, this.log, `${this.config.flagshipApi}activate`, {
-                    vid: this.id,
-                    cid: this.envId,
-                    caid: variationGroupId,
-                    vaid: variationId
+                .postFlagshipApi({
+                    panic: this.panic,
+                    config: this.config,
+                    log: this.log,
+                    endpoint: `${this.config.flagshipApi}activate`,
+                    params: {
+                        vid: this.id,
+                        cid: this.envId,
+                        caid: variationGroupId,
+                        vaid: variationId
+                    }
                 })
                 .then((response: DecisionApiResponse) => {
                     let successLog = `VariationId "${variationId}" successfully activate with status code:${response.status}`;
@@ -535,6 +548,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public synchronizeModifications(activate = false): Promise<number> {
+        const httpCallback = this.config.internal?.reactNative?.httpCallback || null;
+
         if (this.config.decisionMode !== 'API' && this.panic.shouldRunSafeMode('synchronizeModifications')) {
             return new Promise((resolve) => resolve(400));
         }
@@ -559,7 +574,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     return;
                 }
             }
-            const fetchedModifPromise = this.fetchAllModifications({ activate, force: true }) as Promise<DecisionApiResponse>;
+            const fetchedModifPromise = this.fetchAllModifications({
+                activate,
+                force: true,
+                httpCallback
+            }) as Promise<DecisionApiResponse>;
             fetchedModifPromise
                 .then((response: DecisionApiResponse) => {
                     const output = flagshipSdkHelper.checkDecisionApiResponseFormat(response, this.log);
@@ -582,6 +601,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         activate = false,
         options: { force?: boolean; simpleMode?: boolean } = {}
     ): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
+        const httpCallback = this.config.internal?.reactNative?.httpCallback || null;
         if (this.panic.shouldRunSafeMode('getAllModifications')) {
             return new Promise((resolve) => {
                 if (options?.simpleMode) {
@@ -600,7 +620,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         };
         const optionsToConsider = { ...defaultOptions, ...options };
         return new Promise((resolve, reject) => {
-            (this.fetchAllModifications({ activate, force: optionsToConsider.force }) as Promise<DecisionApiResponse>)
+            (this.fetchAllModifications({ activate, force: optionsToConsider.force, httpCallback }) as Promise<DecisionApiResponse>)
                 .then((response: DecisionApiResponse) => {
                     if (optionsToConsider.simpleMode) {
                         const { detailsModifications } = FlagshipVisitor.analyseModifications(response.data.campaigns);
@@ -729,6 +749,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         campaignCustomID?: string | null;
         force?: boolean;
         loadFromCache?: boolean;
+        httpCallback?: PostFlagshipApiCallback;
     }): Promise<DecisionApiResponse> | DecisionApiResponseData {
         const defaultArgs = {
             activate: false,
@@ -736,7 +757,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             force: false,
             loadFromCache: false
         };
-        const { activate, force, loadFromCache /* , campaignCustomID, */ } = { ...defaultArgs, ...args };
+        const { activate, force, loadFromCache, httpCallback /* , campaignCustomID, */ } = { ...defaultArgs, ...args };
         const url = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
 
         // check if need to return without promise
@@ -792,15 +813,18 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             } else {
                 flagshipSdkHelper
                     .postFlagshipApi(
-                        this.panic,
-                        this.config,
-                        this.log,
-                        url,
                         {
-                            visitor_id: this.id,
-                            trigger_hit: activate, // TODO: to unit test
-                            // sendContextEvent: false, // NOTE: not set because endpoint "/events" is called only with bucketing mode
-                            context: this.context
+                            callback: httpCallback,
+                            panic: this.panic,
+                            config: this.config,
+                            log: this.log,
+                            endpoint: url,
+                            params: {
+                                visitor_id: this.id,
+                                trigger_hit: activate, // TODO: to unit test
+                                // sendContextEvent: false, // NOTE: not set because endpoint "/events" is called only with bucketing mode
+                                context: this.context
+                            }
                         },
                         // query params:
                         {
@@ -1036,11 +1060,17 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
         return new Promise((resolve, reject) => {
             flagshipSdkHelper
-                .postFlagshipApi(this.panic, this.config, this.log, `${this.config.flagshipApi}${this.envId}/events`, {
-                    visitor_id: this.id,
-                    type: 'CONTEXT',
-                    data: {
-                        ...this.context
+                .postFlagshipApi({
+                    panic: this.panic,
+                    config: this.config,
+                    log: this.log,
+                    endpoint: `${this.config.flagshipApi}${this.envId}/events`,
+                    params: {
+                        visitor_id: this.id,
+                        type: 'CONTEXT',
+                        data: {
+                            ...this.context
+                        }
                     }
                 })
                 .then((response) => {

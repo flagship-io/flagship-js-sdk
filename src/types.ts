@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 /* eslint-disable @typescript-eslint/interface-name-prefix */
+import { CancelTokenSource } from 'axios';
 import {
     FlagshipVisitorContext,
     FsModifsRequestedList,
@@ -18,6 +19,12 @@ import { SetPanicModeToOptions } from './class/panicMode/types';
 
 export type MurmurV3 = (value: string, seed?: number) => number;
 
+export type PostFlagshipApiCallback = (
+    axiosCallback: () => Promise<any>,
+    cancelTokenSource: CancelTokenSource,
+    config: FlagshipSdkConfig
+) => Promise<any>;
+
 export type FlagshipSdkConfig = {
     fetchNow?: boolean;
     pollingInterval?: number | null;
@@ -30,6 +37,12 @@ export type FlagshipSdkConfig = {
     initialModifications?: DecisionApiCampaign[] | null;
     initialBucketing?: BucketingApiResponse | null;
     timeout?: number;
+    internal?: {
+        react?: {};
+        reactNative?: {
+            httpCallback?: PostFlagshipApiCallback;
+        };
+    };
 };
 
 export type FlagshipSdkInternalConfig = {
