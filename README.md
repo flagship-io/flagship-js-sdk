@@ -28,12 +28,14 @@
 
 **Visit [https://developers.flagship.io/](https://developers.flagship.io/) to get started with Flagship.**
 
--   [Installation & Getting Started](https://developers.flagship.io/js/v2.1.x/#getting-started)
--   [SDK Settings](https://developers.flagship.io/js/v2.1.x/#sdk-settings)
--   [API Summary](https://developers.flagship.io/js/v2.1.x/#js-sdk-features)
--   [Flagship class](https://developers.flagship.io/js/v2.1.x/#i-flagship-i-class-1)
--   [Flagship visitor](https://developers.flagship.io/js/v2.1.x/#i-flagshipvisitor-i-class-1)
--   [Hit tracking](https://developers.flagship.io/js/v2.1.x/#hits)
+-   [Installation & Getting Started](https://developers.flagship.io/docs/sdk/javascript/v2.1#getting-started)
+-   [API Reference](https://developers.flagship.io/docs/sdk/javascript/v2.1#api-reference)
+-   [SDK Settings](https://developers.flagship.io/docs/sdk/javascript/v2.1#sdk-settings)
+-   [Flagship class](https://developers.flagship.io/docs/sdk/javascript/v2.1#flagship-class)
+-   [Flagship visitor](https://developers.flagship.io/docs/sdk/javascript/v2.1#flagshipvisitor-class)
+-   [Getting modifications](https://developers.flagship.io/docs/sdk/javascript/v2.1#getting-modifications)
+-   [Campaign synchronization](https://developers.flagship.io/docs/sdk/javascript/v2.1#campaign-synchronization)
+-   [Hit tracking](https://developers.flagship.io/docs/sdk/javascript/v2.1#hit-tracking)
 -   [Release Notes](https://github.com/abtasty/flagship-js-sdk/blob/master/RELEASENOTES.md)
 -   [Contributing](https://github.com/abtasty/flagship-js-sdk/blob/master/CONTRIBUTING.md)
 
