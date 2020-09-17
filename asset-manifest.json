@@ -6,10 +6,10 @@
     "runtime-main.js": "/flagship-js-sdk/static/js/runtime-main.47281e6c.js",
     "runtime-main.js.map": "/flagship-js-sdk/static/js/runtime-main.47281e6c.js.map",
     "static/css/2.30f7bf04.chunk.css": "/flagship-js-sdk/static/css/2.30f7bf04.chunk.css",
-    "static/js/2.05846abb.chunk.js": "/flagship-js-sdk/static/js/2.05846abb.chunk.js",
-    "static/js/2.05846abb.chunk.js.map": "/flagship-js-sdk/static/js/2.05846abb.chunk.js.map",
+    "static/js/2.88284af7.chunk.js": "/flagship-js-sdk/static/js/2.88284af7.chunk.js",
+    "static/js/2.88284af7.chunk.js.map": "/flagship-js-sdk/static/js/2.88284af7.chunk.js.map",
     "index.html": "/flagship-js-sdk/index.html",
-    "precache-manifest.ab3021eb7be52753386176ed644d0ce6.js": "/flagship-js-sdk/precache-manifest.ab3021eb7be52753386176ed644d0ce6.js",
+    "precache-manifest.122db74b30995ce8571de5f4965ff86e.js": "/flagship-js-sdk/precache-manifest.122db74b30995ce8571de5f4965ff86e.js",
     "service-worker.js": "/flagship-js-sdk/service-worker.js",
     "static/css/2.30f7bf04.chunk.css.map": "/flagship-js-sdk/static/css/2.30f7bf04.chunk.css.map",
     "static/css/main.2af8a648.chunk.css.map": "/flagship-js-sdk/static/css/main.2af8a648.chunk.css.map",
@@ -18,7 +18,7 @@
   "entrypoints": [
     "static/js/runtime-main.47281e6c.js",
     "static/css/2.30f7bf04.chunk.css",
-    "static/js/2.05846abb.chunk.js",
+    "static/js/2.88284af7.chunk.js",
     "static/css/main.2af8a648.chunk.css",
     "static/js/main.1ea52899.chunk.js"
   ]
