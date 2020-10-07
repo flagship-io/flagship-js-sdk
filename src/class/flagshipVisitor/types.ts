@@ -1,4 +1,4 @@
-export type FlagshipModification = string | boolean | number | Array<any> | { [key: string]: any };
+export type FlagshipModification = string | boolean | number | null | Array<any> | { [key: string]: any };
 
 export type FlagshipVisitorContext = {
     [key: string]: boolean | number | string;
@@ -54,6 +54,7 @@ export type DecisionApiCampaign = {
     variationGroupId: string;
     variation: {
         id: string;
+        reference?: boolean;
         modifications: {
             type: string;
             value: {
