@@ -1,5 +1,9 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.1.5
+
+-   Minor change with Typescript.
+
 ## ➡️ Version 2.1.4
 
 -   Fix issue when executing `flagship.start(envId, apiKey, { ... );` and `apiKey` is null.
