@@ -2,14 +2,12 @@ const merge = require('webpack-merge');
 const baseConfig = require('./config.base.js');
 
 module.exports = merge(baseConfig, {
+    mode: 'production',
+    devtool: false,
     target: 'web',
-    entry: {
-        app: './src/standAlone.ts'
-    },
     output: {
-        filename: 'flagship.bundle.js',
-        library: 'flagship',
-        libraryExport: 'default'
-    },
-    externals: []
+        filename: 'index.standalone.js',
+        library: 'Flagship', // TBC - CAP on Flagship
+        libraryTarget: 'umd'
+    }
 });
