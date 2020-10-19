@@ -84,9 +84,9 @@ class Flagship implements IFlagship {
             flagshipVisitorInstance
                 .getAllModifications(this.config.activateNow, { force: true })
                 .then(() => {
-                    this.log.info(logBook[this.config.decisionMode].modificationSuccess);
                     let bucketingFirstPollingTriggered = false;
                     const triggerVisitorReady = () => {
+                        this.log.info(logBook[this.config.decisionMode].modificationSuccess);
                         (flagshipVisitorInstance as any).callEventEndpoint();
                         flagshipVisitorInstance.emit('ready');
                     };
