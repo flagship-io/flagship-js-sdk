@@ -1,6 +1,11 @@
 import mockAxios from 'jest-mock-axios';
 import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
-import testConfig, { demoPollingInterval } from '../../config/test';
+import testConfig, {
+    demoPollingInterval,
+    bucketingMinimumConfig,
+    bucketingApiMockOtherResponse200,
+    bucketingApiMockOtherResponse304
+} from '../../config/test';
 
 import flagshipSdk from '../..';
 import demoData from '../../../test/mock/demoData';
@@ -13,6 +18,7 @@ import { BucketingApiResponse } from './types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import assertionHelper from '../../../test/helper/assertion';
 import mockGenerator from '../../../test/helper/mockGenerator';
+import { mockPollingRequest } from '../../../test/helper/testUtils';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -30,57 +36,8 @@ let spyThen;
 let spyCatch;
 
 let bucketingApiMockResponse: BucketingApiResponse;
-let bucketingEventMockResponse: HttpResponse;
 
-const bucketingApiMockOtherResponse200: { status: number; headers: { 'last-modified': string } } = {
-    status: 200,
-    headers: { 'last-modified': demoData.bucketing.headers.lastModified[0] }
-};
-
-const bucketingApiMockOtherResponse304: { status: number; headers: {} } = {
-    status: 304,
-    headers: {} // NOTE: 'last-modified' does not exist on 304
-};
-
-const mockPollingRequest = (
-    done,
-    getPollingLoop: () => number,
-    loopScheduler: (HttpResponse | string)[],
-    envId = demoData.envId[0]
-): void => {
-    try {
-        if (loopScheduler.length < getPollingLoop()) {
-            return;
-        }
-
-        if (typeof loopScheduler[getPollingLoop()] === 'string') {
-            mockAxios.mockError(loopScheduler[getPollingLoop()]);
-        } else {
-            mockAxios.mockResponseFor(
-                internalConfig.bucketingEndpoint.replace('@ENV_ID@', envId),
-                loopScheduler[getPollingLoop()] as HttpResponse
-            );
-        }
-
-        if (getPollingLoop() < loopScheduler.length) {
-            mockPollingRequest(done, getPollingLoop, loopScheduler);
-        }
-    } catch (error) {
-        if (error.message === 'No request to respond to!') {
-            setTimeout(() => {
-                mockPollingRequest(done, getPollingLoop, loopScheduler);
-            }, demoPollingInterval - 50);
-        } else {
-            done.fail(`mock ${error}`);
-        }
-    }
-};
-
-const bucketingConfig: FlagshipSdkConfig = {
-    ...testConfig,
-    fetchNow: true,
-    decisionMode: 'Bucketing'
-};
+const bucketingConfig: FlagshipSdkConfig = { ...bucketingMinimumConfig };
 
 const initSpyLogs = (bInstance) => {
     spyWarnLogs = jest.spyOn(bInstance.log, 'warn');
@@ -109,6 +66,15 @@ describe('Bucketing used from visitor instance', () => {
         //
     });
     afterEach(() => {
+        if (sdk) {
+            sdk.eventEmitter.removeAllListeners();
+        }
+        if (visitorInstance) {
+            visitorInstance.removeAllListeners();
+        }
+        if (bucketInstance) {
+            bucketInstance.removeAllListeners();
+        }
         sdk = null;
         bucketingApiMockResponse = null;
         visitorInstance = null;
@@ -183,41 +149,41 @@ describe('Bucketing used from visitor instance', () => {
     });
 
     it('should create visitor with empty modifs cache if apiMode is "Bucketing" and it failed during first call', (done) => {
-        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], bucketingConfig);
+        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, pollingInterval: demoPollingInterval });
         const sdkLogs = initSpyLogs(sdk);
+        let pollingLoop = 0;
         sdk.eventEmitter.on('bucketPollingFailed', () => {
-            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-            initSpyLogs(visitorInstance);
-            visitorInstance.on('ready', () => {
-                try {
-                    expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-                    expect(spyDebugLogs).toHaveBeenCalledTimes(0);
-                    expect(spyErrorLogs).toHaveBeenCalledTimes(0);
-                    expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-                    expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+            pollingLoop += 1;
+            if (pollingLoop === 1) {
+                visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+                initSpyLogs(visitorInstance);
+                visitorInstance.on('ready', () => {
+                    try {
+                        expect(sdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+                        expect(sdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                        expect(sdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                        expect(sdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                        expect(sdkLogs.spyInfoLogs).toHaveBeenCalledTimes(3);
 
-                    expect(sdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
-                    expect(sdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
-                    expect(sdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
-                    expect(sdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
-                    expect(sdkLogs.spyInfoLogs).toHaveBeenCalledTimes(3);
+                        expect(sdkLogs.spyInfoLogs).toHaveBeenNthCalledWith(1, 'Creating new visitor (id="test-perf")');
+                        expect(sdkLogs.spyInfoLogs).toHaveBeenNthCalledWith(
+                            2,
+                            'new visitor (id="test-perf") waiting for existing bucketing data (waiting to be ready...)'
+                        );
+                        expect(sdkLogs.spyInfoLogs).toHaveBeenNthCalledWith(3, 'new visitor (id="test-perf") (ready !)');
 
-                    expect(sdkLogs.spyInfoLogs).toHaveBeenNthCalledWith(1, 'Creating new visitor (id="test-perf")');
-                    expect(sdkLogs.spyInfoLogs).toHaveBeenNthCalledWith(
-                        2,
-                        'new visitor (id="test-perf") check for existing bucketing data (waiting to be ready...)'
-                    );
-                    expect(sdkLogs.spyInfoLogs).toHaveBeenNthCalledWith(3, 'new visitor (id="test-perf") (ready !)');
+                        expect(visitorInstance.fetchedModifications).toEqual(null);
 
-                    expect(visitorInstance.fetchedModifications).toEqual(null);
-
-                    done();
-                } catch (error) {
-                    done.fail(error.stack);
-                }
-            });
+                        done();
+                    } catch (error) {
+                        done.fail(error.stack);
+                    }
+                });
+            }
         });
-        mockAxios.mockError('Error api bucket');
+        // first call => before creating visitor, to simulate already running bucketing polling
+        // 2nd call, still failing => just to see, if SDK is waiting hopefully a successful polling before notifying that the visitor is ready
+        mockPollingRequest(done, () => pollingLoop, ['Error api bucket', 'Error api bucket 2']);
     });
 
     it('should have correct behavior for bucketing cache api handling', (done) => {

@@ -72,7 +72,7 @@ class Flagship implements IFlagship {
                     `new visitor (id="${id}") decision API failed during initialization with error "${error}"`
             },
             Bucketing: {
-                newVisitorInfo: `new visitor (id="${id}") check for existing bucketing data (waiting to be ready...)`,
+                newVisitorInfo: `new visitor (id="${id}") waiting for existing bucketing data (waiting to be ready...)`,
                 modificationSuccess: `new visitor (id="${id}") (ready !)`
             }
         };
@@ -85,8 +85,28 @@ class Flagship implements IFlagship {
                 .getAllModifications(this.config.activateNow, { force: true })
                 .then(() => {
                     this.log.info(logBook[this.config.decisionMode].modificationSuccess);
-                    (flagshipVisitorInstance as any).callEventEndpoint();
-                    flagshipVisitorInstance.emit('ready');
+                    let bucketingFirstPollingTriggered = false;
+                    const triggerVisitorReady = () => {
+                        (flagshipVisitorInstance as any).callEventEndpoint();
+                        flagshipVisitorInstance.emit('ready');
+                    };
+                    const postProcessBucketing = (hasFailed: boolean): void => {
+                        if (!bucketingFirstPollingTriggered) {
+                            bucketingFirstPollingTriggered = true;
+                        }
+                        if (hasFailed) {
+                            return triggerVisitorReady();
+                        }
+                        flagshipVisitorInstance.synchronizeModifications(this.config.activateNow).then(() => triggerVisitorReady());
+                        return undefined;
+                    };
+                    // Check if bucketing first start
+                    if (this.config.decisionMode === 'Bucketing' && this.config.fetchNow && !this.bucket.data) {
+                        this.eventEmitter.once('bucketPollingSuccess', () => postProcessBucketing(false));
+                        this.eventEmitter.once('bucketPollingFailed', () => postProcessBucketing(true));
+                    } else {
+                        triggerVisitorReady();
+                    }
                 })
                 .catch((response) => {
                     if (this.config.decisionMode !== 'Bucketing') {

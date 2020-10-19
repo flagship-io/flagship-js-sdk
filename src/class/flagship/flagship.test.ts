@@ -2,9 +2,11 @@ import mockAxios from 'jest-mock-axios';
 import defaultConfig, { internalConfig } from '../../config/default';
 import { IFlagshipVisitor, IFlagship, FlagshipSdkConfig } from '../../types';
 import demoData from '../../../test/mock/demoData';
-import testConfig from '../../config/test';
+import testConfig, { bucketingMinimumConfig, demoPollingInterval, bucketingApiMockOtherResponse200 } from '../../config/test';
 import flagshipSdk from '../../index';
 import assertionHelper from '../../../test/helper/assertion';
+import { mockPollingRequest } from '../../../test/helper/testUtils';
+import { BucketingApiResponse } from '../bucketing/types';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -23,6 +25,8 @@ let spyErrorLogs;
 let spyFatalLogs;
 let spyInfoLogs;
 let spyDebugLogs;
+
+let bucketingApiMockResponse: BucketingApiResponse;
 
 const initSpyLogs = (classInstance) => {
     spyWarnLogs = jest.spyOn(classInstance.log, 'warn');
@@ -44,13 +48,17 @@ describe('FlagshipVisitor', () => {
         spyWarnConsoleLogs = jest.spyOn(console, 'warn').mockImplementation();
         spyErrorConsoleLogs = jest.spyOn(console, 'error').mockImplementation();
         spyInfoConsoleLogs = jest.spyOn(console, 'log').mockImplementation();
+
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
     });
+
     afterEach(() => {
         spyWarnConsoleLogs.mockRestore();
         spyErrorConsoleLogs.mockRestore();
         spyInfoConsoleLogs.mockRestore();
         mockAxios.reset();
     });
+
     describe('newVisitor function', () => {
         it('should have .once("ready") triggered also when fetchNow=false', (done) => {
             const mockFn = jest.fn();
@@ -489,6 +497,7 @@ describe('FlagshipVisitor', () => {
                 }
             });
         });
+
         it('should use default config even if user has set empty/undefined values', (done) => {
             responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -517,7 +526,61 @@ describe('FlagshipVisitor', () => {
             mockAxios.mockResponse(responseObj);
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
+
+        it('should wait at least one successful polling to notify that user is ready and from there have modifications, in bucketing mode', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...bucketingMinimumConfig,
+                pollingInterval: demoPollingInterval
+            });
+            const sdkLogs = initSpyLogs(sdk);
+
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            initSpyLogs(visitorInstance);
+            let pollingLoop = 0;
+
+            const intervalExpect = setInterval(() => {
+                if (pollingLoop === 0) {
+                    expect(visitorInstance.fetchedModifications).toEqual(null);
+                }
+            }, 5);
+
+            visitorInstance.on('ready', () => {
+                try {
+                    expect(visitorInstance.fetchedModifications).not.toEqual(null);
+
+                    expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                    expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+                    // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, ''); // "saveModificationsInCache - saving in cache those modifications:
+
+                    expect(sdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyInfoLogs).toHaveBeenCalledTimes(3);
+
+                    done();
+                } catch (error) {
+                    done.fail(error.stack);
+                }
+            });
+
+            sdk.eventEmitter.on('bucketPollingSuccess', () => {
+                clearInterval(intervalExpect);
+                pollingLoop += 1;
+            });
+
+            setTimeout(
+                () =>
+                    mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }]),
+                20
+            );
+        });
     });
+
     describe('bucketing', () => {
         it('should report an error if trying to start bucketing but decisionMode is not set to "Bucketing"', (done) => {
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: false });
@@ -633,6 +696,7 @@ describe('FlagshipVisitor', () => {
             }
         });
     });
+
     it('should fetch decision api if "initialModifications" and "fetchNow" are set', (done) => {
         const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
