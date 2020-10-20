@@ -246,36 +246,6 @@ describe('Bucketing used from visitor instance', () => {
         mockAxios.mockResponse({ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 });
     });
 
-    it('should warn when synchronizing and no fetch have been done before', (done) => {
-        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
-        sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
-        sdk.bucket.isPollingRunning = true; // mock
-        visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
-        initSpyLogs(visitorInstance);
-        expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
-        expect(visitorInstance.fetchedModifications).toEqual(null);
-        visitorInstance.synchronizeModifications().then(() => {
-            try {
-                expect(spyDebugLogs).toHaveBeenCalledTimes(0);
-                expect(spyInfoLogs).toHaveBeenCalledTimes(1);
-                expect(spyErrorLogs).toHaveBeenCalledTimes(0);
-                expect(spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(spyWarnLogs).toHaveBeenCalledTimes(0);
-
-                expect(spyInfoLogs).toHaveBeenNthCalledWith(
-                    1,
-                    "fetchAllModifications - the visitor won't have modifications assigned as the bucketing still didn't received any data. Consider do a synchronization a bit later."
-                );
-
-                expect(visitorInstance.fetchedModifications).toEqual(null);
-                expect(visitorInstance.bucket instanceof BucketingVisitor).toEqual(true);
-                done();
-            } catch (error) {
-                done.fail(error.stack);
-            }
-        });
-    });
-
     it('should warn when receiving unexpected polling status code', (done) => {
         bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...bucketingConfig, fetchNow: false });
@@ -291,7 +261,7 @@ describe('Bucketing used from visitor instance', () => {
             visitorInstance.synchronizeModifications().then(() => {
                 try {
                     expect(spyDebugLogs).toHaveBeenCalledTimes(0);
-                    expect(spyInfoLogs).toHaveBeenCalledTimes(1);
+                    expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                     expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                     expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                     expect(spyWarnLogs).toHaveBeenCalledTimes(0);

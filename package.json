@@ -114,6 +114,7 @@
             "^.+\\.[t|j]sx?$": "babel-jest"
         },
         "coveragePathIgnorePatterns": [
+            "<rootDir>/test/",
             "/node_modules/"
         ],
         "testPathIgnorePatterns": [

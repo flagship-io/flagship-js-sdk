@@ -79,26 +79,27 @@ class Flagship implements IFlagship {
 
         this.log.info(`Creating new visitor (id="${id}")`);
         const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.bucket, id, context, this.panic);
+        let bucketingFirstPollingTriggered = false;
         if (this.config.fetchNow || this.config.activateNow) {
             this.log.info(logBook[this.config.decisionMode].newVisitorInfo);
             flagshipVisitorInstance
                 .getAllModifications(this.config.activateNow, { force: true })
                 .then(() => {
-                    let bucketingFirstPollingTriggered = false;
                     const triggerVisitorReady = () => {
                         this.log.info(logBook[this.config.decisionMode].modificationSuccess);
                         (flagshipVisitorInstance as any).callEventEndpoint();
                         flagshipVisitorInstance.emit('ready');
                     };
                     const postProcessBucketing = (hasFailed: boolean): void => {
-                        if (!bucketingFirstPollingTriggered) {
-                            bucketingFirstPollingTriggered = true;
+                        if (bucketingFirstPollingTriggered) {
+                            return;
                         }
+                        bucketingFirstPollingTriggered = true;
                         if (hasFailed) {
-                            return triggerVisitorReady();
+                            triggerVisitorReady();
+                            return;
                         }
                         flagshipVisitorInstance.synchronizeModifications(this.config.activateNow).then(() => triggerVisitorReady());
-                        return undefined;
                     };
                     // Check if bucketing first start
                     if (this.config.decisionMode === 'Bucketing' && this.config.fetchNow && !this.bucket.data) {
