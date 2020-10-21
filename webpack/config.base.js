@@ -1,7 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const webpack = require('webpack');
 const path = require('path');
-const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
     entry: {
@@ -42,18 +41,18 @@ module.exports = {
                     {
                         loader: 'babel-loader',
                         options: {
-                            presets: ['@babel/preset-env']
+                            presets: [
+                                '@babel/preset-env',
+                                {
+                                    useBuiltIns: 'entry'
+                                }
+                            ]
                         }
                     }
                 ]
             }
         ]
     },
-    externals: [
-        nodeExternals({
-            whitelist: ['axios', 'validate.js']
-        })
-    ],
     plugins: [new webpack.DefinePlugin({ 'global.GENTLY': false })],
     resolve: {
         extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js']
