@@ -1,6 +1,6 @@
 node_modules
 
-dist/
+examples/api-server/dist
 
 coverage
 
