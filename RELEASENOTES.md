@@ -1,5 +1,9 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.1.7
+
+-   Minor change.
+
 ## ➡️ Version 2.1.6
 
 ### New features 🎉
