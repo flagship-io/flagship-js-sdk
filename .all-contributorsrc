@@ -40,6 +40,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "Madi-Ji",
+      "name": "Julien Madiot",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/6860236?v=4",
+      "profile": "https://julien-madiot.fr/",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7

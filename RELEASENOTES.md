@@ -1,5 +1,23 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.1.6
+
+### New features 🎉
+
+-   This new version includes a stand alone version which you can import like this:
+
+    ```javascript
+
+    <script src="https://cdn.jsdelivr.net/npm/@flagship.io/js-sdk@X.X.X/public/index.standalone.js"></script>
+    <script>
+      window.flagship.init(...)
+      // code...
+    </script>
+
+    ```
+
+    Where `X.X.X` should be a version of the JS SDK.
+
 ## ➡️ Version 2.1.5
 
 -   Minor change with Typescript.
