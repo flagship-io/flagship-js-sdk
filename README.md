@@ -12,8 +12,12 @@
 
 ![flagship-js-sdk-functions](badges/badge-functions.svg)
 
+[![](https://data.jsdelivr.com/v1/package/npm/@flagship.io/js-sdk/badge)](https://www.jsdelivr.com/package/npm/@flagship.io/js-sdk)
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![Apache2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
@@ -101,6 +105,20 @@
 
 </div>
 
+-   With stand alone version:
+
+<p align="center">
+<a href="https://codesandbox.io/s/fs-js-sdk-standalone-version-hoeb9">
+<img src="https://i.imgur.com/lZJmgo2.png" alt="js sdk stand alone version" width="600"/>
+</a>
+</p>
+
+<div style="display: flex; justify-content: space-around; font-size: 24px">
+
+[Live Demo 🕹](https://codesandbox.io/s/fs-js-sdk-standalone-version-hoeb9)
+
+</div>
+
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
@@ -117,6 +135,7 @@
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Licence
