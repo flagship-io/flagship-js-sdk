@@ -1,5 +1,9 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.1.7
+
+-   Minor change.
+
 ## ➡️ Version 2.1.6
 
 ### New features 🎉
@@ -10,7 +14,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@flagship.io/js-sdk@X.X.X/public/index.standalone.js"></script>
     <script>
-      window.flagship.init(...)
+      window.Flagship.init(...)
       // code...
     </script>
 
