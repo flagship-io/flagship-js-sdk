@@ -14,7 +14,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@flagship.io/js-sdk@X.X.X/public/index.standalone.js"></script>
     <script>
-      window.flagship.init(...)
+      window.Flagship.init(...)
       // code...
     </script>
 
