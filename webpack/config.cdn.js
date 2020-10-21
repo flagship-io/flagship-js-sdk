@@ -1,60 +1,16 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-const webpack = require('webpack');
-const path = require('path');
+const merge = require('webpack-merge');
 const nodeExternals = require('webpack-node-externals');
+const baseConfig = require('./config.base.js');
 
-module.exports = {
-    target: 'web',
-    entry: {
-        app: './src/standAlone.ts'
-    },
+module.exports = merge(baseConfig, {
+    target: 'node',
     output: {
-        filename: 'flagship.bundle.js',
-        library: 'flagship',
-        libraryExport: 'default'
+        filename: 'index.node.js',
+        libraryTarget: 'commonjs2'
     },
-    mode: 'production',
-    module: {
-        exprContextCritical: false,
-        rules: [
-            {
-                test: /\.(ts|js)x?$/,
-                enforce: 'pre',
-                include: path.resolve(__dirname),
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'eslint-loader',
-                        options: {
-                            cache: true,
-                            failOnError: true,
-                            failOnWarning: false
-                        }
-                    }
-                ]
-            },
-            { test: /\.tsx?$/, loader: 'ts-loader' },
-            {
-                test: /\.m?js$/,
-                exclude: /(node_modules|bower_components)/,
-                use: [
-                    {
-                        loader: 'babel-loader',
-                        options: {
-                            presets: [
-                                '@babel/preset-env',
-                                {
-                                    useBuiltIns: 'entry'
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        ]
-    },
-    plugins: [new webpack.DefinePlugin({ 'global.GENTLY': false })],
-    resolve: {
-        extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js']
-    }
-};
+    externals: [
+        nodeExternals({
+            whitelist: ['axios', 'validate.js']
+        })
+    ]
+});
