@@ -13,9 +13,7 @@
 ![flagship-js-sdk-functions](badges/badge-functions.svg)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
-
+[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![Apache2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
@@ -113,12 +111,12 @@
     <td align="center"><a href="https://www.domenge.fr/"><img src="https://avatars0.githubusercontent.com/u/15636263?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Emilien Domenge</b></sub></a><br /><a href="https://github.com/abtasty/flagship-js-sdk/commits?author=Emidomenge" title="Code">💻</a> <a href="https://github.com/abtasty/flagship-js-sdk/commits?author=Emidomenge" title="Documentation">📖</a> <a href="#example-Emidomenge" title="Examples">💡</a> <a href="#maintenance-Emidomenge" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://github.com/guillaumejacquart"><img src="https://avatars2.githubusercontent.com/u/5268752?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Guillaume Jacquart</b></sub></a><br /><a href="https://github.com/abtasty/flagship-js-sdk/issues?q=author%3Aguillaumejacquart" title="Bug reports">🐛</a> <a href="https://github.com/abtasty/flagship-js-sdk/pulls?q=is%3Apr+reviewed-by%3Aguillaumejacquart" title="Reviewed Pull Requests">👀</a></td>
     <td align="center"><a href="https://yanistam.me/"><img src="https://avatars1.githubusercontent.com/u/11974574?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Yanis Tam</b></sub></a><br /><a href="https://github.com/abtasty/flagship-js-sdk/commits?author=Madorakkusu" title="Code">💻</a></td>
+    <td align="center"><a href="https://julien-madiot.fr/"><img src="https://avatars1.githubusercontent.com/u/6860236?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Julien Madiot</b></sub></a><br /><a href="https://github.com/abtasty/flagship-js-sdk/commits?author=Madi-Ji" title="Code">💻</a> <a href="#ideas-Madi-Ji" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Licence
