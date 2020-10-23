@@ -11,6 +11,7 @@
         "array-callback-return": "off",
         "@typescript-eslint/camelcase": 0,
         "import/extensions": 0,
+        "import/prefer-default-export": 1,
         "import/no-extraneous-dependencies": 0
     },
     "parserOptions": {

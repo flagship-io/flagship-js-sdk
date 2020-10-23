@@ -2,9 +2,11 @@ import mockAxios from 'jest-mock-axios';
 import defaultConfig, { internalConfig } from '../../config/default';
 import { IFlagshipVisitor, IFlagship, FlagshipSdkConfig } from '../../types';
 import demoData from '../../../test/mock/demoData';
-import testConfig from '../../config/test';
+import testConfig, { bucketingMinimumConfig, demoPollingInterval, bucketingApiMockOtherResponse200 } from '../../config/test';
 import flagshipSdk from '../../index';
 import assertionHelper from '../../../test/helper/assertion';
+import { mockPollingRequest, mockPollingRequestV2 } from '../../../test/helper/testUtils';
+import { BucketingApiResponse } from '../bucketing/types';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -23,6 +25,8 @@ let spyErrorLogs;
 let spyFatalLogs;
 let spyInfoLogs;
 let spyDebugLogs;
+
+let bucketingApiMockResponse: BucketingApiResponse;
 
 const initSpyLogs = (classInstance) => {
     spyWarnLogs = jest.spyOn(classInstance.log, 'warn');
@@ -44,14 +48,30 @@ describe('FlagshipVisitor', () => {
         spyWarnConsoleLogs = jest.spyOn(console, 'warn').mockImplementation();
         spyErrorConsoleLogs = jest.spyOn(console, 'error').mockImplementation();
         spyInfoConsoleLogs = jest.spyOn(console, 'log').mockImplementation();
+
+        bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
     });
+
     afterEach(() => {
+        if (sdk) {
+            sdk.eventEmitter.removeAllListeners();
+        }
+        if (visitorInstance) {
+            visitorInstance.removeAllListeners();
+        }
+
         spyWarnConsoleLogs.mockRestore();
         spyErrorConsoleLogs.mockRestore();
         spyInfoConsoleLogs.mockRestore();
         mockAxios.reset();
     });
+
     describe('newVisitor function', () => {
+        beforeEach(() => {
+            sdk = null;
+            bucketingApiMockResponse = null;
+            visitorInstance = null;
+        });
         it('should have .once("ready") triggered also when fetchNow=false', (done) => {
             const mockFn = jest.fn();
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: false });
@@ -489,6 +509,7 @@ describe('FlagshipVisitor', () => {
                 }
             });
         });
+
         it('should use default config even if user has set empty/undefined values', (done) => {
             responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },
@@ -517,7 +538,206 @@ describe('FlagshipVisitor', () => {
             mockAxios.mockResponse(responseObj);
             expect(visitorInstance.fetchedModifications).toMatchObject(responseObj.data.campaigns);
         });
+
+        it('should wait at least one successful polling to notify that visitor is ready and from there have modifications, in bucketing mode', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...bucketingMinimumConfig,
+                pollingInterval: demoPollingInterval
+            });
+            const sdkLogs = initSpyLogs(sdk);
+
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            const synchroSpy = jest.spyOn(visitorInstance, 'synchronizeModifications');
+            initSpyLogs(visitorInstance);
+            let pollingLoop = 0;
+
+            const intervalExpect = setInterval(() => {
+                if (pollingLoop === 0) {
+                    expect(visitorInstance.fetchedModifications).toEqual(null);
+                }
+            }, 5);
+
+            visitorInstance.on('ready', () => {
+                try {
+                    expect(visitorInstance.fetchedModifications).not.toEqual(null);
+                    expect(synchroSpy).toHaveBeenCalledTimes(1);
+
+                    expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                    expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+                    // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, ''); // "saveModificationsInCache - saving in cache those modifications:
+
+                    expect(sdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyInfoLogs).toHaveBeenCalledTimes(3);
+
+                    done();
+                } catch (error) {
+                    done.fail(error.stack);
+                }
+            });
+
+            sdk.eventEmitter.on('bucketPollingSuccess', () => {
+                clearInterval(intervalExpect);
+                pollingLoop += 1;
+            });
+
+            setTimeout(
+                () =>
+                    mockPollingRequest(done, () => pollingLoop, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }]),
+                20
+            );
+        });
+
+        it('should wait at least one polling but when it failed, should notify that visitor is ready without modifications, in bucketing mode', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...bucketingMinimumConfig,
+                pollingInterval: demoPollingInterval
+            });
+
+            const sdkLogs = initSpyLogs(sdk);
+
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            const synchroSpy = jest.spyOn(visitorInstance, 'synchronizeModifications');
+            initSpyLogs(visitorInstance);
+            let pollingLoop = 0;
+
+            const intervalExpect = setInterval(() => {
+                if (pollingLoop === 0) {
+                    expect(visitorInstance.fetchedModifications).toEqual(null);
+                }
+            }, 5);
+
+            visitorInstance.on('ready', () => {
+                try {
+                    expect(visitorInstance.fetchedModifications).toEqual(null);
+                    expect(synchroSpy).toHaveBeenCalledTimes(0);
+
+                    expect(spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(0);
+                    expect(spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(spyInfoLogs).toHaveBeenCalledTimes(0);
+
+                    // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, ''); // "saveModificationsInCache - saving in cache those modifications:
+
+                    expect(sdkLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyDebugLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(sdkLogs.spyInfoLogs).toHaveBeenCalledTimes(3);
+
+                    done();
+                } catch (error) {
+                    done.fail(error.stack);
+                }
+            });
+
+            sdk.eventEmitter.on('bucketPollingSuccess', () => {
+                done.fail('should not be here !');
+            });
+
+            sdk.eventEmitter.on('bucketPollingFailed', () => {
+                clearInterval(intervalExpect);
+                pollingLoop += 1;
+            });
+
+            setTimeout(() => mockPollingRequest(done, () => pollingLoop, ['bucketing failed']), 20);
+        });
+
+        it('should not trigger "ready" after multiple failure & success polling, in bucketing mode', (done) => {
+            bucketingApiMockResponse = demoData.bucketing.classical as BucketingApiResponse;
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...bucketingMinimumConfig,
+                pollingInterval: demoPollingInterval
+            });
+            const sdkLogs = initSpyLogs(sdk);
+            const testFailed = (error) => {
+                done.fail(error);
+            };
+            const visitorInstanceCellular = sdk.newVisitor(
+                demoData.bucketing.functions.murmur.allocation[68].visitorId,
+                demoData.visitor.cleanContext
+            );
+            const synchroSpy = jest.spyOn(visitorInstanceCellular, 'synchronizeModifications');
+            initSpyLogs(visitorInstanceCellular);
+            let pollingLoop = 0;
+            const checkBehavior = (): void => {
+                try {
+                    if (pollingLoop === 0) {
+                        expect(visitorInstanceCellular.fetchedModifications).toEqual(null);
+                    } else if (pollingLoop > 0) {
+                        setTimeout(() => {
+                            try {
+                                expect(visitorInstanceCellular.fetchedModifications).not.toEqual(null);
+                            } catch (error) {
+                                testFailed(error);
+                            }
+                        }, 5);
+                    }
+                    if (pollingLoop > 2) {
+                        done();
+                    }
+                } catch (error) {
+                    testFailed(error);
+                }
+            };
+            checkBehavior();
+
+            visitorInstanceCellular.on('ready', () => {
+                try {
+                    if (pollingLoop === 1) {
+                        expect(visitorInstanceCellular.fetchedModifications).not.toEqual(null);
+                        expect(synchroSpy).toHaveBeenCalledTimes(1);
+                    } else {
+                        testFailed('"ready" event not supposed to be triggered after another bucketing polling');
+                    }
+                    // continue polling
+                    mockPollingRequestV2(
+                        0,
+                        [
+                            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 },
+                            'fail bucketing #1',
+                            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 },
+                            { data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }
+                        ],
+                        {
+                            onFail: (error) => {
+                                testFailed(error.stack);
+                            }
+                        }
+                    );
+                } catch (error) {
+                    testFailed(error.stack);
+                }
+            });
+
+            sdk.eventEmitter.on('bucketPollingSuccess', () => {
+                pollingLoop += 1;
+                checkBehavior();
+            });
+            sdk.eventEmitter.on('bucketPollingFailed', () => {
+                pollingLoop += 1;
+                checkBehavior();
+            });
+
+            setTimeout(
+                () =>
+                    mockPollingRequestV2(0, [{ data: bucketingApiMockResponse, ...bucketingApiMockOtherResponse200 }], {
+                        onFail: (error) => {
+                            testFailed(error.stack);
+                        }
+                    }),
+                20
+            );
+        }, 20000);
     });
+
     describe('bucketing', () => {
         it('should report an error if trying to start bucketing but decisionMode is not set to "Bucketing"', (done) => {
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: false });
@@ -633,6 +853,7 @@ describe('FlagshipVisitor', () => {
             }
         });
     });
+
     it('should fetch decision api if "initialModifications" and "fetchNow" are set', (done) => {
         const defaultCacheData = demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns;
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {

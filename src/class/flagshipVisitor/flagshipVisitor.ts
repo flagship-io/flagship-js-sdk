@@ -799,10 +799,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                         );
                         // NOTE: triggerActivateIfNeeded trigger in post process
                     }
-                } else {
-                    this.log.info(
-                        "fetchAllModifications - the visitor won't have modifications assigned as the bucketing still didn't received any data. Consider do a synchronization a bit later."
-                    );
                 }
                 resolve(
                     this.fetchAllModificationsPostProcess(transformedBucketingData, {
