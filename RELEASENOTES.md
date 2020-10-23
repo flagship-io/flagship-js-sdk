@@ -1,5 +1,11 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.1.8
+
+### New features 🎉
+
+-   Contains minor optimizations for [REACT SDK](https://developers.flagship.io/docs/sdk/react/v2.0#onupdate) (onUpdate).
+
 ## ➡️ Version 2.1.7
 
 -   Minor change.
