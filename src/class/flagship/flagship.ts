@@ -72,21 +72,42 @@ class Flagship implements IFlagship {
                     `new visitor (id="${id}") decision API failed during initialization with error "${error}"`
             },
             Bucketing: {
-                newVisitorInfo: `new visitor (id="${id}") check for existing bucketing data (waiting to be ready...)`,
+                newVisitorInfo: `new visitor (id="${id}") waiting for existing bucketing data (waiting to be ready...)`,
                 modificationSuccess: `new visitor (id="${id}") (ready !)`
             }
         };
 
         this.log.info(`Creating new visitor (id="${id}")`);
         const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.bucket, id, context, this.panic);
+        let bucketingFirstPollingTriggered = false;
         if (this.config.fetchNow || this.config.activateNow) {
             this.log.info(logBook[this.config.decisionMode].newVisitorInfo);
             flagshipVisitorInstance
                 .getAllModifications(this.config.activateNow, { force: true })
                 .then(() => {
-                    this.log.info(logBook[this.config.decisionMode].modificationSuccess);
-                    (flagshipVisitorInstance as any).callEventEndpoint();
-                    flagshipVisitorInstance.emit('ready');
+                    const triggerVisitorReady = () => {
+                        this.log.info(logBook[this.config.decisionMode].modificationSuccess);
+                        (flagshipVisitorInstance as any).callEventEndpoint();
+                        flagshipVisitorInstance.emit('ready');
+                    };
+                    const postProcessBucketing = (hasFailed: boolean): void => {
+                        if (bucketingFirstPollingTriggered) {
+                            return;
+                        }
+                        bucketingFirstPollingTriggered = true;
+                        if (hasFailed) {
+                            triggerVisitorReady();
+                            return;
+                        }
+                        flagshipVisitorInstance.synchronizeModifications(this.config.activateNow).then(() => triggerVisitorReady());
+                    };
+                    // Check if bucketing first start
+                    if (this.config.decisionMode === 'Bucketing' && this.config.fetchNow && !this.bucket.data) {
+                        this.eventEmitter.once('bucketPollingSuccess', () => postProcessBucketing(false));
+                        this.eventEmitter.once('bucketPollingFailed', () => postProcessBucketing(true));
+                    } else {
+                        triggerVisitorReady();
+                    }
                 })
                 .catch((response) => {
                     if (this.config.decisionMode !== 'Bucketing') {
