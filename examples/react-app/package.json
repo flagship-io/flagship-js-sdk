@@ -4,7 +4,7 @@
   "private": false,
   "homepage": "https://abtasty.github.io/flagship-js-sdk/",
   "dependencies": {
-    "@flagship.io/js-sdk": "^2.1.7",
+    "@flagship.io/js-sdk": "^2.1.8",
     "@tenon-io/tenon-codeblock": "^1.0.0",
     "@types/node": "12.12.14",
     "@types/react": "16.9.13",
