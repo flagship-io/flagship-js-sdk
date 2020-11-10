@@ -1,5 +1,35 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.1.9
+
+### New features 🎉
+
+-   The SDK supports the new visitor reconciliation feature named "continuity". Two new functions have been added to the FlagshipVisitor class:
+
+    **authenticate**
+
+    ```javascript
+    visitorInstance.authenticate('VISITOR_ID_ALREADY_KNOWN_BY_FLAGSHIP'); // which will link the previous visitor (anonymous) to the already known visitor
+    ```
+
+    **unauthenticate**
+
+    ```javascript
+    visitorInstance.unauthenticate(); // the visitor will be back considered as anonymous if it was previously authenticated (after calling visitorInstance.authenticate('xxx') )
+    ```
+
+    More details on continuity feature in the [SDK documentation]().
+
+-   Create automatically a visitor id when you do not specify.
+
+    Example:
+
+    ```javascript
+    visitorInstance = sdk.newVisitor(null, { ...myVisitorContext }); // SDK will detect that no id has been specified and will create automatically one.
+
+    // [...]
+    ```
+
 ## ➡️ Version 2.1.8
 
 ### New features 🎉

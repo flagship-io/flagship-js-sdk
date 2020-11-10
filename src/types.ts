@@ -112,6 +112,8 @@ export interface IFlagshipVisitor extends EventEmitter {
     modificationsInternalStatus: ModificationsInternalStatus | null;
     // UPDATE VISITOR
     updateContext(context: FlagshipVisitorContext): void;
+    authenticate(id: string): void;
+    unauthenticate(): void;
     // VISITOR MODIFICATIONS
     getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
     getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;

@@ -98,6 +98,56 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         return Math.floor(Math.random() * Date.now()).toString();
     }
 
+    public authenticate(id: string): void {
+        // Some validation
+        if (!id) {
+            return this.log.error(
+                'authenticate - no id specified. You must provide the visitor id which identifies your authenticated user.'
+            );
+        }
+        if (typeof id !== 'string') {
+            return this.log.error(
+                `authenticate - Received incorrect argument type: '${typeof id}'.The expected id must be type of 'string'.`
+            );
+        }
+
+        this.anonymousId = this.id;
+        this.id = id;
+
+        const { fetchNow, activateNow } = this.config;
+        const updateMsg = `authenticate - visitor passed from anonymous (id=${this.anonymousId}) to authenticated (id=${this.id}).`;
+
+        if (fetchNow || activateNow) {
+            this.synchronizeModifications();
+            this.log.info(updateMsg);
+        } else {
+            this.log.info(
+                `${updateMsg} Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`
+            );
+        }
+        return null;
+    }
+
+    public unauthenticate(): void {
+        if (!this.anonymousId) {
+            return this.log.error(`unauthenticate - Your visitor never has been authenticated.`);
+        }
+        this.id = this.anonymousId;
+        this.anonymousId = null;
+
+        const { fetchNow, activateNow } = this.config;
+        const updateMsg = `unauthenticate - visitor passed from authenticated (id=${this.anonymousId}) to anonymous (id=${this.id}).`;
+        if (fetchNow || activateNow) {
+            this.synchronizeModifications();
+            this.log.info(updateMsg);
+        } else {
+            this.log.info(
+                `${updateMsg} Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`
+            );
+        }
+        return null;
+    }
+
     private activateCampaign(
         variationId: string,
         variationGroupId: string,
@@ -112,6 +162,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     endpoint: `${this.config.flagshipApi}activate`,
                     params: {
                         vid: this.id,
+                        aid: this.anonymousId,
                         cid: this.envId,
                         caid: variationGroupId,
                         vaid: variationId
@@ -824,8 +875,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                             config: this.config,
                             log: this.log,
                             endpoint: url,
+                            // body
                             params: {
                                 visitor_id: this.id,
+                                anonymous_id: this.anonymousId,
                                 trigger_hit: activate, // TODO: to unit test
                                 // sendContextEvent: false, // NOTE: not set because endpoint "/events" is called only with bucketing mode
                                 context: this.context
