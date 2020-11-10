@@ -129,7 +129,7 @@ class Flagship implements IFlagship {
     // Pre-req: envId + visitorId must be the same
     /**
      * @returns {IFlagshipVisitor}
-     * @description Used internally only. Don't use it outside the SDK !
+     * @description Used internally only. Don't use it outside the SDK ! Once the visitor is updated, it will trigger the "ready" event again.
      */
     public updateVisitor(visitorInstance: IFlagshipVisitor, context: FlagshipVisitorContext): IFlagshipVisitor {
         this.log.debug(`updateVisitor - updating visitor (id="${visitorInstance.id}")`);
@@ -142,6 +142,8 @@ class Flagship implements IFlagship {
             this.panic,
             visitorInstance
         );
+
+        // activate or fetch NOW if: context has changed OR activateNow enabled OR fetchNow enabled
         if (
             ((!utilsHelper.deepCompare(visitorInstance.context, context) || flagshipVisitorInstance.fetchedModifications === null) &&
                 this.config.fetchNow) ||
