@@ -77,8 +77,8 @@ class Flagship implements IFlagship {
             }
         };
 
-        this.log.info(`Creating new visitor (id="${id}")`);
         const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.bucket, id, context, this.panic);
+        this.log.info(`Creating new visitor (id="${flagshipVisitorInstance.id}")`);
         let bucketingFirstPollingTriggered = false;
         if (this.config.fetchNow || this.config.activateNow) {
             this.log.info(logBook[this.config.decisionMode].newVisitorInfo);

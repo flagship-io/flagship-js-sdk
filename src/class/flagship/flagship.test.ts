@@ -510,6 +510,26 @@ describe('FlagshipVisitor', () => {
             });
         });
 
+        it('should log an info log when a creating a visitor without specified id', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: false, enableConsoleLogs: true });
+            visitorInstance = sdk.newVisitor(null, {
+                ...demoData.visitor.cleanContext
+            });
+            initSpyLogs(visitorInstance);
+
+            visitorInstance.once('ready', () => {
+                try {
+                    const digitRegex = new RegExp('^\\d+$');
+                    const automaticGenVisitorIdLog = spyInfoConsoleLogs.mock.calls[spyInfoConsoleLogs.mock.calls.length - 2];
+                    expect(automaticGenVisitorIdLog.includes('undefined')).toEqual(false);
+                    expect(digitRegex.test(automaticGenVisitorIdLog[0].split('"')[1])).toEqual(true);
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
+        });
+
         it('should use default config even if user has set empty/undefined values', (done) => {
             responseObj = {
                 data: { ...demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign },

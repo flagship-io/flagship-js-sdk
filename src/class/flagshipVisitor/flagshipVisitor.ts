@@ -36,7 +36,9 @@ import {
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     config: FlagshipSdkConfig;
 
-    id: string;
+    id: string; // authenticatedId
+
+    anonymousId: string | null;
 
     log: FsLogger;
 
@@ -66,8 +68,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         super();
         this.panic = panic;
         this.config = config;
-        this.id = id;
+        this.id = id || FlagshipVisitor.createVisitorId();
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
+        if (!id) {
+            this.log.info(`no id specified during visitor creation. The SDK has automatically created one: "${this.id}"`);
+        }
         this.envId = envId;
         this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
         this.isAllModificationsFetched = previousVisitorInstance ? previousVisitorInstance.isAllModificationsFetched : false;
@@ -87,6 +92,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         if (this.config.decisionMode === 'Bucketing') {
             this.bucket = new BucketingVisitor(this.envId, this.id, this.context, this.config, bucket);
         }
+    }
+
+    private static createVisitorId(): string {
+        return Math.floor(Math.random() * Date.now()).toString();
     }
 
     private activateCampaign(

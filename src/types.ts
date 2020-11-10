@@ -101,14 +101,26 @@ export interface IFlagshipBucketing extends EventEmitter {
 export interface IFlagshipVisitor extends EventEmitter {
     config: FlagshipSdkConfig;
     id: string;
+    anonymousId: string;
     log: FsLogger;
-    envId: string;
+    envId: string | null;
     panic: IFsPanicMode;
     context: FlagshipVisitorContext;
     isAllModificationsFetched: boolean;
     bucket: IFlagshipBucketingVisitor | null;
     fetchedModifications: DecisionApiCampaign[] | null;
     modificationsInternalStatus: ModificationsInternalStatus | null;
+    // UPDATE VISITOR
+    updateContext(context: FlagshipVisitorContext): void;
+    // VISITOR MODIFICATIONS
+    getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
+    getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;
+    synchronizeModifications(activate?: boolean): Promise<number>;
+    getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
+    getAllModifications(
+        activate?: boolean,
+        options?: { force?: boolean; simpleMode?: boolean }
+    ): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
     activateModifications(
         modifications: Array<{
             key: string;
@@ -116,17 +128,10 @@ export interface IFlagshipVisitor extends EventEmitter {
             variationGroupId?: string;
         }>
     ): void;
-    getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
-    getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;
-    updateContext(context: FlagshipVisitorContext): void;
-    synchronizeModifications(activate?: boolean): Promise<number>;
-    getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
-    getAllModifications(
-        activate?: boolean,
-        options?: { force?: boolean; simpleMode?: boolean }
-    ): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+    // VISITOR HITS
     sendHit(hitData: HitShape): Promise<void>;
     sendHits(hitsArray: Array<HitShape>): Promise<void>;
+    // VISITOR LISTENER
     on(event: 'ready', listener: () => void): this;
     on(event: 'saveCache', listener: (args: SaveCacheArgs) => void): this;
 }
