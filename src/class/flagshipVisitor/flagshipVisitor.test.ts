@@ -3514,25 +3514,66 @@ describe('FlagshipVisitor', () => {
             mockAxios.mockResponse(defaultDecisionApiResponse);
         });
 
-        it('should log an error if trying to unauthenticate a user which has never been authenticate previously', () => {
+        it('should log an error if trying to unauthenticate a user which has never been authenticate previously', (done) => {
             const currentVisitorId = visitorInstance.id;
 
             expect(visitorInstance.anonymousId).toEqual(null);
             expect(visitorInstance.id).toEqual(currentVisitorId);
+            const expectedErrorMsg = 'unauthenticate - Your visitor never has been authenticated.';
+            visitorInstance.unauthenticate().catch((e) => {
+                expect(e).toEqual(expectedErrorMsg);
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
 
-            visitorInstance.unauthenticate();
+                expect(visitorSpy.spyErrorLogs).toHaveBeenNthCalledWith(1, expectedErrorMsg);
 
-            expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
-            expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
-            expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+                // should not have change
+                expect(visitorInstance.anonymousId).toEqual(null);
+                expect(visitorInstance.id).toEqual(currentVisitorId);
 
-            expect(visitorSpy.spyErrorLogs).toHaveBeenNthCalledWith(1, 'unauthenticate - Your visitor never has been authenticated.');
+                done();
+            });
+        });
 
-            // should not have change
-            expect(visitorInstance.anonymousId).toEqual(null);
-            expect(visitorInstance.id).toEqual(currentVisitorId);
+        it('should not authenticate the visitor if the id (in argument) is not set', (done) => {
+            const anonymousId = visitorInstance.id;
+            const expectedErrorMsg =
+                'authenticate - no id specified. You must provide the visitor id which identifies your authenticated user.';
+            visitorInstance.authenticate().catch((e) => {
+                expect(e).toEqual(expectedErrorMsg);
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                expect(visitorSpy.spyErrorLogs).toHaveBeenNthCalledWith(1, expectedErrorMsg);
+
+                expect(visitorInstance.id).toEqual(anonymousId);
+                expect(visitorInstance.anonymousId).toEqual(null);
+                done();
+            });
+        });
+
+        it('should not authenticate the visitor if the id (in argument) is not a string', (done) => {
+            const anonymousId = visitorInstance.id;
+            const expectedErrorMsg = `authenticate - Received incorrect argument type: 'number'.The expected id must be type of 'string'.`;
+            visitorInstance.authenticate(123).catch((e) => {
+                expect(e).toEqual(expectedErrorMsg);
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                expect(visitorSpy.spyErrorLogs).toHaveBeenNthCalledWith(1, expectedErrorMsg);
+                expect(visitorInstance.id).toEqual(anonymousId);
+                expect(visitorInstance.anonymousId).toEqual(null);
+                done();
+            });
         });
     });
     describe('visitor reconciliation (continuity) [fetchNow=true OR activateNow=true]', () => {
@@ -3645,6 +3686,149 @@ describe('FlagshipVisitor', () => {
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+
+                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
+                    1,
+                    `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`
+                );
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+
+                expect(visitorInstance.anonymousId).toEqual(anonymousId);
+                expect(visitorInstance.id).toEqual(demoData.envId[0]);
+
+                // UNAUTH
+
+                visitorInstance.unauthenticate().then(() => afterUnauth());
+
+                mockAxios.mockResponseFor(
+                    internalConfig.campaignNormalEndpoint
+                        .replace('@ENV_ID@', visitorInstance.envId)
+                        .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                    defaultDecisionApiResponse
+                );
+            };
+            visitorInstance.on('ready', () => {
+                visitorInstance.authenticate(authenticatedId).then(() => afterAuth());
+                mockAxios.mockResponseFor(
+                    internalConfig.campaignNormalEndpoint
+                        .replace('@ENV_ID@', visitorInstance.envId)
+                        .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                    defaultDecisionApiResponse
+                );
+            });
+            mockAxios.mockResponseFor(
+                internalConfig.campaignNormalEndpoint
+                    .replace('@ENV_ID@', visitorInstance.envId)
+                    .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                defaultDecisionApiResponse
+            );
+        });
+
+        it('should synchronize automatically when auth with "activateNow=true"', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, activateNow: true });
+            visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext); // don't specify an id so it will a create one automatically
+            visitorSpy = initSpyLogs(visitorInstance);
+            const anonymousId = visitorInstance.id;
+            const authenticatedId = demoData.envId[0];
+            const afterUnauth = () => {
+                expect(mockAxios.post).toHaveBeenCalledTimes(7);
+                expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    6,
+                    `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                    {
+                        ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                        visitor_id: anonymousId,
+                        anonymous_id: null,
+                        trigger_hit: false // because already activated before
+                    },
+                    {
+                        cancelToken: {},
+                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        params: { exposeAllKeys: true, sendContextEvent: false },
+                        timeout: 2000
+                    }
+                );
+
+                // TODO: maybe check what we send to "/events":
+                // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
+
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(9);
+
+                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
+                    2,
+                    `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`
+                );
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
+
+                expect(visitorInstance.anonymousId).toEqual(null);
+                expect(visitorInstance.id).toEqual(anonymousId);
+                done();
+            };
+            const afterAuth = () => {
+                expect(mockAxios.post).toHaveBeenCalledTimes(5);
+                expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                    {
+                        ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                        visitor_id: anonymousId,
+                        anonymous_id: null
+                    },
+                    {
+                        cancelToken: {},
+                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        params: { exposeAllKeys: true, sendContextEvent: false },
+                        timeout: 2000
+                    }
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    `${visitorInstance.config.flagshipApi}activate`,
+                    {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
+                        caid: 'blntcamqmdvg04g371h0',
+                        vaid: 'blntcamqmdvg04g371hg',
+                        vid: anonymousId,
+                        aid: null
+                    },
+                    {
+                        ...assertionHelper.getApiKeyHeader(visitorInstance.config.apiKey)
+                    }
+                );
+                // NOTE: second call hit '/event' endpoint.
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    4,
+                    `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                    {
+                        ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                        visitor_id: authenticatedId,
+                        anonymous_id: anonymousId,
+                        trigger_hit: false // because already activated before
+                    },
+                    {
+                        cancelToken: {},
+                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        params: { exposeAllKeys: true, sendContextEvent: false },
+                        timeout: 2000
+                    }
+                );
+                // TODO: maybe check what we send to "/events":
+                // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
+
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(5);
 
                 expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
                     1,
