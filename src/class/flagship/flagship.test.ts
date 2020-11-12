@@ -245,10 +245,9 @@ describe('FlagshipVisitor', () => {
                         2,
                         `${internalConfig.apiV2}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'blntcamqmdvg04g371hg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'blntcamqmdvg04g371h0',
-                            vid: 'test-perf'
+                            caid: 'blntcamqmdvg04g371h0'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -258,10 +257,9 @@ describe('FlagshipVisitor', () => {
                         3,
                         `${internalConfig.apiV2}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq2ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2csg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2csg'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -271,10 +269,9 @@ describe('FlagshipVisitor', () => {
                         4,
                         `${internalConfig.apiV2}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq1ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2ceg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2ceg'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -290,9 +287,8 @@ describe('FlagshipVisitor', () => {
                 1,
                 `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                    trigger_hit: true
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -320,10 +316,9 @@ describe('FlagshipVisitor', () => {
                         2,
                         `${mockEndpoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'blntcamqmdvg04g371hg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'blntcamqmdvg04g371h0',
-                            vid: 'test-perf'
+                            caid: 'blntcamqmdvg04g371h0'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -333,10 +328,9 @@ describe('FlagshipVisitor', () => {
                         3,
                         `${mockEndpoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq2ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2csg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2csg'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -346,10 +340,9 @@ describe('FlagshipVisitor', () => {
                         4,
                         `${mockEndpoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq1ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2ceg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2ceg'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -365,9 +358,8 @@ describe('FlagshipVisitor', () => {
                 1,
                 `${mockEndpoint}${demoData.envId[0]}/campaigns?mode=normal`,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                    trigger_hit: true
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -395,10 +387,9 @@ describe('FlagshipVisitor', () => {
                         2,
                         `${endPoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'blntcamqmdvg04g371hg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'blntcamqmdvg04g371h0',
-                            vid: 'test-perf'
+                            caid: 'blntcamqmdvg04g371h0'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
@@ -409,10 +400,9 @@ describe('FlagshipVisitor', () => {
                         3,
                         `${endPoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq2ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2csg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2csg'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
@@ -423,10 +413,9 @@ describe('FlagshipVisitor', () => {
                         4,
                         `${endPoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq1ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2ceg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2ceg'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
@@ -443,10 +432,8 @@ describe('FlagshipVisitor', () => {
                 1,
                 `${endPoint}${demoData.envId[0]}/campaigns?mode=normal`,
                 {
-                    context: demoData.visitor.cleanContext,
-
-                    trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                    trigger_hit: true
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),

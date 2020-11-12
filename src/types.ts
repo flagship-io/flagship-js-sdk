@@ -46,6 +46,7 @@ export type FlagshipSdkConfig = {
 };
 
 export type FlagshipSdkInternalConfig = {
+    campaignNormalEndpoint: string;
     bucketingEndpoint: string;
     apiV1: string;
     apiV2: string;
@@ -112,8 +113,8 @@ export interface IFlagshipVisitor extends EventEmitter {
     modificationsInternalStatus: ModificationsInternalStatus | null;
     // UPDATE VISITOR
     updateContext(context: FlagshipVisitorContext): void;
-    authenticate(id: string): void;
-    unauthenticate(): void;
+    authenticate(id: string): Promise<void>;
+    unauthenticate(): Promise<void>;
     // VISITOR MODIFICATIONS
     getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
     getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;
