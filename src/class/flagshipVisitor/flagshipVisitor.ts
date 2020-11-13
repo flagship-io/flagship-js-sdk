@@ -31,7 +31,9 @@ import {
     ItemHit,
     ModificationsInternalStatus,
     TransactionHit,
-    ActivatedArchived
+    ActivatedArchived,
+    UnauthenticateVisitorOutput,
+    AuthenticateVisitorOutput
 } from './types';
 
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
@@ -100,7 +102,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         return Math.floor(Math.random() * Date.now()).toString();
     }
 
-    public authenticate(id: string): Promise<void> {
+    public authenticate(id: string): AuthenticateVisitorOutput {
         let errorMsg;
         // Some validation
         if (!id) {
@@ -128,7 +130,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         return new Promise((resolve) => resolve());
     }
 
-    public unauthenticate(): Promise<void> {
+    public unauthenticate(): UnauthenticateVisitorOutput {
         let errorMsg;
         if (!this.anonymousId) {
             errorMsg = `unauthenticate - Your visitor never has been authenticated.`;

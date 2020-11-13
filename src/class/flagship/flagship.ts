@@ -129,7 +129,9 @@ class Flagship implements IFlagship {
     // Pre-req: envId + visitorId must be the same
     /**
      * @returns {IFlagshipVisitor}
-     * @description Used internally only. Don't use it outside the SDK ! Once the visitor is updated, it will trigger the "ready" event again.
+     * @description Used internally only. Don't use it outside the SDK ! This function must ALWAYS trigger "ready" event.
+     * [When fetchNow/activateNow=true] Update visitor will check if a synchronize is needed based on visitor context changed or no modifications have been fetched before, then it will emit "ready" event.
+     * [When both fetchNow/activateNow=false] It will just emit "ready" event, without any change.
      */
     public updateVisitor(visitorInstance: IFlagshipVisitor, context: FlagshipVisitorContext): IFlagshipVisitor {
         this.log.debug(`updateVisitor - updating visitor (id="${visitorInstance.id}")`);
@@ -143,14 +145,13 @@ class Flagship implements IFlagship {
             visitorInstance
         );
 
-        // activate or fetch NOW if: context has changed OR activateNow enabled OR fetchNow enabled
+        // fetch (+activate[optional]) NOW if: (context has changed OR no modifs in cache) AND (fetchNow enabled OR activateNow enabled)
         if (
-            ((!utilsHelper.deepCompare(visitorInstance.context, context) || flagshipVisitorInstance.fetchedModifications === null) &&
-                this.config.fetchNow) ||
-            this.config.activateNow
+            (!utilsHelper.deepCompare(visitorInstance.context, context) || flagshipVisitorInstance.fetchedModifications === null) &&
+            (this.config.fetchNow || this.config.activateNow)
         ) {
             this.log.debug(
-                `updateVisitor - visitor(id="${visitorInstance.id}") does not have modifications or context has changed + (fetchNow=${this.config.fetchNow} || activateNow=${this.config.activateNow}) detected, trying a synchronize...`
+                `updateVisitor - visitor(id="${visitorInstance.id}") does not have modifications or context has changed + (fetchNow=${this.config.fetchNow} OR/AND activateNow=${this.config.activateNow}) detected, trigger a synchronize...`
             );
             flagshipVisitorInstance
                 .synchronizeModifications(this.config.activateNow)
