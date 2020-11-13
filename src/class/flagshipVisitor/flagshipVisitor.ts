@@ -1,8 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
 import { EventEmitter } from 'events';
-
-import { rejects } from 'assert';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import {
@@ -99,7 +97,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     private static createVisitorId(): string {
-        return Math.floor(Math.random() * Date.now()).toString();
+        const now = new Date();
+        const random = Math.floor(Math.random() * (99999 - 10000) + 10000); // Random number between 10000 - 99999
+        return `${now.getFullYear()}${now.getMonth()}${now.getDay()}${now.getHours()}${now.getMinutes()}${random}`;
     }
 
     public authenticate(id: string): AuthenticateVisitorOutput {
