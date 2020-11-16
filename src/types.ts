@@ -99,6 +99,11 @@ export interface IFlagshipBucketing extends EventEmitter {
     on(event: 'error', listener: (args: Error) => void): this;
 }
 
+export type ReadyListenerOutput = {
+    withError: boolean;
+    error: Error | null;
+};
+
 export interface IFlagshipVisitor extends EventEmitter {
     config: FlagshipSdkConfig;
     id: string;
@@ -135,7 +140,7 @@ export interface IFlagshipVisitor extends EventEmitter {
     sendHit(hitData: HitShape): Promise<void>;
     sendHits(hitsArray: Array<HitShape>): Promise<void>;
     // VISITOR LISTENER
-    on(event: 'ready', listener: () => void): this;
+    on(event: 'ready', listener: () => ReadyListenerOutput): this;
     on(event: 'saveCache', listener: (args: SaveCacheArgs) => void): this;
 }
 export interface IFlagship {

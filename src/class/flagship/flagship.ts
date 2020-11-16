@@ -88,7 +88,7 @@ class Flagship implements IFlagship {
                     const triggerVisitorReady = () => {
                         this.log.info(logBook[this.config.decisionMode].modificationSuccess);
                         (flagshipVisitorInstance as any).callEventEndpoint();
-                        flagshipVisitorInstance.emit('ready');
+                        flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput());
                     };
                     const postProcessBucketing = (hasFailed: boolean): void => {
                         if (bucketingFirstPollingTriggered) {
@@ -113,13 +113,13 @@ class Flagship implements IFlagship {
                     if (this.config.decisionMode !== 'Bucketing') {
                         this.log.fatal(logBook[this.config.decisionMode].modificationFailed(response));
                     }
-                    flagshipVisitorInstance.emit('ready');
+                    flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput(response));
                 });
         } else {
             // Before emit('ready'), make sure there is listener to it
             flagshipVisitorInstance.once('newListener', (event, listener) => {
                 if (event === 'ready') {
-                    listener();
+                    listener(flagshipSdkHelper.generateReadyListenerOutput());
                 }
             });
         }
@@ -156,10 +156,10 @@ class Flagship implements IFlagship {
             flagshipVisitorInstance
                 .synchronizeModifications(this.config.activateNow)
                 .then(() => {
-                    flagshipVisitorInstance.emit('ready');
+                    flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput());
                 })
-                .catch(() => {
-                    flagshipVisitorInstance.emit('ready');
+                .catch((e) => {
+                    flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput(e));
                 });
         } else {
             flagshipVisitorInstance.once('newListener', (event, listener) => {

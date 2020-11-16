@@ -975,7 +975,7 @@ describe('FlagshipVisitor', () => {
                             expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'updateVisitor - updating visitor (id="test-perf")');
                             expect(spyDebugLogs).toHaveBeenNthCalledWith(
                                 2,
-                                'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true || activateNow=false) detected, trying a synchronize...'
+                                'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true OR/AND activateNow=false) detected, trigger a synchronize...'
                             );
 
                             expect(freshVisitor.fetchedModifications).toEqual(responseObj.data.campaigns);
@@ -1031,7 +1031,7 @@ describe('FlagshipVisitor', () => {
                         expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'updateVisitor - updating visitor (id="test-perf")');
                         expect(spyDebugLogs).toHaveBeenNthCalledWith(
                             2,
-                            'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true || activateNow=false) detected, trying a synchronize...'
+                            'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true OR/AND activateNow=false) detected, trigger a synchronize...'
                         );
 
                         expect(freshVisitor.fetchedModifications).toEqual(null);
@@ -1088,7 +1088,7 @@ describe('FlagshipVisitor', () => {
                         expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'updateVisitor - updating visitor (id="test-perf")');
                         expect(spyDebugLogs).toHaveBeenNthCalledWith(
                             2,
-                            'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true || activateNow=false) detected, trying a synchronize...'
+                            'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true OR/AND activateNow=false) detected, trigger a synchronize...'
                         );
 
                         expect(freshVisitor.config.timeout).toEqual(1);
