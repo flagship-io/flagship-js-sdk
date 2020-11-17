@@ -2,7 +2,7 @@ import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { EventEmitter } from 'events';
 
 import defaultConfig, { internalConfig } from '../../config/default';
-import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor, IFsPanicMode } from '../../types';
+import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor, IFsPanicMode, IFsLocalStorage } from '../../types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import Bucketing from '../bucketing/bucketing';
@@ -11,9 +11,12 @@ import FlagshipVisitor from '../flagshipVisitor/flagshipVisitor';
 import { FlagshipVisitorContext } from '../flagshipVisitor/types';
 import PanicMode from '../panicMode/panicMode';
 import utilsHelper from '../../lib/utils';
+import { clientLocalStorage } from '../localStorage/localStorage';
 
 class Flagship implements IFlagship {
     config: FlagshipSdkConfig;
+
+    localStorage: IFsLocalStorage;
 
     log: FsLogger;
 
@@ -33,6 +36,7 @@ class Flagship implements IFlagship {
         this.bucket = null;
         this.panic = new PanicMode(this.config);
         this.envId = envId;
+        this.localStorage = utilsHelper.isClient() ? clientLocalStorage : null;
         if (!apiKey) {
             this.log.warn(
                 'WARNING: "start" function signature will change in the next major release. "start(envId, settings)" will be "start(envId, apiKey, settings)", please make this change ASAP!'
@@ -77,7 +81,11 @@ class Flagship implements IFlagship {
             }
         };
 
-        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.bucket, id, context, this.panic);
+        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, id, this.panic, this.config, {
+            bucket: this.bucket,
+            context,
+            localStorage: this.localStorage
+        });
         this.log.info(`Creating new visitor (id="${flagshipVisitorInstance.id}")`);
         let bucketingFirstPollingTriggered = false;
         if (this.config.fetchNow || this.config.activateNow) {
@@ -135,15 +143,12 @@ class Flagship implements IFlagship {
      */
     public updateVisitor(visitorInstance: IFlagshipVisitor, context: FlagshipVisitorContext): IFlagshipVisitor {
         this.log.debug(`updateVisitor - updating visitor (id="${visitorInstance.id}")`);
-        const flagshipVisitorInstance = new FlagshipVisitor(
-            this.envId,
-            this.config,
-            this.bucket,
-            visitorInstance.id,
+        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, visitorInstance.id, this.panic, this.config, {
+            bucket: this.bucket,
+            previousVisitorInstance: visitorInstance,
             context,
-            this.panic,
-            visitorInstance
-        );
+            localStorage: this.localStorage
+        });
 
         // fetch (+activate[optional]) NOW if: (context has changed OR no modifs in cache) AND (fetchNow enabled OR activateNow enabled)
         if (

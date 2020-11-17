@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-/* eslint-disable @typescript-eslint/interface-name-prefix */
 import { CancelTokenSource } from 'axios';
 import {
     FlagshipVisitorContext,
@@ -24,6 +23,21 @@ export type PostFlagshipApiCallback = (
     cancelTokenSource: CancelTokenSource,
     config: FlagshipSdkConfig
 ) => Promise<any>;
+
+export interface IFsLocalStorage {
+    get: (key: string) => string;
+    set(key: string, value: any): void;
+    remove: (key: string) => void;
+    clear: () => void;
+}
+
+export type IFlagshipCore = {
+    log: FsLogger;
+    config: FlagshipSdkConfig;
+    envId: string;
+    localStorage: IFsLocalStorage | null; // only defined on client side for now...
+    panic: IFsPanicMode;
+};
 
 export type FlagshipSdkConfig = {
     fetchNow?: boolean;
@@ -70,12 +84,9 @@ export interface IFsPanicMode {
     shouldRunSafeMode(functionName: string, options?: { logType: 'debug' | 'error' }): boolean;
 }
 
-export interface IFlagshipBucketingVisitor {
+export interface IFlagshipBucketingVisitor extends IFlagshipCore {
     data: BucketingApiResponse | null;
     computedData: DecisionApiResponseData | null;
-    log: FsLogger;
-    envId: string;
-    config: FlagshipSdkConfig;
     visitorId: string;
     visitorContext: FlagshipVisitorContext;
     global: IFlagshipBucketing;
@@ -84,13 +95,9 @@ export interface IFlagshipBucketingVisitor {
     updateVisitorContext(newContext: FlagshipVisitorContext): void;
 }
 
-export interface IFlagshipBucketing extends EventEmitter {
+export interface IFlagshipBucketing extends EventEmitter, IFlagshipCore {
     data: BucketingApiResponse | null;
-    log: FsLogger;
-    envId: string;
-    panic: IFsPanicMode;
     isPollingRunning: boolean;
-    config: FlagshipSdkConfig;
     lastModifiedDate: string | null;
     callApi(): Promise<BucketingApiResponse | void>;
     startPolling(): void;
@@ -104,13 +111,9 @@ export type ReadyListenerOutput = {
     error: Error | null;
 };
 
-export interface IFlagshipVisitor extends EventEmitter {
-    config: FlagshipSdkConfig;
+export interface IFlagshipVisitor extends EventEmitter, IFlagshipCore {
     id: string;
     anonymousId: string;
-    log: FsLogger;
-    envId: string | null;
-    panic: IFsPanicMode;
     context: FlagshipVisitorContext;
     isAllModificationsFetched: boolean;
     bucket: IFlagshipBucketingVisitor | null;
@@ -143,11 +146,8 @@ export interface IFlagshipVisitor extends EventEmitter {
     on(event: 'ready', listener: () => ReadyListenerOutput): this;
     on(event: 'saveCache', listener: (args: SaveCacheArgs) => void): this;
 }
-export interface IFlagship {
-    config: FlagshipSdkConfig;
-    log: FsLogger;
-    panic: IFsPanicMode;
-    envId: string;
+
+export interface IFlagship extends IFlagshipCore {
     eventEmitter: EventEmitter;
     bucket: IFlagshipBucketing | null;
     newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;

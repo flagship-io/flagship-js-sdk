@@ -10,7 +10,8 @@ import {
     IFlagshipBucketingVisitor,
     IFlagshipVisitor,
     IFsPanicMode,
-    PostFlagshipApiCallback
+    PostFlagshipApiCallback,
+    IFsLocalStorage
 } from '../../types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
@@ -42,6 +43,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     anonymousId: string | null;
 
+    localStorage: IFsLocalStorage;
+
     log: FsLogger;
 
     envId: string;
@@ -60,14 +63,24 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     constructor(
         envId: string,
-        config: FlagshipSdkConfig,
-        bucket: IFlagshipBucketing | null,
         id: string,
-        context: FlagshipVisitorContext = {},
         panic: IFsPanicMode,
-        previousVisitorInstance: IFlagshipVisitor = null
+        config: FlagshipSdkConfig,
+        optional?: {
+            bucket?: IFlagshipBucketing | null;
+            context?: FlagshipVisitorContext | {};
+            previousVisitorInstance?: IFlagshipVisitor | null;
+            localStorage?: IFsLocalStorage | null;
+        }
     ) {
         super();
+        const defaultOptionalValue = {
+            bucket: null,
+            context: {},
+            previousVisitorInstance: null,
+            localStorage: null
+        };
+        const { bucket, context, previousVisitorInstance } = { ...defaultOptionalValue, ...optional };
         this.panic = panic;
         this.config = config;
         this.id = id || FlagshipVisitor.createVisitorId();
