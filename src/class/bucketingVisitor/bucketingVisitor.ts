@@ -122,8 +122,13 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         const reportIssueBetweenValueTypeAndOperator = (type: string, operator: BucketingOperator): void => {
             log.warn(`getEligibleCampaigns - operator "${operator}" is not supported for type "${type}". Assertion aborted.`);
         };
-        const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean): boolean =>
-            apiValueArray.map((apiValue) => assertionCallback(vcValue, apiValue)).filter((answer) => answer === true).length > 0;
+        const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean, shouldHaveAllAssertionsValid?: boolean): boolean => {
+            if (shouldHaveAllAssertionsValid) {
+                return apiValueArray.map((apiValue) => assertionCallback(vcValue, apiValue)).filter((answer) => answer === true).length === apiValueArray.length;
+            }
+
+            return apiValueArray.map((apiValue) => assertionCallback(vcValue, apiValue)).filter((answer) => answer === true).length > 0;
+        }
         const computeAssertion = ({ operator, key, value }: BucketingTargetings, compareWithVisitorId: boolean): boolean => {
             const vtc = compareWithVisitorId ? visitorId : visitorContext[key]; // vtc = 'value to compare'
             if (typeof vtc === 'undefined' || vtc === null) {
@@ -159,7 +164,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                     return vtc === value;
                 case 'NOT_EQUALS':
                     if (Array.isArray(value)) {
-                        return checkAssertion<string | boolean | number>(vtc, value, (a, b) => a !== b);
+                        return checkAssertion<string | boolean | number>(vtc, value, (a, b) => a !== b, true);
                     }
                     return vtc !== value;
                 case 'LOWER_THAN':
@@ -350,7 +355,8 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                                     return checkAssertion<string>(
                                         vtc as string,
                                         value as string[],
-                                        (a, b) => !(a as string).toLowerCase().includes((b as string).toLowerCase())
+                                        (a, b) => !(a as string).toLowerCase().includes((b as string).toLowerCase()),
+                                        true
                                     );
                                 }
                                 return !(vtc as string).toLowerCase().includes((value as string).toLowerCase());
