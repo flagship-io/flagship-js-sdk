@@ -3,7 +3,7 @@ import Axios, { AxiosResponse } from 'axios';
 import { EventEmitter } from 'events';
 
 import { internalConfig } from '../../config/default';
-import { FlagshipSdkConfig, IFlagshipBucketing, IFsPanicMode, IFsLocalStorage } from '../../types';
+import { FlagshipSdkConfig, IFlagshipBucketing, IFsPanicMode, IFsCacheManager } from '../../types';
 import loggerHelper from '../../lib/loggerHelper';
 import { BucketingApiResponse } from './types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
@@ -15,7 +15,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
 
     envId: string;
 
-    localStorage: IFsLocalStorage;
+    cacheManager: IFsCacheManager;
 
     isPollingRunning: boolean;
 
@@ -30,7 +30,7 @@ class Bucketing extends EventEmitter implements IFlagshipBucketing {
         config: FlagshipSdkConfig,
         panic: IFsPanicMode,
         optional?: {
-            localStorage?: IFsLocalStorage | null;
+            localStorage?: IFsCacheManager | null;
         }
     ) {
         super();

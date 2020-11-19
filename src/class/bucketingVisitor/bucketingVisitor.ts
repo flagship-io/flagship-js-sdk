@@ -1,6 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { MurmurHashV3 } from 'react-native-murmurhash';
-import { FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipBucketing, IFsLocalStorage, IFsPanicMode } from '../../types';
+import { FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipBucketing, IFsCacheManager, IFsPanicMode } from '../../types';
 import { FlagshipVisitorContext, DecisionApiCampaign, DecisionApiResponseData } from '../flagshipVisitor/types';
 import {
     BucketingVariation,
@@ -21,7 +21,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
 
     log: FsLogger;
 
-    localStorage: IFsLocalStorage;
+    cacheManager: IFsCacheManager;
 
     envId: string;
 
@@ -42,15 +42,15 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         config: FlagshipSdkConfig,
         globalBucket: IFlagshipBucketing,
         optional?: {
-            localStorage?: IFsLocalStorage | null;
+            cacheManager?: IFsCacheManager | null;
             panic?: IFsPanicMode | null; // NOTE: actually not used but must be never null if it's not the case anymore
         }
     ) {
         // const defaultOptionalValue = {
-        //     localStorage: null,
+        //     cacheManager: null,
         //     panic: null
         // };
-        // const { localStorage, panic } = { ...defaultOptionalValue, ...optional };
+        // const { cacheManager, panic } = { ...defaultOptionalValue, ...optional };
         const bucketingData = globalBucket.data;
         this.config = config;
         this.visitorId = visitorId;

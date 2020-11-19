@@ -11,7 +11,7 @@ import {
     IFlagshipVisitor,
     IFsPanicMode,
     PostFlagshipApiCallback,
-    IFsLocalStorage
+    IFsCacheManager
 } from '../../types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
@@ -43,7 +43,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     anonymousId: string | null;
 
-    localStorage: IFsLocalStorage;
+    cacheManager: IFsCacheManager;
 
     log: FsLogger;
 
@@ -70,7 +70,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             bucket?: IFlagshipBucketing | null;
             context?: FlagshipVisitorContext | {};
             previousVisitorInstance?: IFlagshipVisitor | null;
-            localStorage?: IFsLocalStorage | null;
+            cacheManager?: IFsCacheManager | null;
         }
     ) {
         super();
@@ -78,7 +78,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             bucket: null,
             context: {},
             previousVisitorInstance: null,
-            localStorage: null
+            cacheManager: null
         };
         const { bucket, context, previousVisitorInstance } = { ...defaultOptionalValue, ...optional };
         this.panic = panic;

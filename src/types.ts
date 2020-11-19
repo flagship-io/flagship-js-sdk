@@ -24,18 +24,23 @@ export type PostFlagshipApiCallback = (
     config: FlagshipSdkConfig
 ) => Promise<any>;
 
-export interface IFsLocalStorage {
-    get: (key: string) => string;
-    set(key: string, value: any): void;
-    remove: (key: string) => void;
-    clear: () => void;
+export interface IFsVisitorProfile {
+    id: string; // required
+    anonymousId?: string | null;
+    context?: FlagshipVisitorContext;
+    campaigns?: DecisionApiCampaign[];
+}
+
+export interface IFsCacheManager {
+    saveVisitorProfile: (visitorId: string, visitorProfile: IFsVisitorProfile) => void;
+    loadVisitorProfile: (visitorId: string) => IFsVisitorProfile;
 }
 
 export type IFlagshipCore = {
     log: FsLogger;
     config: FlagshipSdkConfig;
     envId: string;
-    localStorage: IFsLocalStorage | null; // only defined on client side for now...
+    cacheManager: IFsCacheManager | null; // only defined on client side for now...
     panic: IFsPanicMode;
 };
 
