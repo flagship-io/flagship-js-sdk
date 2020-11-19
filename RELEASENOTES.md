@@ -1,5 +1,25 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.1.10
+
+### New features 🎉
+
+-   This new release includes a client cache manager which will improve the cross section visitor experience. If you want to disable it, we created a new settings `enableClientCache`, boolean. The default value is `true` meaning that the cache manager will be enable on client side but this setting will be ignored on server side.
+
+-   `newVisitor` function takes a new optional 3rd argument named "options", it takes an object, read more about that in the [SDK documentation]().
+
+    We can use "options" argument to specify if the new visitor is already authenticated (`false` by default):
+
+    ```javascript
+    const visitorContext = { some: 'visitorContext' };
+    const visitorOptions = { isAuthenticated: true };
+    const fsVisitorInstance = fsInstance.newVisitor('YOUR_VISITOR_ID', visitorContext, visitorOptions);
+    ```
+
+### Bug fixes 🐛
+
+-   Fix debug logs reporting the value of bucketing polling interval in **minutes** instead of **seconds**.
+
 ## ➡️ Version 2.1.9
 
 ### New features 🎉

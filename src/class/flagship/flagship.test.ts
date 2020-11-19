@@ -1074,9 +1074,15 @@ describe('FlagshipVisitor', () => {
                 // change a bit the settings
                 sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true, timeout: 1 });
                 initSpyLogs(sdk);
-                const freshVisitor = sdk.updateVisitor(visitorInstance, { ...demoData.visitor.cleanContext, pos: { deep: 'context' } });
-                mockAxios.mockResponse(responseObj);
-                mockAxios.mockResponse(responseObj);
+                const freshVisitor = sdk.updateVisitor(visitorInstance, {
+                    context: { ...demoData.visitor.cleanContext, pos: { deep: 'context' } }
+                });
+                mockAxios.mockResponseFor(
+                    internalConfig.campaignNormalEndpoint
+                        .replace('@ENV_ID@', visitorInstance.envId)
+                        .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                    responseObj
+                );
                 freshVisitor.once('ready', () => {
                     try {
                         expect(spyDebugLogs).toHaveBeenCalledTimes(2);

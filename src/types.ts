@@ -51,6 +51,7 @@ export type FlagshipSdkConfig = {
     enableConsoleLogs?: boolean;
     decisionMode?: 'API' | 'Bucketing';
     nodeEnv?: string;
+    enableClientCache?: boolean;
     flagshipApi?: string;
     apiKey?: string | null;
     initialModifications?: DecisionApiCampaign[] | null;
@@ -121,6 +122,7 @@ export interface IFlagshipVisitor extends EventEmitter, IFlagshipCore {
     anonymousId: string;
     context: FlagshipVisitorContext;
     isAllModificationsFetched: boolean;
+    isAuthenticated: boolean;
     bucket: IFlagshipBucketingVisitor | null;
     fetchedModifications: DecisionApiCampaign[] | null;
     modificationsInternalStatus: ModificationsInternalStatus | null;
@@ -163,3 +165,7 @@ export interface IFlagship extends IFlagshipCore {
 export interface FlagshipNodeSdk {
     start(envId: string, apiKeyOrSettings?: any, config?: FlagshipSdkConfig): IFlagship;
 }
+
+export type NewVisitorOptions = {
+    isAuthenticated?: boolean;
+};

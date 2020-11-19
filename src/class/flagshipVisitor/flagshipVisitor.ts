@@ -53,6 +53,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     isAllModificationsFetched: boolean;
 
+    isAuthenticated: boolean;
+
     bucket: IFlagshipBucketingVisitor | null;
 
     fetchedModifications: DecisionApiCampaign[] | null;
@@ -69,6 +71,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         optional?: {
             bucket?: IFlagshipBucketing | null;
             context?: FlagshipVisitorContext | {};
+            isAuthenticated?: boolean;
             previousVisitorInstance?: IFlagshipVisitor | null;
             cacheManager?: IFsCacheManager | null;
         }
@@ -77,12 +80,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         const defaultOptionalValue = {
             bucket: null,
             context: {},
+            isAuthenticated: false,
             previousVisitorInstance: null,
             cacheManager: null
         };
-        const { bucket, context, previousVisitorInstance } = { ...defaultOptionalValue, ...optional };
+        const { bucket, context, previousVisitorInstance, isAuthenticated } = { ...defaultOptionalValue, ...optional };
         this.panic = panic;
         this.config = config;
+        this.isAuthenticated = isAuthenticated;
         this.id = id || FlagshipVisitor.createVisitorId();
         this.anonymousId = null;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);

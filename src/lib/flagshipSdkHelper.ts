@@ -226,30 +226,6 @@ const flagshipSdkHelper = {
 
         return errorMsg;
     },
-    // checkVisitorProfileShape: (visitorProfile: IFsVisitorProfile, log: FsLogger): IFsVisitorProfile | null => {
-    //     const constraints = {
-    //         id: {
-    //             presence: { message: 'is missing' },
-    //             type: { type: 'string', message: 'is not a string' }
-    //         },
-    //         anonymousId: {
-    //             type: { type: 'string', message: 'is not a string' }
-    //         },
-    //         context: {},
-    //         campaigns: {
-    //             type: { type: 'array', message: 'is not a array' }
-    //         }
-    //     };
-
-    //     let errorMsg = 'visitor profile does not have correct format:\n';
-    //     const output = validate(visitorProfile, constraints);
-    //     if (output) {
-    //         errorMsg += flagshipSdkHelper.generateValidateError(output);
-    //         log.error(errorMsg);
-    //         return null;
-    //     }
-    //     return visitorProfile;
-    // },
     validateDecisionApiData: (data: DecisionApiCampaign[] | null, log: FsLogger): null | DecisionApiCampaign[] => {
         const constraints = {
             id: {

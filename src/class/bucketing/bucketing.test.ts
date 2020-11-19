@@ -711,7 +711,7 @@ describe('Bucketing - polling', () => {
 
                     expect(spySdkLogs.spyWarnLogs).toHaveBeenNthCalledWith(
                         1,
-                        `startBucketingPolling - bucket already polling with interval set to "${demoPollingInterval}" minute(s).`
+                        `startBucketingPolling - bucket already polling with interval set to "${demoPollingInterval}" second(s).`
                     );
 
                     expect(sdk.bucket.data).toEqual(bucketingApiMockResponse);

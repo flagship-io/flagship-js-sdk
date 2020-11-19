@@ -4,10 +4,11 @@ const defaultConfig: FlagshipSdkConfig = {
     fetchNow: true,
     activateNow: false,
     enableConsoleLogs: false,
+    enableClientCache: true, // this setting is ignored on server side.
     decisionMode: 'API',
     nodeEnv: 'production',
     flagshipApi: 'https://decision-api.flagship.io/v1/',
-    pollingInterval: null,
+    pollingInterval: null, // seconds
     apiKey: null, // TODO: remove next major release
     timeout: 2, // seconds
     initialBucketing: null,
