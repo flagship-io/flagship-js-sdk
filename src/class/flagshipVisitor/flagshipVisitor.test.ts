@@ -1,16 +1,18 @@
 import mockAxios from 'jest-mock-axios';
 import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
 import { internalConfig } from '../../config/default';
-import { IFlagshipVisitor, IFlagship } from '../../types';
+import { IFlagshipVisitor, IFlagship, IFsVisitorProfile } from '../../types';
 
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
 import flagshipSdk from '../../index';
 import FlagshipVisitor from './flagshipVisitor';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
-import { DecisionApiResponseData } from './types';
+import { DecisionApiResponseData, DecisionApiResponse } from './types';
 import { BucketingApiResponse } from '../bucketing/types';
 import assertionHelper from '../../../test/helper/assertion';
+import utilsHelper from '../../lib/utils';
+import { CLIENT_CACHE_KEY } from '../cacheManager/clientCacheManager';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -24,7 +26,7 @@ let spyErrorLogs;
 let spyFatalLogs;
 let spyInfoLogs;
 let spyDebugLogs;
-let defaultDecisionApiResponse: DecisionApiResponseData;
+let defaultDecisionApiResponse: DecisionApiResponse;
 let defaultActivateModificationResponse;
 
 type initSpyLogsOutput = {
@@ -34,6 +36,10 @@ type initSpyLogsOutput = {
     spyInfoLogs: jest.SpyInstance<any, unknown[]>;
     spyDebugLogs: jest.SpyInstance<any, unknown[]>;
 };
+
+let spyWarnConsoleLogs;
+let spyErrorConsoleLogs;
+let spyInfoConsoleLogs;
 
 const initSpyLogs = (vInstance): initSpyLogsOutput => {
     spyFatalLogs = jest.spyOn(vInstance.log, 'fatal');
@@ -59,8 +65,16 @@ describe('FlagshipVisitor', () => {
     beforeAll(() => {
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
     });
+    beforeEach(() => {
+        spyWarnConsoleLogs = jest.spyOn(console, 'warn').mockImplementation();
+        spyErrorConsoleLogs = jest.spyOn(console, 'error').mockImplementation();
+        spyInfoConsoleLogs = jest.spyOn(console, 'log').mockImplementation();
+    });
     afterEach(() => {
         mockAxios.reset();
+        spyWarnConsoleLogs.mockRestore();
+        spyErrorConsoleLogs.mockRestore();
+        spyInfoConsoleLogs.mockRestore();
     });
 
     it('should create a Visitor instance with clean context', () => {
@@ -3333,7 +3347,7 @@ describe('FlagshipVisitor', () => {
     });
     describe('visitor reconciliation (continuity) [fetchNow=false, activateNow=false]', () => {
         beforeEach(() => {
-            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, enableConsoleLogs: true });
             visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext); // don't specify an id so it will a create one automatically
             defaultDecisionApiResponse = {
                 data: demoData.decisionApi.normalResponse.oneCampaignWithFurtherModifs,
@@ -3400,6 +3414,7 @@ describe('FlagshipVisitor', () => {
 
         it('should call the decision api normally when visitor is created as anonymous then authenticated and then sign out', (done) => {
             const currentVisitorId = visitorInstance.id;
+            expect(visitorInstance.isAuthenticated).toEqual(false);
             visitorInstance
                 .synchronizeModifications()
                 .then(() => {
@@ -3431,22 +3446,27 @@ describe('FlagshipVisitor', () => {
                             // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                             expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                             expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                             expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(3);
+                            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                            expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                                1,
-                                `authenticate - visitor passed from anonymous (id=${currentVisitorId}) to authenticated (id=${authenticatedId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`
-                            );
-                            // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
-                            expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'updateCache - no cache manager found.');
-                            // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
+                            expect(
+                                assertionHelper.extractLogsThatReportedMessage(
+                                    `authenticate - visitor passed from anonymous (id=${currentVisitorId}) to authenticated (id=${authenticatedId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`,
+                                    spyInfoConsoleLogs
+                                ).length
+                            ).toEqual(1);
+
+                            expect(
+                                assertionHelper.extractLogsThatReportedMessage('updateCache - no cache manager found.', spyInfoConsoleLogs)
+                                    .length
+                            ).toEqual(2);
 
                             expect(visitorInstance.anonymousId).toEqual(currentVisitorId);
                             expect(visitorInstance.id).toEqual(demoData.envId[0]);
 
+                            expect(visitorInstance.isAuthenticated).toEqual(true);
                             // NOW SIGN OUT THE VISITOR
 
                             visitorInstance.unauthenticate();
@@ -3476,22 +3496,21 @@ describe('FlagshipVisitor', () => {
                                     // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                                     expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
+                                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                                     expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                                     expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(5);
+                                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                                    expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                                        2,
-                                        `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${currentVisitorId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`
-                                    );
-                                    // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
-                                    // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
-                                    // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
+                                    expect(
+                                        assertionHelper.extractLogsThatReportedMessage(
+                                            `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${currentVisitorId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`,
+                                            spyInfoConsoleLogs
+                                        ).length
+                                    ).toEqual(1);
 
                                     expect(visitorInstance.anonymousId).toEqual(null);
                                     expect(visitorInstance.id).toEqual(currentVisitorId);
-
+                                    expect(visitorInstance.isAuthenticated).toEqual(false);
                                     done();
                                 })
                                 .catch((e) => done.fail(e));
@@ -3600,7 +3619,7 @@ describe('FlagshipVisitor', () => {
             mockAxios.reset();
         });
         it('should synchronize automatically when auth with "fetchNow=true"', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfig);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, enableConsoleLogs: true });
             visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext); // don't specify an id so it will a create one automatically
             visitorSpy = initSpyLogs(visitorInstance);
             const anonymousId = visitorInstance.id;
@@ -3628,18 +3647,17 @@ describe('FlagshipVisitor', () => {
                 // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                 expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(5);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                    2,
-                    `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`
-                );
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
+                expect(
+                    assertionHelper.extractLogsThatReportedMessage(
+                        `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`,
+                        spyInfoConsoleLogs
+                    ).length
+                ).toEqual(1);
 
                 expect(visitorInstance.anonymousId).toEqual(null);
                 expect(visitorInstance.id).toEqual(anonymousId);
@@ -3683,19 +3701,21 @@ describe('FlagshipVisitor', () => {
                 // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                 expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                    1,
-                    `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`
-                );
+                expect(
+                    assertionHelper.extractLogsThatReportedMessage(
+                        `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`,
+                        spyInfoConsoleLogs
+                    ).length
+                ).toEqual(1);
 
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
-                expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'updateCache - no cache manager found.');
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
+                expect(
+                    assertionHelper.extractLogsThatReportedMessage('updateCache - no cache manager found.', spyInfoConsoleLogs).length
+                ).toEqual(2);
 
                 expect(visitorInstance.anonymousId).toEqual(anonymousId);
                 expect(visitorInstance.id).toEqual(demoData.envId[0]);
@@ -3729,7 +3749,11 @@ describe('FlagshipVisitor', () => {
         });
 
         it('should synchronize automatically when auth with "activateNow=true"', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, activateNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...testConfigWithoutFetchNow,
+                enableConsoleLogs: true,
+                activateNow: true
+            });
             visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext); // don't specify an id so it will a create one automatically
             visitorSpy = initSpyLogs(visitorInstance);
             const anonymousId = visitorInstance.id;
@@ -3758,18 +3782,17 @@ describe('FlagshipVisitor', () => {
                 // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                 expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(11);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                    2,
-                    `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`
-                );
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
+                expect(
+                    assertionHelper.extractLogsThatReportedMessage(
+                        `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`,
+                        spyInfoConsoleLogs
+                    ).length
+                ).toEqual(1);
 
                 expect(visitorInstance.anonymousId).toEqual(null);
                 expect(visitorInstance.id).toEqual(anonymousId);
@@ -3828,19 +3851,21 @@ describe('FlagshipVisitor', () => {
                 // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                 expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(6);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                    1,
-                    `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`
-                );
+                expect(
+                    assertionHelper.extractLogsThatReportedMessage(
+                        `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`,
+                        spyInfoConsoleLogs
+                    ).length
+                ).toEqual(1);
 
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
-                expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'updateCache - no cache manager found.');
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
+                expect(
+                    assertionHelper.extractLogsThatReportedMessage('updateCache - no cache manager found.', spyInfoConsoleLogs).length
+                ).toEqual(2);
 
                 expect(visitorInstance.anonymousId).toEqual(anonymousId);
                 expect(visitorInstance.id).toEqual(demoData.envId[0]);
@@ -3871,6 +3896,136 @@ describe('FlagshipVisitor', () => {
                     .replace('@API_URL@', visitorInstance.config.flagshipApi),
                 defaultDecisionApiResponse
             );
+        });
+    });
+    describe('cache manager', () => {
+        beforeEach(() => {
+            defaultDecisionApiResponse = {
+                data: demoData.decisionApi.normalResponse.oneCampaignOneModif,
+                status: 200,
+                statusText: 'OK'
+            };
+            localStorage.clear();
+            localStorage.setItem.mockClear();
+            eventMockResponse = { status: 204, data: {} };
+        });
+        afterEach(() => {
+            if (sdk) {
+                sdk.eventEmitter.removeAllListeners();
+            }
+            if (visitorInstance) {
+                visitorInstance.removeAllListeners();
+            }
+            sdk = null;
+            bucketingApiMockResponse = null;
+            visitorInstance = null;
+            mockAxios.reset();
+        });
+        it('should not create a cache manager if environment is server', () => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
+            expect(sdk.cacheManager).toEqual(null);
+        });
+        it('should not create a cache manager if environment is client and settings "enableClientCache=true"', () => {
+            utilsHelper.isClient = jest.fn().mockReturnValue(true);
+            utilsHelper.isServer = jest.fn().mockReturnValue(false);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
+            expect(sdk.cacheManager).not.toEqual(null);
+            expect(sdk.cacheManager.loadVisitorProfile).toBeDefined();
+            expect(sdk.cacheManager.saveVisitorProfile).toBeDefined();
+        });
+        it('should create a cache manager if environment is client and settings "enableClientCache=false"', () => {
+            utilsHelper.isClient = jest.fn().mockReturnValue(true);
+            utilsHelper.isServer = jest.fn().mockReturnValue(false);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, enableClientCache: false });
+            expect(sdk.cacheManager).toEqual(null);
+        });
+        it('should set in local storage the visitor profile after visitor being initialized and when settings "enableClientCache=true"', (done) => {
+            utilsHelper.isClient = jest.fn().mockReturnValue(true);
+            utilsHelper.isServer = jest.fn().mockReturnValue(false);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...testConfigWithoutFetchNow,
+                enableConsoleLogs: true,
+                nodeEnv: 'dev'
+            });
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext);
+            visitorSpy = initSpyLogs(visitorInstance);
+
+            visitorInstance.on('ready', () => {
+                const automaticGenVisitorIdLog = spyInfoConsoleLogs.mock.calls.filter((call) => call[0].includes('cache'));
+                expect(automaticGenVisitorIdLog.length).toEqual(0);
+                const assertVisitorProfile: IFsVisitorProfile = {
+                    id: demoData.visitor.id[0],
+                    anonymousId: null,
+                    context: demoData.visitor.cleanContext,
+                    campaigns: null
+                };
+                expect(localStorage.setItem).toHaveBeenLastCalledWith(CLIENT_CACHE_KEY, JSON.stringify(assertVisitorProfile));
+                expect(localStorage.__STORE__[CLIENT_CACHE_KEY]).toBe(JSON.stringify(assertVisitorProfile));
+                expect(Object.keys(localStorage.__STORE__).length).toBe(1);
+
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+                done();
+            });
+        });
+        it('should have correct behavior when (id=null, isAuthenticated=false, enableClientCache=true) + cache with anonymous id', (done) => {
+            utilsHelper.isClient = jest.fn().mockReturnValue(true);
+            utilsHelper.isServer = jest.fn().mockReturnValue(false);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...testConfigWithoutFetchNow,
+                enableConsoleLogs: true,
+                nodeEnv: 'dev'
+            });
+
+            // SIMULATING AN EXISTING CACHE - BEGIN
+            const customVisitorProfile = {
+                id: 'mike',
+                anonymousId: 'weAreAnonymous',
+                context: {
+                    isCool: true
+                },
+                campaigns: demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns
+            };
+            localStorage.setItem(CLIENT_CACHE_KEY, JSON.stringify(customVisitorProfile));
+            // SIMULATING AN EXISTING CACHE - END
+
+            visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext, { isAuthenticated: false });
+            visitorSpy = initSpyLogs(visitorInstance);
+
+            visitorInstance.on('ready', () => {
+                const automaticGenVisitorIdLog = spyInfoConsoleLogs.mock.calls.filter((call) => call[0].includes('cache'));
+                expect(automaticGenVisitorIdLog.length).toEqual(0);
+
+                expect(visitorInstance.id).toEqual(customVisitorProfile.anonymousId);
+                expect(visitorInstance.anonymousId).toEqual(null);
+
+                expect(
+                    assertionHelper.extractLogsThatReportedMessage(
+                        'detected "isAuthenticated=false" + previous authenticate experience for this visitor. From there, the SDK will consider its previous unauthenticate experience.',
+                        spyInfoConsoleLogs
+                    ).length
+                ).toEqual(1);
+
+                expect(localStorage.setItem).toHaveBeenNthCalledWith(
+                    3,
+                    CLIENT_CACHE_KEY,
+                    '{"id":"weAreAnonymous","anonymousId":null,"context":{"pos":"es"},"campaigns":null}'
+                );
+                expect(localStorage.__STORE__[CLIENT_CACHE_KEY]).toBe(
+                    '{"id":"weAreAnonymous","anonymousId":null,"context":{"pos":"es"},"campaigns":null}'
+                );
+                expect(Object.keys(localStorage.__STORE__).length).toBe(1);
+
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+                done();
+            });
         });
     });
 });

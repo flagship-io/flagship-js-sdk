@@ -69,13 +69,13 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         id: string,
         panic: IFsPanicMode,
         config: FlagshipSdkConfig,
-        optional?: {
+        optional: {
             bucket?: IFlagshipBucketing | null;
             context?: FlagshipVisitorContext | {};
             isAuthenticated?: boolean;
             previousVisitorInstance?: IFlagshipVisitor | null;
             cacheManager?: IFsCacheManager | null;
-        }
+        } = {}
     ) {
         super();
         const defaultOptionalValue = {
@@ -85,16 +85,36 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             previousVisitorInstance: null,
             cacheManager: null
         };
-        const { bucket, context, previousVisitorInstance, isAuthenticated, cacheManager } = { ...defaultOptionalValue, ...optional };
+        const { bucket, context, previousVisitorInstance, isAuthenticated, cacheManager } = {
+            ...defaultOptionalValue,
+            ...Object.keys(optional).reduce((reducer, key) => {
+                return typeof optional[key] === 'undefined' || optional[key] === null ? reducer : { ...reducer, [key]: optional[key] };
+            }, {})
+        };
         this.cacheManager = cacheManager;
         this.panic = panic;
         this.config = config;
-        const cacheData = this.getCache({ customLog: loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:*initiliazing*`) });
+        const earlyLog = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:*initiliazing*`); // this is to do some logs before knowing the actual visitor id.
+        const cacheData = this.getCache({ customLog: earlyLog });
         this.isAuthenticated = isAuthenticated;
-        this.id = id || cacheData?.id || FlagshipVisitor.createVisitorId();
+        this.setVisitorId(id || cacheData?.id || FlagshipVisitor.createVisitorId());
         this.anonymousId = cacheData?.anonymousId || null;
-        this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
-        if (!id) {
+
+        // if cache detected with existing data
+        if (!!cacheData) {
+            // if dev specified that visitor is authenticated but no anonymous id found (=PU)
+            if (this.isAuthenticated && !this.anonymousId) {
+                this.log.warn(
+                    'detected "isAuthenticated=true" but the SDK found an inconsistency from cache. It seems the visitor only had an unauthenticate experience and never has been authenticate before. As a result, the visitor will still be considered anonymous.'
+                );
+            } else if (!this.isAuthenticated && this.anonymousId) {
+                this.log.info(
+                    'detected "isAuthenticated=false" + previous authenticate experience for this visitor. From there, the SDK will consider its previous unauthenticate experience.'
+                );
+                this.unauthenticate();
+            }
+        }
+        if (!id && !cacheData) {
             this.log.info(`no id specified during visitor creation. The SDK has automatically created one: "${this.id}"`);
         }
         this.envId = envId;
@@ -118,6 +138,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
 
         this.updateCache();
+    }
+
+    private setVisitorId(id: string): void {
+        this.id = id;
+        this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
     }
 
     private getCache(options: { customLog?: FsLogger } = {}): IFsVisitorProfile | null {
@@ -168,7 +193,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
 
         this.anonymousId = this.id;
-        this.id = id;
+        this.setVisitorId(id);
+        this.isAuthenticated = true;
         this.updateCache();
 
         const { fetchNow, activateNow } = this.config;
@@ -190,8 +216,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             return new Promise((resolve, reject) => reject(errorMsg));
         }
         const previousAuthenticatedId = this.id;
-        this.id = this.anonymousId;
+        this.setVisitorId(this.anonymousId);
         this.anonymousId = null;
+        this.isAuthenticated = false;
         this.updateCache();
 
         const { fetchNow, activateNow } = this.config;

@@ -1,6 +1,6 @@
 import { IFsCacheManager } from '../../types';
 
-const CLIENT_CACHE_KEY = 'FS_CLIENT_VISITOR';
+export const CLIENT_CACHE_KEY = 'FS_CLIENT_VISITOR';
 
 const clientCacheManager: IFsCacheManager = {
     saveVisitorProfile: (visitorId, visitorProfile) => {

@@ -80,7 +80,7 @@ class Flagship implements IFlagship {
 
     public newVisitor(id: string, context: FlagshipVisitorContext, options: NewVisitorOptions = {}): IFlagshipVisitor {
         const defaultOptions: NewVisitorOptions = {
-            isAuthenticated: undefined
+            isAuthenticated: null
         };
         const { isAuthenticated } = { ...defaultOptions, ...options };
         const logBook = {

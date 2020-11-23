@@ -150,14 +150,14 @@ export interface IFlagshipVisitor extends EventEmitter, IFlagshipCore {
     sendHit(hitData: HitShape): Promise<void>;
     sendHits(hitsArray: Array<HitShape>): Promise<void>;
     // VISITOR LISTENER
-    on(event: 'ready', listener: () => ReadyListenerOutput): this;
+    on(event: 'ready', listener: (args: ReadyListenerOutput) => void): this;
     on(event: 'saveCache', listener: (args: SaveCacheArgs) => void): this;
 }
 
 export interface IFlagship extends IFlagshipCore {
     eventEmitter: EventEmitter;
     bucket: IFlagshipBucketing | null;
-    newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;
+    newVisitor(id: string, context: FlagshipVisitorContext, options?: { isAuthenticated?: boolean }): IFlagshipVisitor;
     startBucketingPolling(): { success: boolean; reason?: string };
     stopBucketingPolling(): { success: boolean; reason?: string };
 }

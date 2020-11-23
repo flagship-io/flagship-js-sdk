@@ -37,6 +37,9 @@ const assertionHelper = {
     },
     getTimeout: (url: string, config: FlagshipSdkConfig): { timeout: number } => {
         return { timeout: url.includes('/campaigns') ? config.timeout * 1000 : undefined };
+    },
+    extractLogsThatReportedMessage: (message: string, spyConsoleLogs: any): any[] => {
+        return spyConsoleLogs.mock.calls.filter((call) => call[0].includes(message));
     }
 };
 
