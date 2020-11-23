@@ -3434,14 +3434,15 @@ describe('FlagshipVisitor', () => {
                             expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
                             expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                             expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+                            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(3);
 
                             expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
                                 1,
                                 `authenticate - visitor passed from anonymous (id=${currentVisitorId}) to authenticated (id=${authenticatedId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`
                             );
                             // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
-                            // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+                            expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'updateCache - no cache manager found.');
+                            // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
 
                             expect(visitorInstance.anonymousId).toEqual(currentVisitorId);
                             expect(visitorInstance.id).toEqual(demoData.envId[0]);
@@ -3478,7 +3479,7 @@ describe('FlagshipVisitor', () => {
                                     expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
                                     expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                                     expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(3);
+                                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(5);
 
                                     expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
                                         2,
@@ -3630,7 +3631,7 @@ describe('FlagshipVisitor', () => {
                 expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(5);
 
                 expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
                     2,
@@ -3685,14 +3686,16 @@ describe('FlagshipVisitor', () => {
                 expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(3);
 
                 expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
                     1,
                     `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`
                 );
+
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+                expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'updateCache - no cache manager found.');
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
 
                 expect(visitorInstance.anonymousId).toEqual(anonymousId);
                 expect(visitorInstance.id).toEqual(demoData.envId[0]);
@@ -3758,7 +3761,7 @@ describe('FlagshipVisitor', () => {
                 expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(9);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(11);
 
                 expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
                     2,
@@ -3828,14 +3831,16 @@ describe('FlagshipVisitor', () => {
                 expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(5);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(6);
 
                 expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
                     1,
                     `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`
                 );
+
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
-                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+                expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'updateCache - no cache manager found.');
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
 
                 expect(visitorInstance.anonymousId).toEqual(anonymousId);
                 expect(visitorInstance.id).toEqual(demoData.envId[0]);

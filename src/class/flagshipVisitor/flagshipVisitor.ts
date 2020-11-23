@@ -11,7 +11,8 @@ import {
     IFlagshipVisitor,
     IFsPanicMode,
     PostFlagshipApiCallback,
-    IFsCacheManager
+    IFsCacheManager,
+    IFsVisitorProfile
 } from '../../types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
@@ -84,12 +85,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             previousVisitorInstance: null,
             cacheManager: null
         };
-        const { bucket, context, previousVisitorInstance, isAuthenticated } = { ...defaultOptionalValue, ...optional };
+        const { bucket, context, previousVisitorInstance, isAuthenticated, cacheManager } = { ...defaultOptionalValue, ...optional };
+        this.cacheManager = cacheManager;
         this.panic = panic;
         this.config = config;
+        const cacheData = this.getCache({ customLog: loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:*initiliazing*`) });
         this.isAuthenticated = isAuthenticated;
-        this.id = id || FlagshipVisitor.createVisitorId();
-        this.anonymousId = null;
+        this.id = id || cacheData?.id || FlagshipVisitor.createVisitorId();
+        this.anonymousId = cacheData?.anonymousId || null;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
         if (!id) {
             this.log.info(`no id specified during visitor creation. The SDK has automatically created one: "${this.id}"`);
@@ -113,6 +116,37 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         if (this.config.decisionMode === 'Bucketing') {
             this.bucket = new BucketingVisitor(this.envId, this.id, this.context, this.config, bucket);
         }
+
+        this.updateCache();
+    }
+
+    private getCache(options: { customLog?: FsLogger } = {}): IFsVisitorProfile | null {
+        const defaultOptions = {
+            customLog: this.log
+        };
+        const { customLog } = { ...defaultOptions, ...options };
+        if (!this.cacheManager) {
+            customLog.debug('getCache - no cache manager found.');
+            return null;
+        }
+
+        return this.cacheManager.loadVisitorProfile(this.id);
+    }
+
+    private updateCache(): void {
+        const profile: IFsVisitorProfile = {
+            id: this.id,
+            anonymousId: this.anonymousId,
+            context: this.context,
+            campaigns: this.fetchedModifications
+        };
+
+        if (!this.cacheManager) {
+            this.log.debug('updateCache - no cache manager found.');
+            return;
+        }
+
+        return this.cacheManager.saveVisitorProfile(this.id, profile);
     }
 
     private static createVisitorId(): string {
@@ -135,6 +169,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         this.anonymousId = this.id;
         this.id = id;
+        this.updateCache();
 
         const { fetchNow, activateNow } = this.config;
         const updateMsg = `authenticate - visitor passed from anonymous (id=${this.anonymousId}) to authenticated (id=${this.id}).`;
@@ -157,6 +192,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         const previousAuthenticatedId = this.id;
         this.id = this.anonymousId;
         this.anonymousId = null;
+        this.updateCache();
 
         const { fetchNow, activateNow } = this.config;
         const updateMsg = `unauthenticate - visitor passed from authenticated (id=${previousAuthenticatedId}) to anonymous (id=${this.id}).`;

@@ -33,7 +33,7 @@ export interface IFsVisitorProfile {
 
 export interface IFsCacheManager {
     saveVisitorProfile: (visitorId: string, visitorProfile: IFsVisitorProfile) => void;
-    loadVisitorProfile: (visitorId: string) => IFsVisitorProfile;
+    loadVisitorProfile: (visitorId: string) => IFsVisitorProfile | null;
 }
 
 export type IFlagshipCore = {

@@ -507,7 +507,9 @@ describe('FlagshipVisitor', () => {
             visitorInstance.once('ready', () => {
                 try {
                     const digitRegex = new RegExp('^\\d+$');
-                    const automaticGenVisitorIdLog = spyInfoConsoleLogs.mock.calls[spyInfoConsoleLogs.mock.calls.length - 2];
+                    const automaticGenVisitorIdLog = spyInfoConsoleLogs.mock.calls.filter((call) =>
+                        call[0].includes('automatically created one')
+                    )[0];
                     expect(automaticGenVisitorIdLog.includes('undefined')).toEqual(false);
                     expect(digitRegex.test(automaticGenVisitorIdLog[0].split('"')[1])).toEqual(true);
                     done();
