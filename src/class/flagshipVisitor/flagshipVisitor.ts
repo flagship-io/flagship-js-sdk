@@ -1,7 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
 import { EventEmitter } from 'events';
-
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import {
@@ -30,13 +29,17 @@ import {
     ItemHit,
     ModificationsInternalStatus,
     TransactionHit,
-    ActivatedArchived
+    ActivatedArchived,
+    UnauthenticateVisitorOutput,
+    AuthenticateVisitorOutput
 } from './types';
 
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     config: FlagshipSdkConfig;
 
-    id: string;
+    id: string; // authenticatedId
+
+    anonymousId: string | null;
 
     log: FsLogger;
 
@@ -66,8 +69,12 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         super();
         this.panic = panic;
         this.config = config;
-        this.id = id;
+        this.id = id || FlagshipVisitor.createVisitorId();
+        this.anonymousId = null;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
+        if (!id) {
+            this.log.info(`no id specified during visitor creation. The SDK has automatically created one: "${this.id}"`);
+        }
         this.envId = envId;
         this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
         this.isAllModificationsFetched = previousVisitorInstance ? previousVisitorInstance.isAllModificationsFetched : false;
@@ -89,6 +96,61 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
     }
 
+    private static createVisitorId(): string {
+        const now = new Date();
+        const random = Math.floor(Math.random() * (99999 - 10000) + 10000); // Random number between 10000 - 99999
+        return `${now.getFullYear()}${now.getMonth()}${now.getDay()}${now.getHours()}${now.getMinutes()}${random}`;
+    }
+
+    public authenticate(id: string): AuthenticateVisitorOutput {
+        let errorMsg;
+        // Some validation
+        if (!id) {
+            errorMsg = 'authenticate - no id specified. You must provide the visitor id which identifies your authenticated user.';
+            this.log.error(errorMsg);
+            return new Promise((resolve, reject) => reject(errorMsg));
+        }
+        if (typeof id !== 'string') {
+            errorMsg = `authenticate - Received incorrect argument type: '${typeof id}'.The expected id must be type of 'string'.`;
+            this.log.error(errorMsg);
+            return new Promise((resolve, reject) => reject(errorMsg));
+        }
+
+        this.anonymousId = this.id;
+        this.id = id;
+
+        const { fetchNow, activateNow } = this.config;
+        const updateMsg = `authenticate - visitor passed from anonymous (id=${this.anonymousId}) to authenticated (id=${this.id}).`;
+
+        if (fetchNow || activateNow) {
+            return this.synchronizeModifications().then(() => this.log.info(updateMsg));
+        }
+        this.log.info(`${updateMsg} Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`);
+
+        return new Promise((resolve) => resolve());
+    }
+
+    public unauthenticate(): UnauthenticateVisitorOutput {
+        let errorMsg;
+        if (!this.anonymousId) {
+            errorMsg = `unauthenticate - Your visitor never has been authenticated.`;
+            this.log.error(errorMsg);
+            return new Promise((resolve, reject) => reject(errorMsg));
+        }
+        const previousAuthenticatedId = this.id;
+        this.id = this.anonymousId;
+        this.anonymousId = null;
+
+        const { fetchNow, activateNow } = this.config;
+        const updateMsg = `unauthenticate - visitor passed from authenticated (id=${previousAuthenticatedId}) to anonymous (id=${this.id}).`;
+        if (fetchNow || activateNow) {
+            return this.synchronizeModifications().then(() => this.log.info(updateMsg));
+        }
+        this.log.info(`${updateMsg} Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`);
+
+        return new Promise((resolve) => resolve());
+    }
+
     private activateCampaign(
         variationId: string,
         variationGroupId: string,
@@ -103,6 +165,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     endpoint: `${this.config.flagshipApi}activate`,
                     params: {
                         vid: this.id,
+                        aid: this.anonymousId,
                         cid: this.envId,
                         caid: variationGroupId,
                         vaid: variationId
@@ -815,8 +878,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                             config: this.config,
                             log: this.log,
                             endpoint: url,
+                            // body
                             params: {
                                 visitor_id: this.id,
+                                anonymous_id: this.anonymousId,
                                 trigger_hit: activate, // TODO: to unit test
                                 // sendContextEvent: false, // NOTE: not set because endpoint "/events" is called only with bucketing mode
                                 context: this.context

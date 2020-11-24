@@ -380,8 +380,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 `${internalConfig.apiV2}activate`,
                 {
-                    vid: visitorInstance.id,
-                    cid: visitorInstance.envId,
+                    ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                     vaid: '123456789',
                     caid: '987654321'
                 },
@@ -397,8 +396,7 @@ describe('FlagshipVisitor', () => {
                     1,
                     `${internalConfig.apiV2}activate`,
                     {
-                        vid: visitorInstance.id,
-                        cid: visitorInstance.envId,
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '123456789',
                         caid: '987654321'
                     },
@@ -446,9 +444,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -480,9 +476,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -517,9 +511,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -551,9 +543,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -591,9 +581,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -665,9 +653,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenCalledWith(
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -833,9 +819,8 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                    trigger_hit: true
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -858,10 +843,9 @@ describe('FlagshipVisitor', () => {
                     2,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: 'blntcamqmdvg04g371hg',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: 'blntcamqmdvg04g371h0',
-                        vid: 'test-perf'
+                        caid: 'blntcamqmdvg04g371h0'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -871,10 +855,9 @@ describe('FlagshipVisitor', () => {
                     3,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: 'bmjdprsjan0g01uq2ctg',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: 'bmjdprsjan0g01uq2csg',
-                        vid: 'test-perf'
+                        caid: 'bmjdprsjan0g01uq2csg'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -884,10 +867,9 @@ describe('FlagshipVisitor', () => {
                     4,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: 'bmjdprsjan0g01uq1ctg',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: 'bmjdprsjan0g01uq2ceg',
-                        vid: 'test-perf'
+                        caid: 'bmjdprsjan0g01uq2ceg'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -901,9 +883,8 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                    trigger_hit: true
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -955,10 +936,9 @@ describe('FlagshipVisitor', () => {
                         1,
                         `${internalConfig.apiV2}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'blntcamqmdvg04g371hg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'blntcamqmdvg04g371h0',
-                            vid: 'test-perf'
+                            caid: 'blntcamqmdvg04g371h0'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -968,10 +948,9 @@ describe('FlagshipVisitor', () => {
                         2,
                         `${internalConfig.apiV2}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq2ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2csg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2csg'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -981,10 +960,9 @@ describe('FlagshipVisitor', () => {
                         3,
                         `${internalConfig.apiV2}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq1ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2ceg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2ceg'
                         },
                         {
                             ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1053,6 +1031,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 `${internalConfig.apiV2}activate`,
                 {
+                    ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                     vaid: 'blntcamqmdvg04g371hg',
                     cid: demoData.envId[0],
                     caid: 'blntcamqmdvg04g371h0',
@@ -1066,6 +1045,7 @@ describe('FlagshipVisitor', () => {
                 2,
                 `${internalConfig.apiV2}activate`,
                 {
+                    ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                     vaid: 'bmjdprsjan0g01uq2ctg',
                     cid: demoData.envId[0],
                     caid: 'bmjdprsjan0g01uq2csg',
@@ -1089,6 +1069,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 `${internalConfig.apiV2}activate`,
                 {
+                    ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                     vaid: 'blntcamqmdvg04g371hg',
                     cid: demoData.envId[0],
                     caid: 'blntcamqmdvg04g371h0',
@@ -1102,6 +1083,7 @@ describe('FlagshipVisitor', () => {
                 2,
                 `${internalConfig.apiV2}activate`,
                 {
+                    ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                     vaid: 'bmjdprsjan0g01uq2ctg',
                     cid: demoData.envId[0],
                     caid: 'bmjdprsjan0g01uq2csg',
@@ -1125,6 +1107,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 `${internalConfig.apiV2}activate`,
                 {
+                    ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                     vaid: 'blntcamqmdvg04g371hg',
                     cid: demoData.envId[0],
                     caid: 'blntcamqmdvg04g371h0',
@@ -1165,9 +1148,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -1201,9 +1182,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -1248,9 +1227,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -1288,9 +1265,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -1320,9 +1295,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -1360,9 +1333,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -1396,9 +1367,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -1435,9 +1404,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -1468,9 +1435,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: false,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance)
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -1509,10 +1474,9 @@ describe('FlagshipVisitor', () => {
                     1,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd8445a622037b1bc3b',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8cc00f72d5f3cb177',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8cc00f72d5f3cb177'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1522,10 +1486,9 @@ describe('FlagshipVisitor', () => {
                     2,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd828feadeb6d9b8414',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8d4106bb1ae2b6455',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8d4106bb1ae2b6455'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1562,10 +1525,9 @@ describe('FlagshipVisitor', () => {
                     1,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd828feadeb6d9b8414',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8d4106bb1ae2b6455',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8d4106bb1ae2b6455'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1575,10 +1537,9 @@ describe('FlagshipVisitor', () => {
                     2,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd89609296ae8430037',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8fcde4be7ffe5476f',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8fcde4be7ffe5476f'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1621,10 +1582,9 @@ describe('FlagshipVisitor', () => {
                     1,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd828feadeb6d9b8414',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8d4106bb1ae2b6455',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8d4106bb1ae2b6455'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1660,10 +1620,9 @@ describe('FlagshipVisitor', () => {
                     1,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd8445a622037b1bc3b',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8cc00f72d5f3cb177',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8cc00f72d5f3cb177'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1673,10 +1632,9 @@ describe('FlagshipVisitor', () => {
                     2,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd828feadeb6d9b8414',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8d4106bb1ae2b6455',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8d4106bb1ae2b6455'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1686,10 +1644,9 @@ describe('FlagshipVisitor', () => {
                     3,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd89609296ae8430037',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8fcde4be7ffe5476f',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8fcde4be7ffe5476f'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1740,10 +1697,9 @@ describe('FlagshipVisitor', () => {
                 1,
                 `${internalConfig.apiV2}activate`,
                 {
+                    ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                     vaid: '5e26ccd8445a622037b1bc3b',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8cc00f72d5f3cb177',
-                    vid: 'test-perf'
+                    caid: '5e26ccd8cc00f72d5f3cb177'
                 },
                 {
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1753,10 +1709,9 @@ describe('FlagshipVisitor', () => {
                 2,
                 `${internalConfig.apiV2}activate`,
                 {
+                    ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                     vaid: '5e26ccd828feadeb6d9b8414',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8d4106bb1ae2b6455',
-                    vid: 'test-perf'
+                    caid: '5e26ccd8d4106bb1ae2b6455'
                 },
                 {
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1766,10 +1721,9 @@ describe('FlagshipVisitor', () => {
                 3,
                 `${internalConfig.apiV2}activate`,
                 {
+                    ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                     vaid: '5e26ccd89609296ae8430037',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8fcde4be7ffe5476f',
-                    vid: 'test-perf'
+                    caid: '5e26ccd8fcde4be7ffe5476f'
                 },
                 {
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1779,10 +1733,9 @@ describe('FlagshipVisitor', () => {
                 4,
                 `${internalConfig.apiV2}activate`,
                 {
+                    ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                     vaid: '5e26ccd89609296ae8430137',
-                    cid: 'bn1ab7m56qolupi5sa0g',
-                    caid: '5e26ccd8fcde4be7ff55476f',
-                    vid: 'test-perf'
+                    caid: '5e26ccd8fcde4be7ff55476f'
                 },
                 {
                     ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1846,10 +1799,9 @@ describe('FlagshipVisitor', () => {
                     1,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd8445a622037b1bc3b',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8cc00f72d5f3cb177',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8cc00f72d5f3cb177'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1859,10 +1811,9 @@ describe('FlagshipVisitor', () => {
                     2,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd89609296ae8430037',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8fcde4be7ffe5476f',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8fcde4be7ffe5476f'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1913,10 +1864,9 @@ describe('FlagshipVisitor', () => {
                     1,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd8445a622037b1bc3b',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8cc00f72d5f3cb177',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8cc00f72d5f3cb177'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1950,10 +1900,9 @@ describe('FlagshipVisitor', () => {
                     1,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd8445a622037b1bc3b',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8cc00f72d5f3cb177',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8cc00f72d5f3cb177'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -1963,10 +1912,9 @@ describe('FlagshipVisitor', () => {
                     2,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: '5e26ccd828feadeb6d9b8414',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: '5e26ccd8d4106bb1ae2b6455',
-                        vid: 'test-perf'
+                        caid: '5e26ccd8d4106bb1ae2b6455'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -2386,10 +2334,9 @@ describe('FlagshipVisitor', () => {
                     1,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: 'blntcamqmdvg04g371hg',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: 'blntcamqmdvg04g371h0',
-                        vid: 'test-perf'
+                        caid: 'blntcamqmdvg04g371h0'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -2400,10 +2347,9 @@ describe('FlagshipVisitor', () => {
                     2,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: 'bmjdprsjan0g01uq2ctg',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: 'bmjdprsjan0g01uq2csg',
-                        vid: 'test-perf'
+                        caid: 'bmjdprsjan0g01uq2csg'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -2440,10 +2386,9 @@ describe('FlagshipVisitor', () => {
                     1,
                     `${internalConfig.apiV2}activate`,
                     {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                         vaid: 'blntcamqmdvg04g371hg',
-                        cid: 'bn1ab7m56qolupi5sa0g',
-                        caid: 'blntcamqmdvg04g371h0',
-                        vid: 'test-perf'
+                        caid: 'blntcamqmdvg04g371h0'
                     },
                     {
                         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
@@ -3384,6 +3329,543 @@ describe('FlagshipVisitor', () => {
             } catch (error) {
                 expect(error.message).toEqual('No request to respond to!');
             }
+        });
+    });
+    describe('visitor reconciliation (continuity) [fetchNow=false, activateNow=false]', () => {
+        beforeEach(() => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
+            visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext); // don't specify an id so it will a create one automatically
+            defaultDecisionApiResponse = {
+                data: demoData.decisionApi.normalResponse.oneCampaignWithFurtherModifs,
+                status: 200,
+                statusText: 'OK'
+            };
+            visitorSpy = initSpyLogs(visitorInstance);
+            eventMockResponse = { status: 204, data: {} };
+        });
+        afterEach(() => {
+            if (sdk) {
+                sdk.eventEmitter.removeAllListeners();
+            }
+            if (visitorInstance) {
+                visitorInstance.removeAllListeners();
+            }
+            sdk = null;
+            bucketingApiMockResponse = null;
+            visitorInstance = null;
+            mockAxios.reset();
+        });
+
+        it('should call the decision api normally when visitor is created as anonymous (= with unknown visitor id)', (done) => {
+            const currentVisitorId = visitorInstance.id;
+            try {
+                visitorInstance.synchronizeModifications().then(() => {
+                    expect(mockAxios.post).toHaveBeenCalledTimes(2);
+                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+
+                    expect(mockAxios.post).toHaveBeenNthCalledWith(
+                        1,
+                        `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                        {
+                            ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                            visitor_id: currentVisitorId
+                        },
+                        {
+                            cancelToken: {},
+                            headers: { 'x-api-key': visitorInstance.config.apiKey },
+                            params: { exposeAllKeys: true, sendContextEvent: false },
+                            timeout: 2000
+                        }
+                    );
+                    // TODO: maybe check what we send to "/events":
+                    // expect(mockAxios.post).toHaveBeenNthCalledWith(2, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
+
+                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+
+                    // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
+
+                    expect(visitorInstance.anonymousId).toEqual(null);
+                    expect(visitorInstance.id).toBeTruthy();
+                    done();
+                });
+            } catch (error) {
+                done.fail(error);
+            }
+            mockAxios.mockResponse(defaultDecisionApiResponse);
+        });
+
+        it('should call the decision api normally when visitor is created as anonymous then authenticated and then sign out', (done) => {
+            const currentVisitorId = visitorInstance.id;
+            visitorInstance
+                .synchronizeModifications()
+                .then(() => {
+                    const authenticatedId = demoData.envId[0];
+                    visitorInstance.authenticate(authenticatedId); // simulate an authenticated user
+
+                    visitorInstance
+                        .synchronizeModifications()
+                        .then(() => {
+                            expect(mockAxios.post).toHaveBeenCalledTimes(4);
+                            expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                            // NOTE: the first 2 axios.post are asserted in the previous unit test.
+                            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                                3,
+                                `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                                {
+                                    ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                                    visitor_id: authenticatedId,
+                                    anonymous_id: currentVisitorId
+                                },
+                                {
+                                    cancelToken: {},
+                                    headers: { 'x-api-key': visitorInstance.config.apiKey },
+                                    params: { exposeAllKeys: true, sendContextEvent: false },
+                                    timeout: 2000
+                                }
+                            );
+                            // TODO: maybe check what we send to "/events":
+                            // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
+
+                            expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                            expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                            expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+
+                            expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
+                                1,
+                                `authenticate - visitor passed from anonymous (id=${currentVisitorId}) to authenticated (id=${authenticatedId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`
+                            );
+                            // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
+                            // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+
+                            expect(visitorInstance.anonymousId).toEqual(currentVisitorId);
+                            expect(visitorInstance.id).toEqual(demoData.envId[0]);
+
+                            // NOW SIGN OUT THE VISITOR
+
+                            visitorInstance.unauthenticate();
+                            visitorInstance
+                                .synchronizeModifications()
+                                .then(() => {
+                                    expect(mockAxios.post).toHaveBeenCalledTimes(6);
+                                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                                    // NOTE: the first 4 axios.post are asserted in the previous unit test.
+                                    expect(mockAxios.post).toHaveBeenNthCalledWith(
+                                        5,
+                                        `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                                        {
+                                            ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                                            visitor_id: currentVisitorId,
+                                            anonymous_id: null
+                                        },
+                                        {
+                                            cancelToken: {},
+                                            headers: { 'x-api-key': visitorInstance.config.apiKey },
+                                            params: { exposeAllKeys: true, sendContextEvent: false },
+                                            timeout: 2000
+                                        }
+                                    );
+
+                                    // TODO: maybe check what we send to "/events":
+                                    // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
+
+                                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
+                                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(3);
+
+                                    expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
+                                        2,
+                                        `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${currentVisitorId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`
+                                    );
+                                    // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
+                                    // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+                                    // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
+
+                                    expect(visitorInstance.anonymousId).toEqual(null);
+                                    expect(visitorInstance.id).toEqual(currentVisitorId);
+
+                                    done();
+                                })
+                                .catch((e) => done.fail(e));
+                            mockAxios.mockResponseFor(
+                                internalConfig.campaignNormalEndpoint
+                                    .replace('@ENV_ID@', visitorInstance.envId)
+                                    .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                                defaultDecisionApiResponse
+                            );
+                        })
+                        .catch((e) => done.fail(e));
+                    const debug = mockAxios.lastReqGet();
+                    mockAxios.mockResponseFor(
+                        internalConfig.campaignNormalEndpoint
+                            .replace('@ENV_ID@', visitorInstance.envId)
+                            .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                        defaultDecisionApiResponse
+                    );
+                })
+                .catch((e) => done.fail(e));
+            mockAxios.mockResponse(defaultDecisionApiResponse);
+        });
+
+        it('should log an error if trying to unauthenticate a user which has never been authenticate previously', (done) => {
+            const currentVisitorId = visitorInstance.id;
+
+            expect(visitorInstance.anonymousId).toEqual(null);
+            expect(visitorInstance.id).toEqual(currentVisitorId);
+            const expectedErrorMsg = 'unauthenticate - Your visitor never has been authenticated.';
+            visitorInstance.unauthenticate().catch((e) => {
+                expect(e).toEqual(expectedErrorMsg);
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                expect(visitorSpy.spyErrorLogs).toHaveBeenNthCalledWith(1, expectedErrorMsg);
+
+                // should not have change
+                expect(visitorInstance.anonymousId).toEqual(null);
+                expect(visitorInstance.id).toEqual(currentVisitorId);
+
+                done();
+            });
+        });
+
+        it('should not authenticate the visitor if the id (in argument) is not set', (done) => {
+            const anonymousId = visitorInstance.id;
+            const expectedErrorMsg =
+                'authenticate - no id specified. You must provide the visitor id which identifies your authenticated user.';
+            visitorInstance.authenticate().catch((e) => {
+                expect(e).toEqual(expectedErrorMsg);
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                expect(visitorSpy.spyErrorLogs).toHaveBeenNthCalledWith(1, expectedErrorMsg);
+
+                expect(visitorInstance.id).toEqual(anonymousId);
+                expect(visitorInstance.anonymousId).toEqual(null);
+                done();
+            });
+        });
+
+        it('should not authenticate the visitor if the id (in argument) is not a string', (done) => {
+            const anonymousId = visitorInstance.id;
+            const expectedErrorMsg = `authenticate - Received incorrect argument type: 'number'.The expected id must be type of 'string'.`;
+            visitorInstance.authenticate(123).catch((e) => {
+                expect(e).toEqual(expectedErrorMsg);
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+
+                expect(visitorSpy.spyErrorLogs).toHaveBeenNthCalledWith(1, expectedErrorMsg);
+                expect(visitorInstance.id).toEqual(anonymousId);
+                expect(visitorInstance.anonymousId).toEqual(null);
+                done();
+            });
+        });
+    });
+    describe('visitor reconciliation (continuity) [fetchNow=true OR activateNow=true]', () => {
+        beforeEach(() => {
+            defaultDecisionApiResponse = {
+                data: demoData.decisionApi.normalResponse.oneCampaignWithFurtherModifs,
+                status: 200,
+                statusText: 'OK'
+            };
+
+            eventMockResponse = { status: 204, data: {} };
+        });
+        afterEach(() => {
+            if (sdk) {
+                sdk.eventEmitter.removeAllListeners();
+            }
+            if (visitorInstance) {
+                visitorInstance.removeAllListeners();
+            }
+            sdk = null;
+            bucketingApiMockResponse = null;
+            visitorInstance = null;
+            mockAxios.reset();
+        });
+        it('should synchronize automatically when auth with "fetchNow=true"', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfig);
+            visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext); // don't specify an id so it will a create one automatically
+            visitorSpy = initSpyLogs(visitorInstance);
+            const anonymousId = visitorInstance.id;
+            const authenticatedId = demoData.envId[0];
+            const afterUnauth = () => {
+                expect(mockAxios.post).toHaveBeenCalledTimes(6);
+                expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    5,
+                    `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                    {
+                        ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                        visitor_id: anonymousId,
+                        anonymous_id: null
+                    },
+                    {
+                        cancelToken: {},
+                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        params: { exposeAllKeys: true, sendContextEvent: false },
+                        timeout: 2000
+                    }
+                );
+
+                // TODO: maybe check what we send to "/events":
+                // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
+
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(3);
+
+                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
+                    2,
+                    `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`
+                );
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
+
+                expect(visitorInstance.anonymousId).toEqual(null);
+                expect(visitorInstance.id).toEqual(anonymousId);
+                done();
+            };
+            const afterAuth = () => {
+                expect(mockAxios.post).toHaveBeenCalledTimes(4);
+                expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                    {
+                        ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                        visitor_id: anonymousId,
+                        anonymous_id: null
+                    },
+                    {
+                        cancelToken: {},
+                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        params: { exposeAllKeys: true, sendContextEvent: false },
+                        timeout: 2000
+                    }
+                );
+                // NOTE: second call hit '/event' endpoint.
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    3,
+                    `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                    {
+                        ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                        visitor_id: authenticatedId,
+                        anonymous_id: anonymousId
+                    },
+                    {
+                        cancelToken: {},
+                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        params: { exposeAllKeys: true, sendContextEvent: false },
+                        timeout: 2000
+                    }
+                );
+                // TODO: maybe check what we send to "/events":
+                // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
+
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+
+                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
+                    1,
+                    `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`
+                );
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+
+                expect(visitorInstance.anonymousId).toEqual(anonymousId);
+                expect(visitorInstance.id).toEqual(demoData.envId[0]);
+
+                // UNAUTH
+
+                visitorInstance.unauthenticate().then(() => afterUnauth());
+
+                mockAxios.mockResponseFor(
+                    internalConfig.campaignNormalEndpoint
+                        .replace('@ENV_ID@', visitorInstance.envId)
+                        .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                    defaultDecisionApiResponse
+                );
+            };
+            visitorInstance.on('ready', () => {
+                visitorInstance.authenticate(authenticatedId).then(() => afterAuth());
+                mockAxios.mockResponseFor(
+                    internalConfig.campaignNormalEndpoint
+                        .replace('@ENV_ID@', visitorInstance.envId)
+                        .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                    defaultDecisionApiResponse
+                );
+            });
+            mockAxios.mockResponseFor(
+                internalConfig.campaignNormalEndpoint
+                    .replace('@ENV_ID@', visitorInstance.envId)
+                    .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                defaultDecisionApiResponse
+            );
+        });
+
+        it('should synchronize automatically when auth with "activateNow=true"', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, activateNow: true });
+            visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext); // don't specify an id so it will a create one automatically
+            visitorSpy = initSpyLogs(visitorInstance);
+            const anonymousId = visitorInstance.id;
+            const authenticatedId = demoData.envId[0];
+            const afterUnauth = () => {
+                expect(mockAxios.post).toHaveBeenCalledTimes(7);
+                expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    6,
+                    `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                    {
+                        ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                        visitor_id: anonymousId,
+                        anonymous_id: null,
+                        trigger_hit: false // because already activated before
+                    },
+                    {
+                        cancelToken: {},
+                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        params: { exposeAllKeys: true, sendContextEvent: false },
+                        timeout: 2000
+                    }
+                );
+
+                // TODO: maybe check what we send to "/events":
+                // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
+
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(9);
+
+                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
+                    2,
+                    `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`
+                );
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
+
+                expect(visitorInstance.anonymousId).toEqual(null);
+                expect(visitorInstance.id).toEqual(anonymousId);
+                done();
+            };
+            const afterAuth = () => {
+                expect(mockAxios.post).toHaveBeenCalledTimes(5);
+                expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    1,
+                    `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                    {
+                        ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                        visitor_id: anonymousId,
+                        anonymous_id: null
+                    },
+                    {
+                        cancelToken: {},
+                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        params: { exposeAllKeys: true, sendContextEvent: false },
+                        timeout: 2000
+                    }
+                );
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    2,
+                    `${visitorInstance.config.flagshipApi}activate`,
+                    {
+                        ...assertionHelper.getActivateApiCommonBody(visitorInstance),
+                        caid: 'blntcamqmdvg04g371h0',
+                        vaid: 'blntcamqmdvg04g371hg',
+                        vid: anonymousId,
+                        aid: null
+                    },
+                    {
+                        ...assertionHelper.getApiKeyHeader(visitorInstance.config.apiKey)
+                    }
+                );
+                // NOTE: second call hit '/event' endpoint.
+                expect(mockAxios.post).toHaveBeenNthCalledWith(
+                    4,
+                    `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                    {
+                        ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                        visitor_id: authenticatedId,
+                        anonymous_id: anonymousId,
+                        trigger_hit: false // because already activated before
+                    },
+                    {
+                        cancelToken: {},
+                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        params: { exposeAllKeys: true, sendContextEvent: false },
+                        timeout: 2000
+                    }
+                );
+                // TODO: maybe check what we send to "/events":
+                // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
+
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(5);
+
+                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
+                    1,
+                    `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`
+                );
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+
+                expect(visitorInstance.anonymousId).toEqual(anonymousId);
+                expect(visitorInstance.id).toEqual(demoData.envId[0]);
+
+                // UNAUTH
+
+                visitorInstance.unauthenticate().then(() => afterUnauth());
+
+                mockAxios.mockResponseFor(
+                    internalConfig.campaignNormalEndpoint
+                        .replace('@ENV_ID@', visitorInstance.envId)
+                        .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                    defaultDecisionApiResponse
+                );
+            };
+            visitorInstance.on('ready', () => {
+                visitorInstance.authenticate(authenticatedId).then(() => afterAuth());
+                mockAxios.mockResponseFor(
+                    internalConfig.campaignNormalEndpoint
+                        .replace('@ENV_ID@', visitorInstance.envId)
+                        .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                    defaultDecisionApiResponse
+                );
+            });
+            mockAxios.mockResponseFor(
+                internalConfig.campaignNormalEndpoint
+                    .replace('@ENV_ID@', visitorInstance.envId)
+                    .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                defaultDecisionApiResponse
+            );
         });
     });
 });
