@@ -182,7 +182,7 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
         cloneCampaign.variationGroups[0].targeting.targetingGroups[0].targetings = campaign.variationGroups[0].targeting.targetingGroups[0].targetings.filter(
             (t) => {
                 //
-                return t.key.includes(type);
+                return !type.includes('Array') ? t.key.includes(type) && !t.key.includes('Array') : t.key.includes(type);
             }
         );
         return {
@@ -227,21 +227,14 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(spyDebugLogs).toHaveBeenCalledTimes(1);
-                expect(spyWarnLogs).toHaveBeenCalledTimes(2);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(1);
 
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'Bucketing - campaign (id="bptggipaqi903f3haq0g") NOT MATCHING visitor');
                 expect(spyWarnLogs).toHaveBeenNthCalledWith(
                     1,
-                    `getEligibleCampaigns - operator "${mapping[operator]}" is not supported for type "${(type === 'Bool'
+                    `getEligibleCampaigns - operator "${mapping[operator]}" is not supported for type "${(type.includes('Bool')
                         ? 'boolean'
-                        : type
-                    ).toLowerCase()}". Assertion aborted.`
-                );
-                expect(spyWarnLogs).toHaveBeenNthCalledWith(
-                    2,
-                    `getEligibleCampaigns - operator "${mapping[operator]}" is not supported for type "${(type === 'Bool'
-                        ? 'boolean'
-                        : type
+                        : type.replace('Array', '')
                     ).toLowerCase()}". Assertion aborted.`
                 );
             } else {
@@ -288,20 +281,27 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
             operator: o
         }));
 
-    [...getBundleOfType('Bool'), ...getBundleOfType('String'), ...getBundleOfType('Number')].forEach((bt) => {
+    [
+        ...getBundleOfType('Bool'),
+        ...getBundleOfType('String'),
+        ...getBundleOfType('Number'),
+        ...getBundleOfType('BoolArray'),
+        ...getBundleOfType('StringArray'),
+        ...getBundleOfType('NumberArray')
+    ].forEach((bt) => {
         switch (bt.operator) {
             case 'lowerThan': // ONLY BOOL
             case 'lowerThanOrEquals':
             case 'greaterThan':
             case 'greaterThanOrEquals':
-                assertOperatorBehavior(bt.operator, bt.type, bt.type === 'Bool');
+                assertOperatorBehavior(bt.operator, bt.type, bt.type.includes('Bool'));
                 break;
 
             case 'startsWith': // BOTH BOOL AND STRING
             case 'endsWith':
             case 'contains':
             case 'notContains':
-                assertOperatorBehavior(bt.operator, bt.type, bt.type === 'Bool' || bt.type === 'Number');
+                assertOperatorBehavior(bt.operator, bt.type, bt.type.includes('Bool') || bt.type.includes('Number'));
                 break;
 
             default:
