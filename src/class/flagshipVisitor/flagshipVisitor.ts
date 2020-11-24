@@ -94,9 +94,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         this.cacheManager = cacheManager;
         this.panic = panic;
         this.config = config;
-        const earlyLog = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:*initiliazing*`); // this is to do some logs before knowing the actual visitor id.
-        const cacheData = this.getCache({ customLog: earlyLog });
         this.isAuthenticated = isAuthenticated;
+        const earlyLog = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:*initiliazing*`); // this is to do some logs before knowing the actual visitor id.
+        const cacheData = this.checkIfCanConsiderCacheData(id, this.getCache({ customLog: earlyLog }));
         this.setVisitorId(id || cacheData?.id || FlagshipVisitor.createVisitorId());
         this.anonymousId = cacheData?.anonymousId || null;
 
@@ -143,6 +143,30 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     private setVisitorId(id: string): void {
         this.id = id;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
+    }
+
+    private checkIfCanConsiderCacheData(id: string, vProfile: IFsVisitorProfile | null): IFsVisitorProfile | null {
+        // no need to continue if no cache found
+        if (!vProfile) {
+            return null;
+        }
+
+        // no need to continue if id does not exist
+        if (!id) {
+            return vProfile;
+        }
+
+        // should consider if match based on anonymousId's value in this case
+        if (!this.isAuthenticated && id === vProfile.anonymousId) {
+            return vProfile;
+        }
+
+        // obviously check the id otherwise...
+        if (id === vProfile.id) {
+            return vProfile;
+        }
+
+        return null;
     }
 
     private getCache(options: { customLog?: FsLogger } = {}): IFsVisitorProfile | null {
