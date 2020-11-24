@@ -4251,9 +4251,7 @@ describe('FlagshipVisitor', () => {
                 done();
             });
         });
-        // 'should consider cache only if id matches when (id=defined, isAuthenticated=false, enableClientCache=true) + NO CACHE AT ALL'
-
-        it('should have correct behavior when (id=specified, isAuthenticated=true, enableClientCache=true) + cache matching the vid', (done) => {
+        it('should have correct behavior when (id=specified, isAuthenticated=true, enableClientCache=true) + auth cache matching the vid', (done) => {
             utilsHelper.isClient = jest.fn().mockReturnValue(true);
             utilsHelper.isServer = jest.fn().mockReturnValue(false);
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
@@ -4573,10 +4571,103 @@ describe('FlagshipVisitor', () => {
             visitorInstance.on('ready', () => {
                 expect(visitorInstance.id).toEqual(customVisitorProfile.id);
                 expect(visitorInstance.anonymousId).toEqual(null);
-
+                expect(
+                    assertionHelper.extractLogsThatReportedMessage(
+                        'detected "isAuthenticated=true" but the SDK found an inconsistency from cache. It seems the visitor only had an unauthenticate experience and never has been authenticate before. As a result, the visitor will still be considered anonymous.',
+                        spyWarnConsoleLogs
+                    ).length
+                ).toEqual(1);
                 expect(assertionHelper.extractLogsThatReportedMessage('authenticate', spyInfoConsoleLogs).length).toEqual(0);
                 expect(localStorage.setItem).toHaveBeenNthCalledWith(
                     2,
+                    CLIENT_CACHE_KEY,
+                    '{"id":"test-perf","anonymousId":null,"context":{"pos":"es"},"campaigns":null}'
+                );
+                expect(localStorage.__STORE__[CLIENT_CACHE_KEY]).toBe(
+                    '{"id":"test-perf","anonymousId":null,"context":{"pos":"es"},"campaigns":null}'
+                );
+                expect(Object.keys(localStorage.__STORE__).length).toBe(1);
+
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+                done();
+            });
+        });
+        it('should have correct behavior when (id=specified, isAuthenticated=true, enableClientCache=true) + unauth cache NOT matching the vid', (done) => {
+            utilsHelper.isClient = jest.fn().mockReturnValue(true);
+            utilsHelper.isServer = jest.fn().mockReturnValue(false);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...testConfigWithoutFetchNow,
+                enableConsoleLogs: true,
+                nodeEnv: 'dev'
+            });
+
+            // SIMULATING AN EXISTING CACHE - BEGIN
+            const customVisitorProfile = {
+                id: demoData.visitor.id[1],
+                anonymousId: null,
+                context: {
+                    isCool: true
+                },
+                campaigns: demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns
+            };
+            localStorage.setItem(CLIENT_CACHE_KEY, JSON.stringify(customVisitorProfile));
+            // SIMULATING AN EXISTING CACHE - END
+
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext, { isAuthenticated: true });
+            visitorSpy = initSpyLogs(visitorInstance);
+
+            visitorInstance.on('ready', () => {
+                expect(visitorInstance.id).toEqual(demoData.visitor.id[0]);
+                expect(visitorInstance.id).not.toEqual(customVisitorProfile.id);
+                expect(visitorInstance.anonymousId).toEqual(null);
+
+                expect(
+                    assertionHelper.extractLogsThatReportedMessage(
+                        'detected "isAuthenticated=true" but the SDK found an inconsistency from cache. It seems the visitor only had an unauthenticate experience and never has been authenticate before. As a result, the visitor will still be considered anonymous.',
+
+                        spyWarnConsoleLogs
+                    ).length
+                ).toEqual(0);
+                expect(localStorage.setItem).toHaveBeenNthCalledWith(
+                    2,
+                    CLIENT_CACHE_KEY,
+                    '{"id":"test-perf","anonymousId":null,"context":{"pos":"es"},"campaigns":null}'
+                );
+                expect(localStorage.__STORE__[CLIENT_CACHE_KEY]).toBe(
+                    '{"id":"test-perf","anonymousId":null,"context":{"pos":"es"},"campaigns":null}'
+                );
+                expect(Object.keys(localStorage.__STORE__).length).toBe(1);
+
+                expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                // expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(0);
+                done();
+            });
+        });
+        it('should have correct behavior when (id=specified, isAuthenticated=true, enableClientCache=true) + NO CACHE', (done) => {
+            utilsHelper.isClient = jest.fn().mockReturnValue(true);
+            utilsHelper.isServer = jest.fn().mockReturnValue(false);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...testConfigWithoutFetchNow,
+                enableConsoleLogs: true,
+                nodeEnv: 'dev'
+            });
+
+            visitorInstance = sdk.newVisitor(demoData.visitor.id[0], demoData.visitor.cleanContext, { isAuthenticated: true });
+            visitorSpy = initSpyLogs(visitorInstance);
+
+            visitorInstance.on('ready', () => {
+                expect(visitorInstance.id).toEqual(demoData.visitor.id[0]);
+                expect(visitorInstance.anonymousId).toEqual(null);
+
+                expect(localStorage.setItem).toHaveBeenNthCalledWith(
+                    1,
                     CLIENT_CACHE_KEY,
                     '{"id":"test-perf","anonymousId":null,"context":{"pos":"es"},"campaigns":null}'
                 );
