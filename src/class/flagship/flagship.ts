@@ -2,7 +2,15 @@ import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { EventEmitter } from 'events';
 
 import defaultConfig, { internalConfig } from '../../config/default';
-import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor, IFsPanicMode } from '../../types';
+import {
+    FlagshipSdkConfig,
+    IFlagship,
+    IFlagshipBucketing,
+    IFlagshipVisitor,
+    IFsPanicMode,
+    IFsCacheManager,
+    NewVisitorOptions
+} from '../../types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import Bucketing from '../bucketing/bucketing';
@@ -11,9 +19,12 @@ import FlagshipVisitor from '../flagshipVisitor/flagshipVisitor';
 import { FlagshipVisitorContext } from '../flagshipVisitor/types';
 import PanicMode from '../panicMode/panicMode';
 import utilsHelper from '../../lib/utils';
+import clientCacheManager from '../cacheManager/clientCacheManager';
 
 class Flagship implements IFlagship {
     config: FlagshipSdkConfig;
+
+    cacheManager: IFsCacheManager;
 
     log: FsLogger;
 
@@ -33,6 +44,10 @@ class Flagship implements IFlagship {
         this.bucket = null;
         this.panic = new PanicMode(this.config);
         this.envId = envId;
+        this.cacheManager = null;
+        if (this.config.enableClientCache && utilsHelper.isClient()) {
+            this.cacheManager = clientCacheManager;
+        }
         if (!apiKey) {
             this.log.warn(
                 'WARNING: "start" function signature will change in the next major release. "start(envId, settings)" will be "start(envId, apiKey, settings)", please make this change ASAP!'
@@ -63,7 +78,11 @@ class Flagship implements IFlagship {
         }
     }
 
-    public newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor {
+    public newVisitor(id: string, context: FlagshipVisitorContext, options: NewVisitorOptions = {}): IFlagshipVisitor {
+        const defaultOptions: NewVisitorOptions = {
+            isAuthenticated: null
+        };
+        const { isAuthenticated } = { ...defaultOptions, ...options };
         const logBook = {
             API: {
                 newVisitorInfo: `new visitor (id="${id}") calling decision API for initialization (waiting to be ready...)`,
@@ -77,8 +96,13 @@ class Flagship implements IFlagship {
             }
         };
 
-        this.log.info(`Creating new visitor (id="${id}")`);
-        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.bucket, id, context, this.panic);
+        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, id, this.panic, this.config, {
+            bucket: this.bucket,
+            context,
+            isAuthenticated,
+            cacheManager: this.cacheManager
+        });
+        this.log.info(`Creating new visitor (id="${flagshipVisitorInstance.id}")`);
         let bucketingFirstPollingTriggered = false;
         if (this.config.fetchNow || this.config.activateNow) {
             this.log.info(logBook[this.config.decisionMode].newVisitorInfo);
@@ -88,7 +112,7 @@ class Flagship implements IFlagship {
                     const triggerVisitorReady = () => {
                         this.log.info(logBook[this.config.decisionMode].modificationSuccess);
                         (flagshipVisitorInstance as any).callEventEndpoint();
-                        flagshipVisitorInstance.emit('ready');
+                        flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput());
                     };
                     const postProcessBucketing = (hasFailed: boolean): void => {
                         if (bucketingFirstPollingTriggered) {
@@ -113,13 +137,13 @@ class Flagship implements IFlagship {
                     if (this.config.decisionMode !== 'Bucketing') {
                         this.log.fatal(logBook[this.config.decisionMode].modificationFailed(response));
                     }
-                    flagshipVisitorInstance.emit('ready');
+                    flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput(response));
                 });
         } else {
             // Before emit('ready'), make sure there is listener to it
             flagshipVisitorInstance.once('newListener', (event, listener) => {
                 if (event === 'ready') {
-                    listener();
+                    listener(flagshipSdkHelper.generateReadyListenerOutput());
                 }
             });
         }
@@ -129,34 +153,43 @@ class Flagship implements IFlagship {
     // Pre-req: envId + visitorId must be the same
     /**
      * @returns {IFlagshipVisitor}
-     * @description Used internally only. Don't use it outside the SDK !
+     * @description Used internally only. Don't use it outside the SDK ! This function must ALWAYS trigger "ready" event.
+     * [When fetchNow/activateNow=true] Update visitor will check if a synchronize is needed based on visitor context changed or no modifications have been fetched before, then it will emit "ready" event.
+     * [When both fetchNow/activateNow=false] It will just emit "ready" event, without any change.
      */
-    public updateVisitor(visitorInstance: IFlagshipVisitor, context: FlagshipVisitorContext): IFlagshipVisitor {
+    public updateVisitor(
+        visitorInstance: IFlagshipVisitor,
+        payload: { context?: FlagshipVisitorContext; isAuthenticated?: boolean }
+    ): IFlagshipVisitor {
+        const defaultPayload = {
+            context: visitorInstance.context,
+            isAuthenticated: visitorInstance.isAuthenticated
+        };
+        const { context, isAuthenticated } = { ...defaultPayload, ...payload };
         this.log.debug(`updateVisitor - updating visitor (id="${visitorInstance.id}")`);
-        const flagshipVisitorInstance = new FlagshipVisitor(
-            this.envId,
-            this.config,
-            this.bucket,
-            visitorInstance.id,
+        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, visitorInstance.id, this.panic, this.config, {
+            bucket: this.bucket,
+            previousVisitorInstance: visitorInstance,
             context,
-            this.panic,
-            visitorInstance
-        );
+            isAuthenticated,
+            cacheManager: this.cacheManager
+        });
+
+        // fetch (+activate[optional]) NOW if: (context has changed OR no modifs in cache) AND (fetchNow enabled OR activateNow enabled)
         if (
-            ((!utilsHelper.deepCompare(visitorInstance.context, context) || flagshipVisitorInstance.fetchedModifications === null) &&
-                this.config.fetchNow) ||
-            this.config.activateNow
+            (!utilsHelper.deepCompare(visitorInstance.context, context) || flagshipVisitorInstance.fetchedModifications === null) &&
+            (this.config.fetchNow || this.config.activateNow)
         ) {
             this.log.debug(
-                `updateVisitor - visitor(id="${visitorInstance.id}") does not have modifications or context has changed + (fetchNow=${this.config.fetchNow} || activateNow=${this.config.activateNow}) detected, trying a synchronize...`
+                `updateVisitor - visitor(id="${visitorInstance.id}") does not have modifications or context has changed + (fetchNow=${this.config.fetchNow} OR/AND activateNow=${this.config.activateNow}) detected, trigger a synchronize...`
             );
             flagshipVisitorInstance
                 .synchronizeModifications(this.config.activateNow)
                 .then(() => {
-                    flagshipVisitorInstance.emit('ready');
+                    flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput());
                 })
-                .catch(() => {
-                    flagshipVisitorInstance.emit('ready');
+                .catch((e) => {
+                    flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput(e));
                 });
         } else {
             flagshipVisitorInstance.once('newListener', (event, listener) => {
@@ -187,11 +220,11 @@ class Flagship implements IFlagship {
         }
         if (this.bucket !== null && this.bucket.isPollingRunning) {
             this.log.warn(
-                `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" minute(s).`
+                `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" second(s).`
             );
             return {
                 success: false,
-                reason: `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" minute(s).`
+                reason: `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" second(s).`
             };
         }
         this.log.error('startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"');

@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-/* eslint-disable @typescript-eslint/interface-name-prefix */
 import { CancelTokenSource } from 'axios';
 import {
     FlagshipVisitorContext,
@@ -25,6 +24,26 @@ export type PostFlagshipApiCallback = (
     config: FlagshipSdkConfig
 ) => Promise<any>;
 
+export interface IFsVisitorProfile {
+    id: string; // required
+    anonymousId?: string | null;
+    context?: FlagshipVisitorContext;
+    campaigns?: DecisionApiCampaign[];
+}
+
+export interface IFsCacheManager {
+    saveVisitorProfile: (visitorId: string, visitorProfile: IFsVisitorProfile) => void;
+    loadVisitorProfile: (visitorId: string) => IFsVisitorProfile | null;
+}
+
+export type IFlagshipCore = {
+    log: FsLogger;
+    config: FlagshipSdkConfig;
+    envId: string;
+    cacheManager: IFsCacheManager | null; // only defined on client side for now...
+    panic: IFsPanicMode;
+};
+
 export type FlagshipSdkConfig = {
     fetchNow?: boolean;
     pollingInterval?: number | null;
@@ -32,6 +51,7 @@ export type FlagshipSdkConfig = {
     enableConsoleLogs?: boolean;
     decisionMode?: 'API' | 'Bucketing';
     nodeEnv?: string;
+    enableClientCache?: boolean;
     flagshipApi?: string;
     apiKey?: string | null;
     initialModifications?: DecisionApiCampaign[] | null;
@@ -46,6 +66,7 @@ export type FlagshipSdkConfig = {
 };
 
 export type FlagshipSdkInternalConfig = {
+    campaignNormalEndpoint: string;
     bucketingEndpoint: string;
     apiV1: string;
     apiV2: string;
@@ -69,12 +90,9 @@ export interface IFsPanicMode {
     shouldRunSafeMode(functionName: string, options?: { logType: 'debug' | 'error' }): boolean;
 }
 
-export interface IFlagshipBucketingVisitor {
+export interface IFlagshipBucketingVisitor extends IFlagshipCore {
     data: BucketingApiResponse | null;
     computedData: DecisionApiResponseData | null;
-    log: FsLogger;
-    envId: string;
-    config: FlagshipSdkConfig;
     visitorId: string;
     visitorContext: FlagshipVisitorContext;
     global: IFlagshipBucketing;
@@ -83,13 +101,9 @@ export interface IFlagshipBucketingVisitor {
     updateVisitorContext(newContext: FlagshipVisitorContext): void;
 }
 
-export interface IFlagshipBucketing extends EventEmitter {
+export interface IFlagshipBucketing extends EventEmitter, IFlagshipCore {
     data: BucketingApiResponse | null;
-    log: FsLogger;
-    envId: string;
-    panic: IFsPanicMode;
     isPollingRunning: boolean;
-    config: FlagshipSdkConfig;
     lastModifiedDate: string | null;
     callApi(): Promise<BucketingApiResponse | void>;
     startPolling(): void;
@@ -98,17 +112,33 @@ export interface IFlagshipBucketing extends EventEmitter {
     on(event: 'error', listener: (args: Error) => void): this;
 }
 
-export interface IFlagshipVisitor extends EventEmitter {
-    config: FlagshipSdkConfig;
+export type ReadyListenerOutput = {
+    withError: boolean;
+    error: Error | null;
+};
+
+export interface IFlagshipVisitor extends EventEmitter, IFlagshipCore {
     id: string;
-    log: FsLogger;
-    envId: string;
-    panic: IFsPanicMode;
+    anonymousId: string;
     context: FlagshipVisitorContext;
     isAllModificationsFetched: boolean;
+    isAuthenticated: boolean;
     bucket: IFlagshipBucketingVisitor | null;
     fetchedModifications: DecisionApiCampaign[] | null;
     modificationsInternalStatus: ModificationsInternalStatus | null;
+    // UPDATE VISITOR
+    updateContext(context: FlagshipVisitorContext): void;
+    authenticate(id: string): Promise<void>;
+    unauthenticate(): Promise<void>;
+    // VISITOR MODIFICATIONS
+    getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
+    getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;
+    synchronizeModifications(activate?: boolean): Promise<number>;
+    getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
+    getAllModifications(
+        activate?: boolean,
+        options?: { force?: boolean; simpleMode?: boolean }
+    ): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
     activateModifications(
         modifications: Array<{
             key: string;
@@ -116,28 +146,18 @@ export interface IFlagshipVisitor extends EventEmitter {
             variationGroupId?: string;
         }>
     ): void;
-    getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
-    getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;
-    updateContext(context: FlagshipVisitorContext): void;
-    synchronizeModifications(activate?: boolean): Promise<number>;
-    getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
-    getAllModifications(
-        activate?: boolean,
-        options?: { force?: boolean; simpleMode?: boolean }
-    ): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+    // VISITOR HITS
     sendHit(hitData: HitShape): Promise<void>;
     sendHits(hitsArray: Array<HitShape>): Promise<void>;
-    on(event: 'ready', listener: () => void): this;
+    // VISITOR LISTENER
+    on(event: 'ready', listener: (args: ReadyListenerOutput) => void): this;
     on(event: 'saveCache', listener: (args: SaveCacheArgs) => void): this;
 }
-export interface IFlagship {
-    config: FlagshipSdkConfig;
-    log: FsLogger;
-    panic: IFsPanicMode;
-    envId: string;
+
+export interface IFlagship extends IFlagshipCore {
     eventEmitter: EventEmitter;
     bucket: IFlagshipBucketing | null;
-    newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor;
+    newVisitor(id: string, context: FlagshipVisitorContext, options?: { isAuthenticated?: boolean }): IFlagshipVisitor;
     startBucketingPolling(): { success: boolean; reason?: string };
     stopBucketingPolling(): { success: boolean; reason?: string };
 }
@@ -145,3 +165,7 @@ export interface IFlagship {
 export interface FlagshipNodeSdk {
     start(envId: string, apiKeyOrSettings?: any, config?: FlagshipSdkConfig): IFlagship;
 }
+
+export type NewVisitorOptions = {
+    isAuthenticated?: boolean;
+};
