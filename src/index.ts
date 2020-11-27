@@ -7,7 +7,7 @@ function startLegacy(envId: string, config?: FlagshipSdkConfig): IFlagship {
 
 // NOTE: apiKeyOrSettings (any) will become apiKey (string) in next major release
 function start(envId: string, apiKeyOrSettings?: any, config?: FlagshipSdkConfig): IFlagship {
-    if (typeof apiKeyOrSettings === 'object' && !Array.isArray(apiKeyOrSettings)) {
+    if (typeof apiKeyOrSettings === 'object' && apiKeyOrSettings !== null && !Array.isArray(apiKeyOrSettings)) {
         return startLegacy(envId, apiKeyOrSettings as FlagshipSdkConfig);
     }
     return new Flagship(envId, apiKeyOrSettings as string, config);

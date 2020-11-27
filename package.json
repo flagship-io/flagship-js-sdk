@@ -1,12 +1,13 @@
 {
     "name": "@flagship.io/js-sdk",
-    "version": "2.0.4",
+    "version": "2.1.8",
     "description": "Flagship JS SDK",
     "main": "dist/index.node.js",
     "browser": "dist/index.browser.js",
     "react-native": "dist/index.reactNative.js",
     "files": [
         "dist",
+        "public",
         "CONTRIBUTING.md",
         "README.md",
         "package.json"
@@ -114,6 +115,7 @@
             "^.+\\.[t|j]sx?$": "babel-jest"
         },
         "coveragePathIgnorePatterns": [
+            "<rootDir>/test/",
             "/node_modules/"
         ],
         "testPathIgnorePatterns": [

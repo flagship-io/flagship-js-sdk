@@ -4,8 +4,14 @@ import { EventEmitter } from 'events';
 
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
-import { FlagshipSdkConfig, IFlagshipBucketing, IFlagshipBucketingVisitor, IFlagshipVisitor } from '../../types';
-import { BucketingApiResponse } from '../bucketing/types';
+import {
+    FlagshipSdkConfig,
+    IFlagshipBucketing,
+    IFlagshipBucketingVisitor,
+    IFlagshipVisitor,
+    IFsPanicMode,
+    PostFlagshipApiCallback
+} from '../../types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
     checkCampaignsActivatedMultipleTimesOutput,
@@ -44,30 +50,34 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     fetchedModifications: DecisionApiCampaign[] | null;
 
-    sdkListener: EventEmitter;
-
     modificationsInternalStatus: ModificationsInternalStatus | null;
+
+    panic: IFsPanicMode;
 
     constructor(
         envId: string,
         config: FlagshipSdkConfig,
-        sdkListener: EventEmitter,
         bucket: IFlagshipBucketing | null,
         id: string,
-        context: FlagshipVisitorContext = {}
+        context: FlagshipVisitorContext = {},
+        panic: IFsPanicMode,
+        previousVisitorInstance: IFlagshipVisitor = null
     ) {
         super();
+        this.panic = panic;
         this.config = config;
         this.id = id;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
         this.envId = envId;
         this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
-        this.isAllModificationsFetched = false;
+        this.isAllModificationsFetched = previousVisitorInstance ? previousVisitorInstance.isAllModificationsFetched : false;
         this.bucket = null;
-        this.sdkListener = sdkListener;
 
         // initialize "fetchedModifications" and "modificationsDetails"
-        if (config.initialModifications) {
+        if (previousVisitorInstance) {
+            this.fetchedModifications = previousVisitorInstance ? previousVisitorInstance.fetchedModifications : null;
+            this.modificationsInternalStatus = previousVisitorInstance ? previousVisitorInstance.modificationsInternalStatus : null;
+        } else if (config.initialModifications) {
             this.saveModificationsInCache(config.initialModifications);
         } else {
             this.fetchedModifications = null;
@@ -76,17 +86,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         if (this.config.decisionMode === 'Bucketing') {
             this.bucket = new BucketingVisitor(this.envId, this.id, this.context, this.config, bucket);
-            sdkListener.on('bucketPollingSuccess', ({ payload: data, status }: { payload: BucketingApiResponse; status: number }) => {
-                if (status === 304) {
-                    // do nothing
-                } else if (status === 200) {
-                    this.log.debug('bucketing polling with fresh data detected.');
-                    (this.bucket as IFlagshipBucketingVisitor).updateCache(data);
-                    // NOTE: saveModificationsInCache MUST be done only when synchronizing !
-                } else {
-                    this.log.error(`unexpected status (="${status}") received. This polling will be ignored.`);
-                }
-            });
         }
     }
 
@@ -97,11 +96,17 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     ): Promise<{ status: number } | Error> {
         return new Promise<{ status: number } | Error>((resolve, reject) => {
             flagshipSdkHelper
-                .postFlagshipApi(this.config, this.log, `${this.config.flagshipApi}activate`, {
-                    vid: this.id,
-                    cid: this.envId,
-                    caid: variationGroupId,
-                    vaid: variationId
+                .postFlagshipApi({
+                    panic: this.panic,
+                    config: this.config,
+                    log: this.log,
+                    endpoint: `${this.config.flagshipApi}activate`,
+                    params: {
+                        vid: this.id,
+                        cid: this.envId,
+                        caid: variationGroupId,
+                        vaid: variationId
+                    }
                 })
                 .then((response: DecisionApiResponse) => {
                     let successLog = `VariationId "${variationId}" successfully activate with status code:${response.status}`;
@@ -123,6 +128,10 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public activateModifications(modifications: Array<{ key: string; variationId?: string; variationGroupId?: string }>): void {
+        if (this.panic.shouldRunSafeMode('activateModifications')) {
+            return;
+        }
+
         const modificationsRequested: FsModifsRequestedList = modifications.reduce(
             (output, { key }) => [...output, { key, defaultValue: '', activate: true }],
             [] as FsModifsRequestedList
@@ -147,7 +156,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 );
                 return false;
             }
-            this.log.debug('triggerActivateIfNeeded - variation already activated');
+            this.log.debug(`triggerActivateIfNeeded - variation (vgId="${data.vgId}") already activated`);
             return true;
         };
 
@@ -427,11 +436,15 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             } else {
                 const { defaultValue } = modifRequested;
                 desiredModifications[modifRequested.key] = defaultValue;
-                this.log.debug(`No value found for modification "${modifRequested.key}".\nSetting default value "${defaultValue}"`);
-                if (modifRequested.activate) {
-                    this.log.warn(
-                        `Unable to activate modification "${modifRequested.key}" because it does not exist on any existing campaign...`
-                    );
+
+                // log only if we're not in panic mode
+                if (this.panic.enabled === false) {
+                    this.log.debug(`No value found for modification "${modifRequested.key}".\nSetting default value "${defaultValue}"`);
+                    if (modifRequested.activate) {
+                        this.log.warn(
+                            `Unable to activate modification "${modifRequested.key}" because it does not exist on any existing campaign...`
+                        );
+                    }
                 }
             }
         });
@@ -470,6 +483,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         modificationsRequested: FsModifsRequestedList,
         activateAllModifications: boolean | null = null
     ): GetModificationsOutput {
+        if (this.panic.shouldRunSafeMode('getModifications')) {
+            const { desiredModifications } = this.extractDesiredModifications([], modificationsRequested, false);
+            return desiredModifications;
+        }
+
         if (!this.fetchedModifications) {
             this.log.warn('No modifications found in cache...');
             const { desiredModifications } = this.extractDesiredModifications([], modificationsRequested, activateAllModifications);
@@ -483,6 +501,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public getModificationInfo(key: string): Promise<null | GetModificationInfoOutput> {
+        if (this.panic.shouldRunSafeMode('getModificationInfo')) {
+            return new Promise((resolve) => resolve(null));
+        }
         const polishOutput = (data: DecisionApiCampaign): GetModificationInfoOutput => ({
             campaignId: data.id,
             variationId: data.variation.id,
@@ -514,20 +535,27 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     resolve(polishOutput(campaigns.filter((cpgn) => cpgn.id === detailsModifications[key].campaignId[0])[0]));
                 })
                 .catch((error: Error) => {
-                    this.saveModificationsInCache(null);
                     reject(error);
                 });
         });
     }
 
     public updateContext(context: FlagshipVisitorContext): void {
+        if (this.panic.shouldRunSafeMode('updateContext')) {
+            return;
+        }
         this.context = flagshipSdkHelper.checkVisitorContext(context, this.log);
     }
 
     public synchronizeModifications(activate = false): Promise<number> {
+        const httpCallback = this.config.internal?.reactNative?.httpCallback || null;
+
+        if (this.config.decisionMode !== 'API' && this.panic.shouldRunSafeMode('synchronizeModifications')) {
+            return new Promise((resolve) => resolve(400));
+        }
+
         return new Promise((resolve, reject) => {
             const postSynchro = (output?: DecisionApiResponseData, response?: DecisionApiResponse): void => {
-                this.saveModificationsInCache((output && output.campaigns) || null);
                 this.callEventEndpoint();
                 resolve(response?.status || 200);
             };
@@ -546,20 +574,26 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     return;
                 }
             }
-            const fetchedModifPromise = this.fetchAllModifications({ activate, force: true }) as Promise<DecisionApiResponse>;
+            const fetchedModifPromise = this.fetchAllModifications({
+                activate,
+                force: true,
+                httpCallback
+            }) as Promise<DecisionApiResponse>;
             fetchedModifPromise
                 .then((response: DecisionApiResponse) => {
                     const output = flagshipSdkHelper.checkDecisionApiResponseFormat(response, this.log);
                     postSynchro(output, response);
                 })
                 .catch((error: Error) => {
-                    this.saveModificationsInCache(null);
                     reject(error);
                 });
         });
     }
 
     public getModificationsForCampaign(campaignId: string, activate = false): Promise<DecisionApiResponse> {
+        if (this.panic.shouldRunSafeMode('getModificationsForCampaign')) {
+            return new Promise((resolve) => resolve({ data: flagshipSdkHelper.generatePanicDecisionApiResponse(this.id), status: 400 }));
+        }
         return this.fetchAllModifications({ activate, campaignCustomID: campaignId }) as Promise<DecisionApiResponse>;
     }
 
@@ -567,13 +601,26 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         activate = false,
         options: { force?: boolean; simpleMode?: boolean } = {}
     ): Promise<DecisionApiResponse | DecisionApiSimpleResponse> {
+        const httpCallback = this.config.internal?.reactNative?.httpCallback || null;
+        if (this.panic.shouldRunSafeMode('getAllModifications')) {
+            return new Promise((resolve) => {
+                if (options?.simpleMode) {
+                    resolve({});
+                } else {
+                    resolve({
+                        data: [],
+                        status: 400
+                    });
+                }
+            });
+        }
         const defaultOptions = {
             force: false,
             simpleMode: false
         };
         const optionsToConsider = { ...defaultOptions, ...options };
         return new Promise((resolve, reject) => {
-            (this.fetchAllModifications({ activate, force: optionsToConsider.force }) as Promise<DecisionApiResponse>)
+            (this.fetchAllModifications({ activate, force: optionsToConsider.force, httpCallback }) as Promise<DecisionApiResponse>)
                 .then((response: DecisionApiResponse) => {
                     if (optionsToConsider.simpleMode) {
                         const { detailsModifications } = FlagshipVisitor.analyseModifications(response.data.campaigns);
@@ -688,16 +735,12 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         // if callback not used, do default behavior
         if (!haveBeenCalled) {
-            if (data === null && previousFM && this.config.decisionMode === 'Bucketing') {
-                this.log.info('saveModificationsInCache - keeping previous cache since bucketing did not return data');
-            } else {
-                save(data);
-                this.log.debug(
-                    `saveModificationsInCache - saving in cache those modifications: "${
-                        this.fetchedModifications ? JSON.stringify(this.fetchedModifications) : 'null'
-                    }"`
-                );
-            }
+            save(data);
+            this.log.debug(
+                `saveModificationsInCache - saving in cache those modifications: "${
+                    this.fetchedModifications ? JSON.stringify(this.fetchedModifications) : 'null'
+                }"`
+            );
         }
     }
 
@@ -706,6 +749,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         campaignCustomID?: string | null;
         force?: boolean;
         loadFromCache?: boolean;
+        httpCallback?: PostFlagshipApiCallback;
     }): Promise<DecisionApiResponse> | DecisionApiResponseData {
         const defaultArgs = {
             activate: false,
@@ -713,7 +757,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             force: false,
             loadFromCache: false
         };
-        const { activate, force, loadFromCache /* , campaignCustomID, */ } = { ...defaultArgs, ...args };
+        const { activate, force, loadFromCache, httpCallback /* , campaignCustomID, */ } = { ...defaultArgs, ...args };
         const url = `${this.config.flagshipApi}${this.envId}/campaigns?mode=normal`;
 
         // check if need to return without promise
@@ -743,70 +787,40 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 );
             } else if (this.config.decisionMode === 'Bucketing') {
                 let transformedBucketingData: DecisionApiResponseData = { visitorId: this.id, campaigns: [] };
-                if (this.bucket && this.bucket.computedData) {
+                this.bucket.updateCache();
+                if (this.bucket?.computedData) {
                     transformedBucketingData = { ...transformedBucketingData, campaigns: this.bucket.computedData.campaigns };
                     this.saveModificationsInCache(transformedBucketingData.campaigns);
-                    resolve(
-                        this.fetchAllModificationsPostProcess(transformedBucketingData, {
-                            ...defaultArgs,
-                            ...args
-                        }) as DecisionApiResponse
-                    );
-                } else {
-                    this.log.info('fetchAllModifications - no data in current bucket, waiting for bucket to start...');
-                    this.sdkListener.once('bucketPollingSuccess', ({ payload: data }) => {
-                        if (this.bucket.computedData) {
-                            transformedBucketingData = {
-                                ...transformedBucketingData,
-                                campaigns: ((this.bucket as IFlagshipBucketingVisitor).computedData as DecisionApiResponseData).campaigns
-                            };
-                            this.saveModificationsInCache(transformedBucketingData.campaigns);
-                            this.log.debug('fetchAllModifications - bucket start detected');
-
-                            if (activate) {
-                                this.log.debug(
-                                    `fetchAllModifications - activateNow enabled with bucketing mode. ${this.modificationsInternalStatus.length} campaign(s) will be activated.`
-                                );
-                                this.triggerActivateIfNeeded(undefined, true);
-                            }
-                        } else {
-                            this.log.error(
-                                `fetchAllModifications - bucket start detected but no data received from bucketing. It might due to an error (see previous logs).`
-                            );
-                        }
-
-                        resolve(
-                            this.fetchAllModificationsPostProcess(transformedBucketingData, {
-                                ...defaultArgs,
-                                ...args
-                            }) as DecisionApiResponse
+                    if (activate) {
+                        this.log.debug(
+                            `fetchAllModifications - activateNow enabled with bucketing mode. Following keys "${Object.keys(
+                                this.modificationsInternalStatus
+                            ).join(', ')}" will be activated.`
                         );
-                    });
-                    this.sdkListener.once('bucketPollingFailed', (error) => {
-                        if (this.fetchedModifications) {
-                            this.log.error(
-                                `fetchAllModifications - bucketing failed with error "${error}", keeping previous modifications in cache. Should not have any impact on the visitor.`
-                            );
-                        } else {
-                            this.log.fatal(`fetchAllModifications - bucketing failed with error "${error}"`);
-                        }
-
-                        this.saveModificationsInCache(null);
-
-                        reject(error);
-                    });
+                        // NOTE: triggerActivateIfNeeded trigger in post process
+                    }
                 }
+                resolve(
+                    this.fetchAllModificationsPostProcess(transformedBucketingData, {
+                        ...defaultArgs,
+                        ...args
+                    }) as DecisionApiResponse
+                );
             } else {
                 flagshipSdkHelper
                     .postFlagshipApi(
-                        this.config,
-                        this.log,
-                        url,
                         {
-                            visitor_id: this.id,
-                            trigger_hit: activate, // TODO: to unit test
-                            // sendContextEvent: false, // NOTE: not set because endpoint "/events" is called only with bucketing mode
-                            context: this.context
+                            callback: httpCallback,
+                            panic: this.panic,
+                            config: this.config,
+                            log: this.log,
+                            endpoint: url,
+                            params: {
+                                visitor_id: this.id,
+                                trigger_hit: activate, // TODO: to unit test
+                                // sendContextEvent: false, // NOTE: not set because endpoint "/events" is called only with bucketing mode
+                                context: this.context
+                            }
                         },
                         // query params:
                         {
@@ -821,8 +835,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                         resolve(this.fetchAllModificationsPostProcess(response, { ...defaultArgs, ...args }) as DecisionApiResponse);
                     })
                     .catch((response: Error) => {
-                        this.saveModificationsInCache(null);
-                        this.log.fatal('fetchAllModifications - an error occurred while fetching...');
+                        this.log.fatal(`fetchAllModifications - an error occurred while fetching ${response?.message || '...'}`); // TODO: precise error
                         if (activate) {
                             this.log.fatal('fetchAllModifications - activate canceled due to errors...');
                         }
@@ -985,6 +998,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public sendHits(hitsArray: Array<HitShape>): Promise<void> {
+        if (this.panic.shouldRunSafeMode('sendHits')) {
+            return new Promise((resolve) => resolve());
+        }
         const payloads: any[] = [];
         const url = 'https://ariane.abtasty.com';
         const handleHitsError = (error: Error): void => {
@@ -1028,17 +1044,29 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     }
 
     public sendHit(hitData: HitShape): Promise<void> {
+        if (this.panic.shouldRunSafeMode('sendHit')) {
+            return new Promise((resolve) => resolve());
+        }
         return this.sendHits([hitData]);
     }
 
     private callEventEndpoint(): Promise<number> {
+        if (this.panic.shouldRunSafeMode('callEventEndpoint', { logType: 'debug' })) {
+            return new Promise((resolve) => resolve(400));
+        }
         return new Promise((resolve, reject) => {
             flagshipSdkHelper
-                .postFlagshipApi(this.config, this.log, `${this.config.flagshipApi}${this.envId}/events`, {
-                    visitor_id: this.id,
-                    type: 'CONTEXT',
-                    data: {
-                        ...this.context
+                .postFlagshipApi({
+                    panic: this.panic,
+                    config: this.config,
+                    log: this.log,
+                    endpoint: `${this.config.flagshipApi}${this.envId}/events`,
+                    params: {
+                        visitor_id: this.id,
+                        type: 'CONTEXT',
+                        data: {
+                            ...this.context
+                        }
                     }
                 })
                 .then((response) => {

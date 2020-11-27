@@ -2,13 +2,15 @@ import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { EventEmitter } from 'events';
 
 import defaultConfig, { internalConfig } from '../../config/default';
-import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor } from '../../types';
+import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor, IFsPanicMode } from '../../types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import Bucketing from '../bucketing/bucketing';
 import { BucketingApiResponse } from '../bucketing/types';
 import FlagshipVisitor from '../flagshipVisitor/flagshipVisitor';
 import { FlagshipVisitorContext } from '../flagshipVisitor/types';
+import PanicMode from '../panicMode/panicMode';
+import utilsHelper from '../../lib/utils';
 
 class Flagship implements IFlagship {
     config: FlagshipSdkConfig;
@@ -21,12 +23,15 @@ class Flagship implements IFlagship {
 
     envId: string;
 
-    constructor(envId: string, apiKey?: string, config = {}) {
+    panic: IFsPanicMode;
+
+    constructor(envId: string, apiKey?: string, config: { [key: string]: any } = {}) {
         const { cleanConfig: cleanCustomConfig, ignoredConfig } = flagshipSdkHelper.checkConfig(config, apiKey);
         this.config = { ...defaultConfig, ...cleanCustomConfig };
         this.log = loggerHelper.getLogger(this.config);
         this.eventEmitter = new EventEmitter();
         this.bucket = null;
+        this.panic = new PanicMode(this.config);
         this.envId = envId;
         if (!apiKey) {
             this.log.warn(
@@ -41,13 +46,21 @@ class Flagship implements IFlagship {
             this.log.debug('Custom flagship SDK config attribute(s) detected');
         }
         if (this.config.decisionMode === 'Bucketing') {
-            this.bucket = new Bucketing(this.envId, this.config);
+            this.bucket = new Bucketing(this.envId, this.config, this.panic);
 
             if (this.config.fetchNow) {
                 this.startBucketingPolling();
             }
         }
+
+        // logs adjustment made on settings
         flagshipSdkHelper.logIgnoredAttributesFromObject(ignoredConfig, this.log, 'custom flagship SDK config');
+
+        if (config.timeout && config.timeout !== this.config.timeout) {
+            this.log.warn(
+                `"timeout" setting is incorrect (value specified =>"${config.timeout}"). The default value (=${this.config.timeout} seconds) has been set instead.`
+            );
+        }
     }
 
     public newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor {
@@ -59,26 +72,47 @@ class Flagship implements IFlagship {
                     `new visitor (id="${id}") decision API failed during initialization with error "${error}"`
             },
             Bucketing: {
-                newVisitorInfo: `new visitor (id="${id}") calling bucketing API for initialization (waiting to be ready...)`,
-                modificationSuccess: `new visitor (id="${id}") bucketing API finished (ready !)`,
-                modificationFailed: (error: Error): string =>
-                    `new visitor (id="${id}") bucket API failed during initialization with error "${error}"`
+                newVisitorInfo: `new visitor (id="${id}") waiting for existing bucketing data (waiting to be ready...)`,
+                modificationSuccess: `new visitor (id="${id}") (ready !)`
             }
         };
 
         this.log.info(`Creating new visitor (id="${id}")`);
-        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.eventEmitter, this.bucket, id, context);
+        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.bucket, id, context, this.panic);
+        let bucketingFirstPollingTriggered = false;
         if (this.config.fetchNow || this.config.activateNow) {
             this.log.info(logBook[this.config.decisionMode].newVisitorInfo);
             flagshipVisitorInstance
                 .getAllModifications(this.config.activateNow, { force: true })
                 .then(() => {
-                    this.log.info(logBook[this.config.decisionMode].modificationSuccess);
-                    (flagshipVisitorInstance as any).callEventEndpoint();
-                    flagshipVisitorInstance.emit('ready');
+                    const triggerVisitorReady = () => {
+                        this.log.info(logBook[this.config.decisionMode].modificationSuccess);
+                        (flagshipVisitorInstance as any).callEventEndpoint();
+                        flagshipVisitorInstance.emit('ready');
+                    };
+                    const postProcessBucketing = (hasFailed: boolean): void => {
+                        if (bucketingFirstPollingTriggered) {
+                            return;
+                        }
+                        bucketingFirstPollingTriggered = true;
+                        if (hasFailed) {
+                            triggerVisitorReady();
+                            return;
+                        }
+                        flagshipVisitorInstance.synchronizeModifications(this.config.activateNow).then(() => triggerVisitorReady());
+                    };
+                    // Check if bucketing first start
+                    if (this.config.decisionMode === 'Bucketing' && this.config.fetchNow && !this.bucket.data) {
+                        this.eventEmitter.once('bucketPollingSuccess', () => postProcessBucketing(false));
+                        this.eventEmitter.once('bucketPollingFailed', () => postProcessBucketing(true));
+                    } else {
+                        triggerVisitorReady();
+                    }
                 })
                 .catch((response) => {
-                    this.log.fatal(logBook[this.config.decisionMode].modificationFailed(response));
+                    if (this.config.decisionMode !== 'Bucketing') {
+                        this.log.fatal(logBook[this.config.decisionMode].modificationFailed(response));
+                    }
                     flagshipVisitorInstance.emit('ready');
                 });
         } else {
@@ -89,6 +123,49 @@ class Flagship implements IFlagship {
                 }
             });
         }
+        return flagshipVisitorInstance;
+    }
+
+    // Pre-req: envId + visitorId must be the same
+    /**
+     * @returns {IFlagshipVisitor}
+     * @description Used internally only. Don't use it outside the SDK !
+     */
+    public updateVisitor(visitorInstance: IFlagshipVisitor, context: FlagshipVisitorContext): IFlagshipVisitor {
+        this.log.debug(`updateVisitor - updating visitor (id="${visitorInstance.id}")`);
+        const flagshipVisitorInstance = new FlagshipVisitor(
+            this.envId,
+            this.config,
+            this.bucket,
+            visitorInstance.id,
+            context,
+            this.panic,
+            visitorInstance
+        );
+        if (
+            ((!utilsHelper.deepCompare(visitorInstance.context, context) || flagshipVisitorInstance.fetchedModifications === null) &&
+                this.config.fetchNow) ||
+            this.config.activateNow
+        ) {
+            this.log.debug(
+                `updateVisitor - visitor(id="${visitorInstance.id}") does not have modifications or context has changed + (fetchNow=${this.config.fetchNow} || activateNow=${this.config.activateNow}) detected, trying a synchronize...`
+            );
+            flagshipVisitorInstance
+                .synchronizeModifications(this.config.activateNow)
+                .then(() => {
+                    flagshipVisitorInstance.emit('ready');
+                })
+                .catch(() => {
+                    flagshipVisitorInstance.emit('ready');
+                });
+        } else {
+            flagshipVisitorInstance.once('newListener', (event, listener) => {
+                if (event === 'ready') {
+                    listener();
+                }
+            });
+        }
+
         return flagshipVisitorInstance;
     }
 

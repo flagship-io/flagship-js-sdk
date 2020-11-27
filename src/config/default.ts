@@ -9,15 +9,22 @@ const defaultConfig: FlagshipSdkConfig = {
     flagshipApi: 'https://decision-api.flagship.io/v1/',
     pollingInterval: null,
     apiKey: null, // TODO: remove next major release
+    timeout: 2, // seconds
     initialBucketing: null,
-    initialModifications: null
+    initialModifications: null,
+    internal: {
+        react: null,
+        reactNative: {
+            httpCallback: null
+        }
+    }
 };
 
 export const internalConfig: FlagshipSdkInternalConfig = {
     bucketingEndpoint: 'https://cdn.flagship.io/@ENV_ID@/bucketing.json',
     apiV1: 'https://decision-api.flagship.io/v1/',
     apiV2: 'https://decision.flagship.io/v2/',
-    pollingIntervalMinValue: 1 // (= 1 min)
+    pollingIntervalMinValue: 1 // (= 1 sec)
 };
 
 export default defaultConfig;

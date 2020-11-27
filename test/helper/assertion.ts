@@ -1,9 +1,14 @@
+import axios, { CancelToken } from 'axios';
+
+import { FlagshipSdkConfig } from '../../src/types';
+
 const assertionHelper = {
-    getApiKeyHeader: (apiKey: string): { headers: { 'x-api-key': string } } => {
+    getApiKeyHeader: (apiKey: string): { headers: { 'x-api-key': string }; cancelToken: CancelToken } => {
         return {
             headers: {
                 'x-api-key': apiKey
-            }
+            },
+            cancelToken: axios.CancelToken.source().token
         };
     },
     getCampaignsQueryParams: (): { params: { exposeAllKeys: boolean; sendContextEvent: boolean } } => {
@@ -13,6 +18,9 @@ const assertionHelper = {
                 sendContextEvent: false
             }
         };
+    },
+    getTimeout: (url: string, config: FlagshipSdkConfig): { timeout: number } => {
+        return { timeout: url.includes('/campaigns') ? config.timeout * 1000 : undefined };
     }
 };
 

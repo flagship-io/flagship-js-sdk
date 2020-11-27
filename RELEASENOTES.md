@@ -1,5 +1,65 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.1.8
+
+### New features 🎉
+
+-   Contains minor optimizations for [REACT SDK](https://developers.flagship.io/docs/sdk/react/v2.0#onupdate) (onUpdate).
+
+## ➡️ Version 2.1.7
+
+-   Minor change.
+
+## ➡️ Version 2.1.6
+
+### New features 🎉
+
+-   This new version includes a stand alone version which you can import like this:
+
+    ```javascript
+
+    <script src="https://cdn.jsdelivr.net/npm/@flagship.io/js-sdk@X.X.X/public/index.standalone.js"></script>
+    <script>
+      window.Flagship.init(...)
+      // code...
+    </script>
+
+    ```
+
+    Where `X.X.X` should be a version of the JS SDK.
+
+## ➡️ Version 2.1.5
+
+-   Minor change with Typescript.
+
+## ➡️ Version 2.1.4
+
+-   Fix issue when executing `flagship.start(envId, apiKey, { ... );` and `apiKey` is null.
+
+## ➡️ Version 2.1.3
+
+-   Minor change.
+
+## ➡️ Version 2.1.2
+
+### New features 🎉
+
+-   Contains minor optimizations for [REACT SDK](https://github.com/abtasty/flagship-react-sdk) (updateVisitor).
+
+## ➡️ Version 2.1.1
+
+### New features 🎉
+
+-   [Server side] In bucketing mode, a performance optimization has been made to avoid the use of events listener between each visitor created and the bucketing.
+
+-   Panic mode supported. When you've enabled panic mode through the web dashboard, the SDK will detect it and be in safe mode. Logs will appear to warns you and default values for modifications will be return.
+
+-   `timeout` setting added. It specify the timeout duration when fetching campaigns via API mode (`decisionMode = "API"`), defined in **seconds**. Minimal value should be greater than 0. More to come on this setting soon...
+
+### Breaking changes #1 ⚠️
+
+-   `pollingInterval` setting is now a period interval defined in **seconds** (not minutes). Minimal value is 1 second.
+
 ## ➡️ Version 2.1.0
 
 ### New features 🎉

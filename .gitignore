@@ -1,6 +1,8 @@
 node_modules
 
-dist/
+examples/api-server/dist
+
+dist
 
 coverage
 
@@ -14,3 +16,5 @@ stats.json
 IMPROVEMENTS.md
 
 .idea
+
+public/
