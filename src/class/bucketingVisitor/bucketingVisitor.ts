@@ -122,8 +122,12 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         const reportIssueBetweenValueTypeAndOperator = (type: string, operator: BucketingOperator): void => {
             log.warn(`getEligibleCampaigns - operator "${operator}" is not supported for type "${type}". Assertion aborted.`);
         };
-        const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean, shouldHaveAllAssertionsValid?: boolean): boolean => {
-            if (shouldHaveAllAssertionsValid) {
+        const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean, options: {shouldHaveAllAssertionsValid? : boolean}): boolean => {
+            const defaultOptions = {
+                shouldHaveAllAssertionsValid: false,
+            }
+            const optionsToConsider = { ...defaultOptions, ...options };
+            if (optionsToConsider.shouldHaveAllAssertionsValid) {
                 return apiValueArray.map((apiValue) => assertionCallback(vcValue, apiValue)).filter((answer) => answer === true).length === apiValueArray.length;
             }
 
