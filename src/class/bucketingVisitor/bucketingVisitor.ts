@@ -122,7 +122,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         const reportIssueBetweenValueTypeAndOperator = (type: string, operator: BucketingOperator): void => {
             log.warn(`getEligibleCampaigns - operator "${operator}" is not supported for type "${type}". Assertion aborted.`);
         };
-        const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean, options: {shouldHaveAllAssertionsValid? : boolean}): boolean => {
+        const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean, options?: {shouldHaveAllAssertionsValid? : boolean}): boolean => {
             const defaultOptions = {
                 shouldHaveAllAssertionsValid: false,
             }
@@ -168,7 +168,12 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                     return vtc === value;
                 case 'NOT_EQUALS':
                     if (Array.isArray(value)) {
-                        return checkAssertion<string | boolean | number>(vtc, value, (a, b) => a !== b, true);
+                        return checkAssertion<string | boolean | number>(
+                            vtc,
+                            value,
+                            (a, b) => a !== b,
+                            {shouldHaveAllAssertionsValid: true}
+                        );
                     }
                     return vtc !== value;
                 case 'LOWER_THAN':
@@ -360,7 +365,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                                         vtc as string,
                                         value as string[],
                                         (a, b) => !(a as string).toLowerCase().includes((b as string).toLowerCase()),
-                                        true
+                                        {shouldHaveAllAssertionsValid: true}
                                     );
                                 }
                                 return !(vtc as string).toLowerCase().includes((value as string).toLowerCase());
