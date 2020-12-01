@@ -1,5 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { MurmurHashV3 } from 'react-native-murmurhash';
+import { CheckAssertionOptions } from "./types";
 import { FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipBucketing } from '../../types';
 import { FlagshipVisitorContext, DecisionApiCampaign, DecisionApiResponseData } from '../flagshipVisitor/types';
 import {
@@ -122,7 +123,7 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         const reportIssueBetweenValueTypeAndOperator = (type: string, operator: BucketingOperator): void => {
             log.warn(`getEligibleCampaigns - operator "${operator}" is not supported for type "${type}". Assertion aborted.`);
         };
-        const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean, options: {shouldHaveAllAssertionsValid? : boolean} = {}): boolean => {
+        const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean, options: CheckAssertionOptions = {}): boolean => {
             const defaultOptions = {
                 shouldHaveAllAssertionsValid: false,
             }
