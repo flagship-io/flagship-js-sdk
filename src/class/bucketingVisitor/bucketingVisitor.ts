@@ -1,5 +1,6 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { MurmurHashV3 } from 'react-native-murmurhash';
+import { CheckAssertionOptions } from "./types";
 import { FlagshipSdkConfig, IFlagshipBucketingVisitor, IFlagshipBucketing, IFsCacheManager, IFsPanicMode } from '../../types';
 import { FlagshipVisitorContext, DecisionApiCampaign, DecisionApiResponseData } from '../flagshipVisitor/types';
 import {
@@ -135,8 +136,17 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
         const reportIssueBetweenValueTypeAndOperator = (type: string, operator: BucketingOperator): void => {
             log.warn(`getEligibleCampaigns - operator "${operator}" is not supported for type "${type}". Assertion aborted.`);
         };
-        const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean): boolean =>
-            apiValueArray.map((apiValue) => assertionCallback(vcValue, apiValue)).filter((answer) => answer === true).length > 0;
+        const checkAssertion = <T>(vcValue: T, apiValueArray: T[], assertionCallback: (a: T, b: T) => boolean, options: CheckAssertionOptions = {}): boolean => {
+            const defaultOptions = {
+                shouldHaveAllAssertionsValid: false,
+            }
+            const optionsToConsider = { ...defaultOptions, ...options };
+            if (optionsToConsider.shouldHaveAllAssertionsValid) {
+                return apiValueArray.map((apiValue) => assertionCallback(vcValue, apiValue)).filter((answer) => answer === true).length === apiValueArray.length;
+            }
+
+            return apiValueArray.map((apiValue) => assertionCallback(vcValue, apiValue)).filter((answer) => answer === true).length > 0;
+        }
         const computeAssertion = ({ operator, key, value }: BucketingTargetings, compareWithVisitorId: boolean): boolean => {
             const vtc = compareWithVisitorId ? visitorId : visitorContext[key]; // vtc = 'value to compare'
             if (typeof vtc === 'undefined' || vtc === null) {
@@ -172,7 +182,12 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                     return vtc === value;
                 case 'NOT_EQUALS':
                     if (Array.isArray(value)) {
-                        return checkAssertion<string | boolean | number>(vtc, value, (a, b) => a !== b);
+                        return checkAssertion<string | boolean | number>(
+                            vtc,
+                            value,
+                            (a, b) => a !== b,
+                            {shouldHaveAllAssertionsValid: true}
+                        );
                     }
                     return vtc !== value;
                 case 'LOWER_THAN':
@@ -363,7 +378,8 @@ class BucketingVisitor implements IFlagshipBucketingVisitor {
                                     return checkAssertion<string>(
                                         vtc as string,
                                         value as string[],
-                                        (a, b) => !(a as string).toLowerCase().includes((b as string).toLowerCase())
+                                        (a, b) => !(a as string).toLowerCase().includes((b as string).toLowerCase()),
+                                        {shouldHaveAllAssertionsValid: true}
                                     );
                                 }
                                 return !(vtc as string).toLowerCase().includes((value as string).toLowerCase());
