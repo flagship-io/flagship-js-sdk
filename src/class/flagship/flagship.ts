@@ -194,7 +194,7 @@ class Flagship implements IFlagship {
         } else {
             flagshipVisitorInstance.once('newListener', (event, listener) => {
                 if (event === 'ready') {
-                    listener();
+                    listener(flagshipSdkHelper.generateReadyListenerOutput());
                 }
             });
         }
