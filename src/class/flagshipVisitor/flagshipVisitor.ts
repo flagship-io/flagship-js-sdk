@@ -96,6 +96,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
     }
 
+    private setVisitorId(id: string): void {
+        this.id = id;
+        this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
+    }
+
     private static createVisitorId(): string {
         return FlagshipCommon.createVisitorId();
     }
@@ -115,7 +120,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
 
         this.anonymousId = this.id;
-        this.id = id;
+        this.setVisitorId(id);
 
         const { fetchNow, activateNow } = this.config;
         const updateMsg = `authenticate - visitor passed from anonymous (id=${this.anonymousId}) to authenticated (id=${this.id}).`;
@@ -136,7 +141,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             return new Promise((resolve, reject) => reject(errorMsg));
         }
         const previousAuthenticatedId = this.id;
-        this.id = this.anonymousId;
+        this.setVisitorId(this.anonymousId);
         this.anonymousId = null;
 
         const { fetchNow, activateNow } = this.config;
