@@ -96,6 +96,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
     }
 
+    private setVisitorId(id: string): void {
+        this.id = id;
+        this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
+    }
+
     private static createVisitorId(): string {
         return FlagshipCommon.createVisitorId();
     }
@@ -115,7 +120,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
 
         this.anonymousId = this.id;
-        this.id = id;
+        this.setVisitorId(id);
 
         const { fetchNow, activateNow } = this.config;
         const updateMsg = `authenticate - visitor passed from anonymous (id=${this.anonymousId}) to authenticated (id=${this.id}).`;
@@ -128,7 +133,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         return new Promise((resolve) => resolve());
     }
 
-    public unauthenticate(): UnauthenticateVisitorOutput {
+    /**
+     * Unauthenticate the visitor.
+     *
+     * @param {visitorId} optional string. Used for other Flagship SDK only (R and RN).
+     * @return {UnauthenticateVisitorOutput} A promise to handle async behavior.
+     * @since 1.1.0
+     */
+    public unauthenticate(visitorId?: string): UnauthenticateVisitorOutput {
         let errorMsg;
         if (!this.anonymousId) {
             errorMsg = `unauthenticate - Your visitor never has been authenticated.`;
@@ -136,7 +148,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             return new Promise((resolve, reject) => reject(errorMsg));
         }
         const previousAuthenticatedId = this.id;
-        this.id = this.anonymousId;
+        this.setVisitorId(visitorId || this.anonymousId);
         this.anonymousId = null;
 
         const { fetchNow, activateNow } = this.config;
