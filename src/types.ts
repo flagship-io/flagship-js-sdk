@@ -119,7 +119,7 @@ export type ReadyListenerOutput = {
 
 export interface IFlagshipVisitor extends EventEmitter, IFlagshipCore {
     id: string;
-    anonymousId: string;
+    anonymousId: string | null;
     context: FlagshipVisitorContext;
     isAllModificationsFetched: boolean;
     isAuthenticated: boolean;
@@ -129,7 +129,7 @@ export interface IFlagshipVisitor extends EventEmitter, IFlagshipCore {
     // UPDATE VISITOR
     updateContext(context: FlagshipVisitorContext): void;
     authenticate(id: string): Promise<void>;
-    unauthenticate(): Promise<void>;
+    unauthenticate(visitorId?: string | null): Promise<void>;
     // VISITOR MODIFICATIONS
     getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
     getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;
@@ -157,7 +157,7 @@ export interface IFlagshipVisitor extends EventEmitter, IFlagshipCore {
 export interface IFlagship extends IFlagshipCore {
     eventEmitter: EventEmitter;
     bucket: IFlagshipBucketing | null;
-    newVisitor(id: string, context: FlagshipVisitorContext, options?: { isAuthenticated?: boolean }): IFlagshipVisitor;
+    newVisitor(id: string | null, context: FlagshipVisitorContext, options?: { isAuthenticated?: boolean }): IFlagshipVisitor;
     startBucketingPolling(): { success: boolean; reason?: string };
     stopBucketingPolling(): { success: boolean; reason?: string };
 }
