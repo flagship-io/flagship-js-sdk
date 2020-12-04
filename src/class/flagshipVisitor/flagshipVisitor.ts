@@ -232,7 +232,14 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         return new Promise((resolve) => resolve());
     }
 
-    public unauthenticate(): UnauthenticateVisitorOutput {
+    /**
+     * Unauthenticate the visitor.
+     *
+     * @param {visitorId} optional string. Used for other Flagship SDK only (R and RN).
+     * @return {UnauthenticateVisitorOutput} A promise to handle async behavior.
+     * @since 1.1.0
+     */
+    public unauthenticate(visitorId?: string): UnauthenticateVisitorOutput {
         let errorMsg;
         if (!this.anonymousId) {
             errorMsg = `unauthenticate - Your visitor never has been authenticated.`;
@@ -240,7 +247,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             return new Promise((resolve, reject) => reject(errorMsg));
         }
         const previousAuthenticatedId = this.id;
-        this.setVisitorId(this.anonymousId);
+        this.setVisitorId(visitorId || this.anonymousId);
         this.anonymousId = null;
         this.isAuthenticated = false;
         this.updateCache();

@@ -129,7 +129,7 @@ export interface IFlagshipVisitor extends EventEmitter, IFlagshipCore {
     // UPDATE VISITOR
     updateContext(context: FlagshipVisitorContext): void;
     authenticate(id: string): Promise<void>;
-    unauthenticate(): Promise<void>;
+    unauthenticate(visitorId?: string): Promise<void>;
     // VISITOR MODIFICATIONS
     getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
     getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;

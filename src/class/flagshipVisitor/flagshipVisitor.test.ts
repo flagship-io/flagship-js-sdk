@@ -3452,7 +3452,7 @@ describe('FlagshipVisitor', () => {
                             expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
                             expect(
-                                assertionHelper.extractLogsThatReportedMessage(
+                                assertionHelper.containsLogThatContainingMessage(
                                     `authenticate - visitor passed from anonymous (id=${currentVisitorId}) to authenticated (id=${authenticatedId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`,
                                     spyInfoConsoleLogs
                                 ).length
@@ -3502,7 +3502,7 @@ describe('FlagshipVisitor', () => {
                                     expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
                                     expect(
-                                        assertionHelper.extractLogsThatReportedMessage(
+                                        assertionHelper.containsLogThatContainingMessage(
                                             `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${currentVisitorId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`,
                                             spyInfoConsoleLogs
                                         ).length
@@ -3653,7 +3653,7 @@ describe('FlagshipVisitor', () => {
                 expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
                 expect(
-                    assertionHelper.extractLogsThatReportedMessage(
+                    assertionHelper.containsLogThatContainingMessage(
                         `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`,
                         spyInfoConsoleLogs
                     ).length
@@ -3707,7 +3707,7 @@ describe('FlagshipVisitor', () => {
                 expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
                 expect(
-                    assertionHelper.extractLogsThatReportedMessage(
+                    assertionHelper.containsLogThatContainingMessage(
                         `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`,
                         spyInfoConsoleLogs
                     ).length
@@ -3751,8 +3751,8 @@ describe('FlagshipVisitor', () => {
         it('should synchronize automatically when auth with "activateNow=true"', (done) => {
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
                 ...testConfigWithoutFetchNow,
-                enableConsoleLogs: true,
-                activateNow: true
+                activateNow: true,
+                enableConsoleLogs: true
             });
             visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext); // don't specify an id so it will a create one automatically
             visitorSpy = initSpyLogs(visitorInstance);
@@ -3788,7 +3788,7 @@ describe('FlagshipVisitor', () => {
                 expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
                 expect(
-                    assertionHelper.extractLogsThatReportedMessage(
+                    assertionHelper.containsLogThatContainingMessage(
                         `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`,
                         spyInfoConsoleLogs
                     ).length
@@ -3857,7 +3857,7 @@ describe('FlagshipVisitor', () => {
                 expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
                 expect(
-                    assertionHelper.extractLogsThatReportedMessage(
+                    assertionHelper.containsLogThatContainingMessage(
                         `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`,
                         spyInfoConsoleLogs
                     ).length
