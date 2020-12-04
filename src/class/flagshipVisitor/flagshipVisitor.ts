@@ -239,7 +239,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
      * @return {UnauthenticateVisitorOutput} A promise to handle async behavior.
      * @since 1.1.0
      */
-    public unauthenticate(visitorId?: string): UnauthenticateVisitorOutput {
+    public unauthenticate(visitorId?: string | null): UnauthenticateVisitorOutput {
         let errorMsg;
         if (!this.anonymousId) {
             errorMsg = `unauthenticate - Your visitor never has been authenticated.`;

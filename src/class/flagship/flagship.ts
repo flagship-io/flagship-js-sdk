@@ -78,23 +78,11 @@ class Flagship implements IFlagship {
         }
     }
 
-    public newVisitor(id: string, context: FlagshipVisitorContext, options: NewVisitorOptions = {}): IFlagshipVisitor {
+    public newVisitor(id: string | null = null, context: FlagshipVisitorContext, options: NewVisitorOptions = {}): IFlagshipVisitor {
         const defaultOptions: NewVisitorOptions = {
             isAuthenticated: null
         };
         const { isAuthenticated } = { ...defaultOptions, ...options };
-        const logBook = {
-            API: {
-                newVisitorInfo: `new visitor (id="${id}") calling decision API for initialization (waiting to be ready...)`,
-                modificationSuccess: `new visitor (id="${id}") decision API finished (ready !)`,
-                modificationFailed: (error: Error): string =>
-                    `new visitor (id="${id}") decision API failed during initialization with error "${error}"`
-            },
-            Bucketing: {
-                newVisitorInfo: `new visitor (id="${id}") waiting for existing bucketing data (waiting to be ready...)`,
-                modificationSuccess: `new visitor (id="${id}") (ready !)`
-            }
-        };
 
         const flagshipVisitorInstance = new FlagshipVisitor(this.envId, id, this.panic, this.config, {
             bucket: this.bucket,
@@ -102,6 +90,18 @@ class Flagship implements IFlagship {
             isAuthenticated,
             cacheManager: this.cacheManager
         });
+        const logBook = {
+            API: {
+                newVisitorInfo: `new visitor (id="${flagshipVisitorInstance.id}") calling decision API for initialization (waiting to be ready...)`,
+                modificationSuccess: `new visitor (id="${flagshipVisitorInstance.id}") decision API finished (ready !)`,
+                modificationFailed: (error: Error): string =>
+                    `new visitor (id="${flagshipVisitorInstance.id}") decision API failed during initialization with error "${error}"`
+            },
+            Bucketing: {
+                newVisitorInfo: `new visitor (id="${flagshipVisitorInstance.id}") waiting for existing bucketing data (waiting to be ready...)`,
+                modificationSuccess: `new visitor (id="${flagshipVisitorInstance.id}") (ready !)`
+            }
+        };
         this.log.info(`Creating new visitor (id="${flagshipVisitorInstance.id}")`);
         let bucketingFirstPollingTriggered = false;
         if (this.config.fetchNow || this.config.activateNow) {

@@ -3925,7 +3925,7 @@ describe('FlagshipVisitor', () => {
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
             expect(sdk.cacheManager).toEqual(null);
         });
-        it('should not create a cache manager if environment is client and settings "enableClientCache=true"', () => {
+        it('should create a cache manager if environment is client and settings "enableClientCache=true"', () => {
             utilsHelper.isClient = jest.fn().mockReturnValue(true);
             utilsHelper.isServer = jest.fn().mockReturnValue(false);
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
@@ -3933,10 +3933,32 @@ describe('FlagshipVisitor', () => {
             expect(sdk.cacheManager.loadVisitorProfile).toBeDefined();
             expect(sdk.cacheManager.saveVisitorProfile).toBeDefined();
         });
-        it('should create a cache manager if environment is client and settings "enableClientCache=false"', () => {
+        it('should NOT create a cache manager if environment is client and settings "enableClientCache=false"', () => {
             utilsHelper.isClient = jest.fn().mockReturnValue(true);
             utilsHelper.isServer = jest.fn().mockReturnValue(false);
             sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, enableClientCache: false });
+            expect(sdk.cacheManager).toEqual(null);
+        });
+        it('should create a random visitor id (when not specified) and there is an existing local storage but "enableClientCache=false"', () => {
+            utilsHelper.isClient = jest.fn().mockReturnValue(true);
+            utilsHelper.isServer = jest.fn().mockReturnValue(false);
+
+            // SIMULATING AN EXISTING CACHE - BEGIN
+            const customVisitorProfile = {
+                id: 'mike',
+                anonymousId: 'weAreAnonymous',
+                context: {
+                    isCool: true
+                },
+                campaigns: demoData.decisionApi.normalResponse.manyModifInManyCampaigns.campaigns
+            };
+            localStorage.setItem(CLIENT_CACHE_KEY, JSON.stringify(customVisitorProfile));
+            // SIMULATING AN EXISTING CACHE - END
+
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, enableClientCache: false });
+            visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext);
+
+            expect(visitorInstance.id).not.toEqual(customVisitorProfile.id);
             expect(sdk.cacheManager).toEqual(null);
         });
         it('should set in local storage the visitor profile after visitor being initialized and when settings "enableClientCache=true"', (done) => {
