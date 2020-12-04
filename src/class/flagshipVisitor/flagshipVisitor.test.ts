@@ -35,6 +35,10 @@ type initSpyLogsOutput = {
     spyDebugLogs: jest.SpyInstance<any, unknown[]>;
 };
 
+let spyWarnConsoleLogs;
+let spyErrorConsoleLogs;
+let spyInfoConsoleLogs;
+
 const initSpyLogs = (vInstance): initSpyLogsOutput => {
     spyFatalLogs = jest.spyOn(vInstance.log, 'fatal');
     spyWarnLogs = jest.spyOn(vInstance.log, 'warn');
@@ -59,8 +63,16 @@ describe('FlagshipVisitor', () => {
     beforeAll(() => {
         sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
     });
+    beforeEach(() => {
+        spyWarnConsoleLogs = jest.spyOn(console, 'warn').mockImplementation();
+        spyErrorConsoleLogs = jest.spyOn(console, 'error').mockImplementation();
+        spyInfoConsoleLogs = jest.spyOn(console, 'log').mockImplementation();
+    });
     afterEach(() => {
         mockAxios.reset();
+        spyWarnConsoleLogs.mockRestore();
+        spyErrorConsoleLogs.mockRestore();
+        spyInfoConsoleLogs.mockRestore();
     });
 
     it('should create a Visitor instance with clean context', () => {
@@ -3333,7 +3345,7 @@ describe('FlagshipVisitor', () => {
     });
     describe('visitor reconciliation (continuity) [fetchNow=false, activateNow=false]', () => {
         beforeEach(() => {
-            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfigWithoutFetchNow);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, enableConsoleLogs: true });
             visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext); // don't specify an id so it will a create one automatically
             defaultDecisionApiResponse = {
                 data: demoData.decisionApi.normalResponse.oneCampaignWithFurtherModifs,
@@ -3431,15 +3443,17 @@ describe('FlagshipVisitor', () => {
                             // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                             expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                             expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                             expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+                            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                            expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                                1,
-                                `authenticate - visitor passed from anonymous (id=${currentVisitorId}) to authenticated (id=${authenticatedId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`
-                            );
+                            expect(
+                                assertionHelper.containsLogThatContainingMessage(
+                                    `authenticate - visitor passed from anonymous (id=${currentVisitorId}) to authenticated (id=${authenticatedId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`,
+                                    spyInfoConsoleLogs
+                                ).length
+                            ).toEqual(1);
                             // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
                             // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
 
@@ -3475,15 +3489,17 @@ describe('FlagshipVisitor', () => {
                                     // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                                     expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
+                                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                                     expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                                     expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(3);
+                                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                                    expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                                        2,
-                                        `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${currentVisitorId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`
-                                    );
+                                    expect(
+                                        assertionHelper.containsLogThatContainingMessage(
+                                            `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${currentVisitorId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`,
+                                            spyInfoConsoleLogs
+                                        ).length
+                                    ).toEqual(1);
                                     // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
                                     // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
                                     // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
@@ -3599,7 +3615,7 @@ describe('FlagshipVisitor', () => {
             mockAxios.reset();
         });
         it('should synchronize automatically when auth with "fetchNow=true"', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], testConfig);
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, enableConsoleLogs: true });
             visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext); // don't specify an id so it will a create one automatically
             visitorSpy = initSpyLogs(visitorInstance);
             const anonymousId = visitorInstance.id;
@@ -3627,15 +3643,17 @@ describe('FlagshipVisitor', () => {
                 // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                 expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                    2,
-                    `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`
-                );
+                expect(
+                    assertionHelper.containsLogThatContainingMessage(
+                        `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`,
+                        spyInfoConsoleLogs
+                    ).length
+                ).toEqual(1);
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
@@ -3682,15 +3700,17 @@ describe('FlagshipVisitor', () => {
                 // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                 expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                    1,
-                    `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`
-                );
+                expect(
+                    assertionHelper.containsLogThatContainingMessage(
+                        `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`,
+                        spyInfoConsoleLogs
+                    ).length
+                ).toEqual(1);
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
 
@@ -3726,7 +3746,11 @@ describe('FlagshipVisitor', () => {
         });
 
         it('should synchronize automatically when auth with "activateNow=true"', (done) => {
-            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfigWithoutFetchNow, activateNow: true });
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], {
+                ...testConfigWithoutFetchNow,
+                activateNow: true,
+                enableConsoleLogs: true
+            });
             visitorInstance = sdk.newVisitor(null, demoData.visitor.cleanContext); // don't specify an id so it will a create one automatically
             visitorSpy = initSpyLogs(visitorInstance);
             const anonymousId = visitorInstance.id;
@@ -3755,15 +3779,17 @@ describe('FlagshipVisitor', () => {
                 // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                 expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(2);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(9);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                    2,
-                    `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`
-                );
+                expect(
+                    assertionHelper.containsLogThatContainingMessage(
+                        `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${anonymousId}).`,
+                        spyInfoConsoleLogs
+                    ).length
+                ).toEqual(1);
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
@@ -3825,15 +3851,17 @@ describe('FlagshipVisitor', () => {
                 // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
 
                 expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(5);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
 
-                expect(visitorSpy.spyInfoLogs).toHaveBeenNthCalledWith(
-                    1,
-                    `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`
-                );
+                expect(
+                    assertionHelper.containsLogThatContainingMessage(
+                        `authenticate - visitor passed from anonymous (id=${anonymousId}) to authenticated (id=${authenticatedId}).`,
+                        spyInfoConsoleLogs
+                    ).length
+                ).toEqual(1);
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
                 // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
 
