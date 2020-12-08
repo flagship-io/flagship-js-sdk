@@ -506,6 +506,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         }
         const polishOutput = (data: DecisionApiCampaign): GetModificationInfoOutput => ({
             campaignId: data.id,
+            isReference: !!data.variation.reference,
             variationId: data.variation.id,
             variationGroupId: data.variationGroupId
         });
