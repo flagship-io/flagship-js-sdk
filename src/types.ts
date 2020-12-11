@@ -26,9 +26,9 @@ export type PostFlagshipApiCallback = (
 
 export interface IFsVisitorProfile {
     id: string; // required
-    anonymousId?: string | null;
-    context?: FlagshipVisitorContext;
-    campaigns?: DecisionApiCampaign[];
+    anonymousId?: string | null; // optional
+    context?: FlagshipVisitorContext; // optional
+    campaigns?: DecisionApiCampaign[]; // optional
 }
 
 export interface IFsCacheManager {
