@@ -1,5 +1,24 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.2.1
+
+### New features 🎉
+
+[Client side only!] The SDK will handle a cache manager (local storage), it is enable by default (you can change this in SDK settings). The goal of this cache is to keep the visitor experience between cross sessions. From there, when you do not specify an id when creating a visitor, the SDK will check inside the cache if a visitor previously existed, if so, it will take back its id.
+The cache also keep cross sessions visitor experience regarding if it has been reconciliated or not (authenticate / unauthenticate).
+
+This feature means, you can now let the SDK handle the visitor id for you, whatever happens during its experience. You just need to be focus on its context and if the visitor is authenticated or not. That's it.
+
+NOTE: Be aware that this feature is actually not available when running the SDK on server side though. (But coming soon !)
+
+-   the SDK has a new settings to handle the client cache manager. It is a boolean named `enableClientCache` (`true` by default). This setting is ignored on server side.
+
+    ```javascript
+    const fsInstance = flagship.start('YOUR_ENV_ID', 'YOUR_API_KEY', {
+        enableClientCache: true
+    });
+    ```
+
 ## ➡️ Version 2.2.0
 
 ### New features 🎉
