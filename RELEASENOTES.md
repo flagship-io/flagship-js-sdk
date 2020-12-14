@@ -1,26 +1,25 @@
 # Flagship JS SDK - Release notes
 
-## ➡️ Version 2.1.10
+## ➡️ Version 2.2.1
 
 ### New features 🎉
 
--   This new release includes a client cache manager which will improve the cross section visitor experience. If you want to disable it, we created a new settings `enableClientCache`, boolean. The default value is `true` meaning that the cache manager will be enable on client side but this setting will be ignored on server side.
+[Client side only!] The SDK will handle a cache manager (local storage), it is enable by default (you can change this in SDK settings). The goal of this cache is to keep the visitor experience between cross sessions. From there, when you do not specify an id when creating a visitor, the SDK will check inside the cache if a visitor previously existed, if so, it will take back its id.
+The cache also keep cross sessions visitor experience regarding if it has been reconciliated or not (authenticate / unauthenticate).
 
--   `newVisitor` function takes a new optional 3rd argument named "options", it takes an object, read more about that in the [SDK documentation]().
+This feature means, you can now let the SDK handle the visitor id for you, whatever happens during its experience. You just need to be focus on its context and if the visitor is authenticated or not. That's it.
 
-    We can use "options" argument to specify if the new visitor is already authenticated (`false` by default):
+NOTE: Be aware that this feature is actually not available when running the SDK on server side though. (But coming soon !)
+
+-   the SDK has a new settings to handle the client cache manager. It is a boolean named `enableClientCache` (`true` by default). This setting is ignored on server side.
 
     ```javascript
-    const visitorContext = { some: 'visitorContext' };
-    const visitorOptions = { isAuthenticated: true };
-    const fsVisitorInstance = fsInstance.newVisitor('YOUR_VISITOR_ID', visitorContext, visitorOptions);
+    const fsInstance = flagship.start('YOUR_ENV_ID', 'YOUR_API_KEY', {
+        enableClientCache: true
+    });
     ```
 
-### Bug fixes 🐛
-
--   Fix debug logs reporting the value of bucketing polling interval in **minutes** instead of **seconds**.
-
-## ➡️ Version 2.1.9
+## ➡️ Version 2.2.0
 
 ### New features 🎉
 
@@ -31,8 +30,8 @@
     before:
 
     ```javascript
-    visitorInstance.on('ready', (data) => {
-        // data was always undefined...
+    visitorInstance.on('ready', () => {
+        // do some stuff...
     });
     ```
 
@@ -40,7 +39,7 @@
 
     ```javascript
     visitorInstance.on('ready', (data) => {
-        const { withError, error } = data; // now data has some info !
+        const { withError, error } = data; // now data has some info ! This is helpful to understand if an error occurred during the asynchronous visitor initialization
         if (withError) {
             console.error('ouch ! visitor is ready but with error :( \nDetails: ' + error.message);
         }
@@ -50,29 +49,30 @@
 
 -   The SDK supports the new visitor reconciliation feature named "continuity". Two new functions have been added to the FlagshipVisitor class:
 
-**authenticate**
+    **authenticate**
 
-```javascript
-visitorInstance.authenticate('VISITOR_ID_ALREADY_KNOWN_BY_FLAGSHIP'); // which will link the previous visitor (anonymous) to the already known visitor
-```
+    Takes a string as argument. The string must be a visitor id.
 
-**unauthenticate**
+    ```javascript
+    visitorInstance.authenticate('MY_AUTHENTICATED_VISITOR_ID'); // this will keep the previous (anonymous) experience with the authenticated one
+    ```
 
-```javascript
-visitorInstance.unauthenticate(); // the visitor will be back considered as anonymous if it was previously authenticated (after calling visitorInstance.authenticate('xxx') )
-```
+    **unauthenticate**
 
-More details on continuity feature in the [SDK documentation]().
+    ```javascript
+    visitorInstance.unauthenticate(); // the visitor will be back considered as anonymous if it was previously authenticated
 
--   Create automatically a visitor id when you do not specify.
+    More details on continuity feature in the [SDK documentation](https://developers.flagship.io/docs/sdk/javascript/v2.2#visitor-reconciliation).
 
-Example:
+    ```
 
-```javascript
-visitorInstance = sdk.newVisitor(null, { ...myVisitorContext }); // SDK will detect that no id has been specified and will create automatically one.
+-   The SDK can now create automatically a visitor id when you do not specify it.
 
-// [...]
-```
+    Example:
+
+    ```javascript
+    visitorInstance = sdk.newVisitor(null, { ...myVisitorContext }); // SDK will detect that no id has been specified and will create automatically one.
+    ```
 
 ## ➡️ Version 2.1.8
 
@@ -181,7 +181,7 @@ Be aware that `apiKey` will be mandatory in the next major release as it will us
 
 ```javascript
 flagshipSdk.start('ENV_ID', { apiKey: 'API_KEY' /*, other settings...*/ }); // "apiKey" was not required
-````
+```
 
 -   **NOW**:
 
@@ -516,3 +516,4 @@ arrayOf(
 -   New available function `activateModifications`.
 
     It allows you to activate automatically the campaigns which are matching the modifications that you specify in arguments. More info [here 👈](README.md#activateModifications)
+````
