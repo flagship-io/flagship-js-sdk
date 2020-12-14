@@ -27,6 +27,7 @@ export type DecisionApiResponseData = {
 
 export type GetModificationInfoOutput = {
     campaignId: string;
+    isReference: boolean;
     variationId: string;
     variationGroupId: string;
 };

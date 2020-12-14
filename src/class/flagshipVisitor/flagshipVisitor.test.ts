@@ -1227,6 +1227,44 @@ describe('FlagshipVisitor', () => {
                 try {
                     expect(response).toEqual({
                         campaignId: 'bmjdprsjan0g01uq2ceg',
+                        isReference: false,
+                        variationGroupId: 'bmjdprsjan0g01uq2ceg',
+                        variationId: 'bmjdprsjan0g01uq1ctg'
+                    });
+                } catch (error) {
+                    done.fail(error);
+                }
+                done();
+            });
+            mockAxios.mockResponse(responseObj);
+            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
+            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                1,
+                url,
+                {
+                    context: demoData.visitor.cleanContext,
+                    trigger_hit: false,
+                    visitor_id: demoData.visitor.id[0]
+                },
+                {
+                    ...assertionHelper.getCampaignsQueryParams(),
+                    ...assertionHelper.getTimeout(url, sdk.config),
+
+                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                }
+            );
+        });
+        it('should return tell if the modification receive is a ref when it is the case', (done) => {
+            const responseObj = {
+                data: { ...demoData.decisionApi.normalResponse.manyModifInManyCampaigns },
+                status: 200,
+                statusText: 'OK'
+            };
+            visitorInstance.getModificationInfo('hello').then((response) => {
+                try {
+                    expect(response).toEqual({
+                        campaignId: 'bmjdprsjan0g01uq2ceg',
+                        isReference: true,
                         variationGroupId: 'bmjdprsjan0g01uq2ceg',
                         variationId: 'bmjdprsjan0g01uq1ctg'
                     });
@@ -1260,6 +1298,7 @@ describe('FlagshipVisitor', () => {
             visitorInstance.getModificationInfo('psp').then((response) => {
                 try {
                     expect(response).toEqual({
+                        isReference: false,
                         campaignId: 'blntcamqmdvg04g371f0',
                         variationGroupId: 'blntcamqmdvg04g371h0',
                         variationId: 'blntcamqmdvg04g371hg'

@@ -1,78 +1,8 @@
 # Flagship JS SDK - Release notes
 
-## ➡️ Version 2.2.1
+## ➡️ Version 2.1.9
 
-### New features 🎉
-
-[Client side only!] The SDK will handle a cache manager (local storage), it is enable by default (you can change this in SDK settings). The goal of this cache is to keep the visitor experience between cross sessions. From there, when you do not specify an id when creating a visitor, the SDK will check inside the cache if a visitor previously existed, if so, it will take back its id.
-The cache also keep cross sessions visitor experience regarding if it has been reconciliated or not (authenticate / unauthenticate).
-
-This feature means, you can now let the SDK handle the visitor id for you, whatever happens during its experience. You just need to be focus on its context and if the visitor is authenticated or not. That's it.
-
-NOTE: Be aware that this feature is actually not available when running the SDK on server side though. (But coming soon !)
-
--   the SDK has a new settings to handle the client cache manager. It is a boolean named `enableClientCache` (`true` by default). This setting is ignored on server side.
-
-    ```javascript
-    const fsInstance = flagship.start('YOUR_ENV_ID', 'YOUR_API_KEY', {
-        enableClientCache: true
-    });
-    ```
-
-## ➡️ Version 2.2.0
-
-### New features 🎉
-
--   visitor's `ready` listener callback now expose some data regarding potential error:
-
-    Example:
-
-    before:
-
-    ```javascript
-    visitorInstance.on('ready', () => {
-        // do some stuff...
-    });
-    ```
-
-    now:
-
-    ```javascript
-    visitorInstance.on('ready', (data) => {
-        const { withError, error } = data; // now data has some info ! This is helpful to understand if an error occurred during the asynchronous visitor initialization
-        if (withError) {
-            console.error('ouch ! visitor is ready but with error :( \nDetails: ' + error.message);
-        }
-        // [...]
-    });
-    ```
-
--   The SDK supports the new visitor reconciliation feature named "continuity". Two new functions have been added to the FlagshipVisitor class:
-
-    **authenticate**
-
-    Takes a string as argument. The string must be a visitor id.
-
-    ```javascript
-    visitorInstance.authenticate('MY_AUTHENTICATED_VISITOR_ID'); // this will keep the previous (anonymous) experience with the authenticated one
-    ```
-
-    **unauthenticate**
-
-    ```javascript
-    visitorInstance.unauthenticate(); // the visitor will be back considered as anonymous if it was previously authenticated
-
-    More details on continuity feature in the [SDK documentation](https://developers.flagship.io/docs/sdk/javascript/v2.2#visitor-reconciliation).
-
-    ```
-
--   The SDK can now create automatically a visitor id when you do not specify it.
-
-    Example:
-
-    ```javascript
-    visitorInstance = sdk.newVisitor(null, { ...myVisitorContext }); // SDK will detect that no id has been specified and will create automatically one.
-    ```
+-   function `getModificationInfo` output now contains a new attribute `isReference` (`boolean`) telling you if the modification is the reference (`true`) or not (`false`).
 
 ## ➡️ Version 2.1.8
 
