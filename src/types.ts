@@ -117,9 +117,9 @@ export interface IFlagshipVisitor extends EventEmitter {
     fetchedModifications: DecisionApiCampaign[] | null;
     modificationsInternalStatus: ModificationsInternalStatus | null;
     // UPDATE VISITOR
-    updateContext(context: FlagshipVisitorContext): void;
-    authenticate(id: string): Promise<void>;
-    unauthenticate(visitorId?: string): Promise<void>;
+    updateContext(visitorContext: FlagshipVisitorContext): void;
+    authenticate(visitorId: string, visitorContext?: FlagshipVisitorContext): Promise<void>;
+    unauthenticate(visitorContext?: FlagshipVisitorContext, visitorId?: string): Promise<void>;
     // VISITOR MODIFICATIONS
     getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
     getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;

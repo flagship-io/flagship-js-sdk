@@ -105,22 +105,27 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         return FlagshipCommon.createVisitorId();
     }
 
-    public authenticate(id: string): AuthenticateVisitorOutput {
+    public authenticate(visitorId: string, visitorContext?: FlagshipVisitorContext): AuthenticateVisitorOutput {
         let errorMsg;
         // Some validation
-        if (!id) {
+        if (!visitorId) {
             errorMsg = 'authenticate - no id specified. You must provide the visitor id which identifies your authenticated user.';
             this.log.error(errorMsg);
             return new Promise((resolve, reject) => reject(errorMsg));
         }
-        if (typeof id !== 'string') {
-            errorMsg = `authenticate - Received incorrect argument type: '${typeof id}'.The expected id must be type of 'string'.`;
+        if (typeof visitorId !== 'string') {
+            errorMsg = `authenticate - Received incorrect argument type: '${typeof visitorId}'.The expected id must be type of 'string'.`;
             this.log.error(errorMsg);
             return new Promise((resolve, reject) => reject(errorMsg));
         }
 
         this.anonymousId = this.id;
-        this.setVisitorId(id);
+        this.setVisitorId(visitorId);
+
+        // check if should update context
+        if (typeof visitorContext !== 'undefined') {
+            this.updateContext(visitorContext);
+        }
 
         const { fetchNow, activateNow } = this.config;
         const updateMsg = `authenticate - visitor passed from anonymous (id=${this.anonymousId}) to authenticated (id=${this.id}).`;
@@ -138,9 +143,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
      *
      * @param {visitorId} optional string. Used for other Flagship SDK only (R and RN).
      * @return {UnauthenticateVisitorOutput} A promise to handle async behavior.
-     * @since 1.1.0
+     * @since 2.2.0
      */
-    public unauthenticate(visitorId?: string): UnauthenticateVisitorOutput {
+    public unauthenticate(visitorContext?: FlagshipVisitorContext, visitorId?: string): UnauthenticateVisitorOutput {
         let errorMsg;
         if (!this.anonymousId) {
             errorMsg = `unauthenticate - Your visitor never has been authenticated.`;
@@ -150,6 +155,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         const previousAuthenticatedId = this.id;
         this.setVisitorId(visitorId || this.anonymousId);
         this.anonymousId = null;
+
+        // check if should update context
+        if (typeof visitorContext !== 'undefined') {
+            this.updateContext(visitorContext);
+        }
 
         const { fetchNow, activateNow } = this.config;
         const updateMsg = `unauthenticate - visitor passed from authenticated (id=${previousAuthenticatedId}) to anonymous (id=${this.id}).`;
