@@ -46,6 +46,7 @@ export type FlagshipSdkConfig = {
 };
 
 export type FlagshipSdkInternalConfig = {
+    campaignNormalEndpoint: string;
     bucketingEndpoint: string;
     apiV1: string;
     apiV2: string;
@@ -98,17 +99,36 @@ export interface IFlagshipBucketing extends EventEmitter {
     on(event: 'error', listener: (args: Error) => void): this;
 }
 
+export type ReadyListenerOutput = {
+    withError: boolean;
+    error: Error | null;
+};
+
 export interface IFlagshipVisitor extends EventEmitter {
     config: FlagshipSdkConfig;
     id: string;
+    anonymousId: string;
     log: FsLogger;
-    envId: string;
+    envId: string | null;
     panic: IFsPanicMode;
     context: FlagshipVisitorContext;
     isAllModificationsFetched: boolean;
     bucket: IFlagshipBucketingVisitor | null;
     fetchedModifications: DecisionApiCampaign[] | null;
     modificationsInternalStatus: ModificationsInternalStatus | null;
+    // UPDATE VISITOR
+    updateContext(visitorContext: FlagshipVisitorContext): void;
+    authenticate(visitorId: string, visitorContext?: FlagshipVisitorContext): Promise<void>;
+    unauthenticate(visitorContext?: FlagshipVisitorContext, visitorId?: string): Promise<void>;
+    // VISITOR MODIFICATIONS
+    getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
+    getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;
+    synchronizeModifications(activate?: boolean): Promise<number>;
+    getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
+    getAllModifications(
+        activate?: boolean,
+        options?: { force?: boolean; simpleMode?: boolean }
+    ): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
     activateModifications(
         modifications: Array<{
             key: string;
@@ -116,18 +136,11 @@ export interface IFlagshipVisitor extends EventEmitter {
             variationGroupId?: string;
         }>
     ): void;
-    getModifications(modificationsRequested: FsModifsRequestedList, activateAllModifications?: boolean): GetModificationsOutput;
-    getModificationInfo(key: string): Promise<null | GetModificationInfoOutput>;
-    updateContext(context: FlagshipVisitorContext): void;
-    synchronizeModifications(activate?: boolean): Promise<number>;
-    getModificationsForCampaign(campaignId: string, activate?: boolean): Promise<DecisionApiResponse>;
-    getAllModifications(
-        activate?: boolean,
-        options?: { force?: boolean; simpleMode?: boolean }
-    ): Promise<DecisionApiResponse | DecisionApiSimpleResponse>;
+    // VISITOR HITS
     sendHit(hitData: HitShape): Promise<void>;
     sendHits(hitsArray: Array<HitShape>): Promise<void>;
-    on(event: 'ready', listener: () => void): this;
+    // VISITOR LISTENER
+    on(event: 'ready', listener: () => ReadyListenerOutput): this;
     on(event: 'saveCache', listener: (args: SaveCacheArgs) => void): this;
 }
 export interface IFlagship {
