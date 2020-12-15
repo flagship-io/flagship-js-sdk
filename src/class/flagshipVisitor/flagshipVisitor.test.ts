@@ -3530,6 +3530,133 @@ describe('FlagshipVisitor', () => {
             mockAxios.mockResponse(defaultDecisionApiResponse);
         });
 
+        it('should update context when visitor is created as anonymous then authenticated and then sign out', (done) => {
+            const currentVisitorId = visitorInstance.id;
+            const spyUpdateContext = jest.spyOn(visitorInstance, 'updateContext');
+            let newContext = { test: 'auth' };
+            visitorInstance
+                .synchronizeModifications()
+                .then(() => {
+                    const authenticatedId = demoData.envId[0];
+                    visitorInstance.authenticate(authenticatedId, newContext); // simulate an authenticated user
+                    expect(spyUpdateContext).toHaveBeenNthCalledWith(1, newContext);
+                    visitorInstance
+                        .synchronizeModifications()
+                        .then(() => {
+                            expect(visitorInstance.context).toEqual(newContext);
+                            expect(mockAxios.post).toHaveBeenCalledTimes(4);
+                            expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                            // NOTE: the first 2 axios.post are asserted in the previous unit test.
+                            expect(mockAxios.post).toHaveBeenNthCalledWith(
+                                3,
+                                `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                                {
+                                    ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                                    visitor_id: authenticatedId,
+                                    anonymous_id: currentVisitorId
+                                },
+                                {
+                                    cancelToken: {},
+                                    headers: { 'x-api-key': visitorInstance.config.apiKey },
+                                    params: { exposeAllKeys: true, sendContextEvent: false },
+                                    timeout: 2000
+                                }
+                            );
+                            // TODO: maybe check what we send to "/events":
+                            // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
+
+                            expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                            expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                            expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                            expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+
+                            expect(
+                                assertionHelper.containsLogThatContainingMessage(
+                                    `authenticate - visitor passed from anonymous (id=${currentVisitorId}) to authenticated (id=${authenticatedId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`,
+                                    spyInfoConsoleLogs
+                                ).length
+                            ).toEqual(1);
+                            // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
+                            // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+
+                            expect(visitorInstance.anonymousId).toEqual(currentVisitorId);
+                            expect(visitorInstance.id).toEqual(demoData.envId[0]);
+
+                            // NOW SIGN OUT THE VISITOR
+                            newContext = { anotherTest: 'unauth' };
+                            visitorInstance.unauthenticate(newContext);
+
+                            expect(spyUpdateContext).toHaveBeenNthCalledWith(2, newContext);
+
+                            visitorInstance
+                                .synchronizeModifications()
+                                .then(() => {
+                                    expect(visitorInstance.context).toEqual(newContext);
+                                    expect(mockAxios.post).toHaveBeenCalledTimes(6);
+                                    expect(mockAxios.get).toHaveBeenCalledTimes(0);
+                                    // NOTE: the first 4 axios.post are asserted in the previous unit test.
+                                    expect(mockAxios.post).toHaveBeenNthCalledWith(
+                                        5,
+                                        `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/campaigns?mode=normal`,
+                                        {
+                                            ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                                            visitor_id: currentVisitorId,
+                                            anonymous_id: null
+                                        },
+                                        {
+                                            cancelToken: {},
+                                            headers: { 'x-api-key': visitorInstance.config.apiKey },
+                                            params: { exposeAllKeys: true, sendContextEvent: false },
+                                            timeout: 2000
+                                        }
+                                    );
+
+                                    // TODO: maybe check what we send to "/events":
+                                    // expect(mockAxios.post).toHaveBeenNthCalledWith(4, `${visitorInstance.config.flagshipApi}${visitorInstance.envId}/events`);
+
+                                    expect(visitorSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
+                                    expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
+                                    expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
+                                    expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
+                                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+
+                                    expect(
+                                        assertionHelper.containsLogThatContainingMessage(
+                                            `unauthenticate - visitor passed from authenticated (id=${authenticatedId}) to anonymous (id=${currentVisitorId}). Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`,
+                                            spyInfoConsoleLogs
+                                        ).length
+                                    ).toEqual(1);
+                                    // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
+                                    // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications:');
+                                    // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(3, 'saveModificationsInCache - saving in cache those modifications:');
+
+                                    expect(visitorInstance.anonymousId).toEqual(null);
+                                    expect(visitorInstance.id).toEqual(currentVisitorId);
+
+                                    done();
+                                })
+                                .catch((e) => done.fail(e));
+                            mockAxios.mockResponseFor(
+                                internalConfig.campaignNormalEndpoint
+                                    .replace('@ENV_ID@', visitorInstance.envId)
+                                    .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                                defaultDecisionApiResponse
+                            );
+                        })
+                        .catch((e) => done.fail(e));
+                    const debug = mockAxios.lastReqGet();
+                    mockAxios.mockResponseFor(
+                        internalConfig.campaignNormalEndpoint
+                            .replace('@ENV_ID@', visitorInstance.envId)
+                            .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                        defaultDecisionApiResponse
+                    );
+                })
+                .catch((e) => done.fail(e));
+            mockAxios.mockResponse(defaultDecisionApiResponse);
+        });
+
         it('should log an error if trying to unauthenticate a user which has never been authenticate previously', (done) => {
             const currentVisitorId = visitorInstance.id;
 
