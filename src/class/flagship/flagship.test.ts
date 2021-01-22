@@ -251,7 +251,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -264,7 +264,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -277,7 +277,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     done();
@@ -326,7 +326,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -339,7 +339,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -352,7 +352,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     done();
@@ -401,7 +401,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                            ...assertionHelper.getCommonEmptyHeaders(),
                             ...assertionHelper.getTimeout(`${endPoint}activate`, sdk.config)
                         }
                     );
@@ -415,7 +415,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                            ...assertionHelper.getCommonEmptyHeaders(),
                             ...assertionHelper.getTimeout(`${endPoint}activate`, sdk.config)
                         }
                     );
@@ -429,7 +429,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                            ...assertionHelper.getCommonEmptyHeaders(),
                             ...assertionHelper.getTimeout(`${endPoint}activate`, sdk.config)
                         }
                     );
@@ -877,7 +877,7 @@ describe('FlagshipVisitor', () => {
                         visitor_id: demoData.visitor.id[0]
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
 

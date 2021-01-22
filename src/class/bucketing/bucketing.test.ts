@@ -466,7 +466,7 @@ describe('Bucketing used from visitor instance', () => {
                             visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
 
@@ -480,7 +480,7 @@ describe('Bucketing used from visitor instance', () => {
                             vid: demoData.bucketing.functions.murmur.allocation[68].visitorId
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -493,7 +493,7 @@ describe('Bucketing used from visitor instance', () => {
                             vid: demoData.bucketing.functions.murmur.allocation[68].visitorId // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
 

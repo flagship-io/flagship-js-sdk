@@ -45,6 +45,7 @@ const flagshipSdkHelper = {
         if (config.apiKey && isNotApiV1 && isCampaignCall) {
             additionalHeaderParams['x-api-key'] = config.apiKey;
         }
+
         const cancelTokenSource = axios.CancelToken.source();
         const axiosFct = (): Promise<any> =>
             axios
