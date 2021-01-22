@@ -1,7 +1,6 @@
 import axios, { CancelToken } from 'axios';
 
 import { FlagshipSdkConfig, IFlagshipVisitor } from '../../src/types';
-import FlagshipVisitor from '../../src/class/flagshipVisitor/flagshipVisitor';
 
 const assertionHelper = {
     getActivateApiCommonBody: (visitorInstance: IFlagshipVisitor): { [key: string]: string } => {
