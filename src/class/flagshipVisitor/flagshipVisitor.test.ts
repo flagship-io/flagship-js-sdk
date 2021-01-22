@@ -397,7 +397,7 @@ describe('FlagshipVisitor', () => {
                     caid: '987654321'
                 },
                 {
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getCommonEmptyHeaders(),
                 }
             );
         });
@@ -413,7 +413,7 @@ describe('FlagshipVisitor', () => {
                         caid: '987654321'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(error).toEqual('server crashed');
@@ -860,7 +860,7 @@ describe('FlagshipVisitor', () => {
                         caid: 'blntcamqmdvg04g371h0'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -872,7 +872,7 @@ describe('FlagshipVisitor', () => {
                         caid: 'bmjdprsjan0g01uq2csg'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -884,7 +884,7 @@ describe('FlagshipVisitor', () => {
                         caid: 'bmjdprsjan0g01uq2ceg'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 done();
@@ -953,7 +953,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'blntcamqmdvg04g371h0'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -965,7 +965,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'bmjdprsjan0g01uq2csg'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -977,7 +977,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'bmjdprsjan0g01uq2ceg'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                 } catch (error) {
@@ -1050,7 +1050,7 @@ describe('FlagshipVisitor', () => {
                     vid: demoData.visitor.id[0]
                 },
                 {
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getCommonEmptyHeaders(),
                 }
             );
             expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -1064,7 +1064,7 @@ describe('FlagshipVisitor', () => {
                     vid: demoData.visitor.id[0]
                 },
                 {
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getCommonEmptyHeaders(),
                 }
             );
         });
@@ -1088,7 +1088,7 @@ describe('FlagshipVisitor', () => {
                     vid: demoData.visitor.id[0]
                 },
                 {
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getCommonEmptyHeaders(),
                 }
             );
             expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -1102,7 +1102,7 @@ describe('FlagshipVisitor', () => {
                     vid: demoData.visitor.id[0]
                 },
                 {
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getCommonEmptyHeaders(),
                 }
             );
         });
@@ -1126,7 +1126,7 @@ describe('FlagshipVisitor', () => {
                     vid: demoData.visitor.id[0]
                 },
                 {
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getCommonEmptyHeaders(),
                 }
             );
         });
@@ -1491,7 +1491,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8cc00f72d5f3cb177'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -1503,7 +1503,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8d4106bb1ae2b6455'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(responseObject.data.campaigns, [
@@ -1542,7 +1542,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8d4106bb1ae2b6455'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -1554,7 +1554,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8fcde4be7ffe5476f'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
@@ -1599,7 +1599,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8d4106bb1ae2b6455'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
@@ -1637,7 +1637,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8cc00f72d5f3cb177'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -1649,7 +1649,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8d4106bb1ae2b6455'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -1661,7 +1661,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8fcde4be7ffe5476f'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
@@ -1714,7 +1714,7 @@ describe('FlagshipVisitor', () => {
                     caid: '5e26ccd8cc00f72d5f3cb177'
                 },
                 {
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getCommonEmptyHeaders(),
                 }
             );
             expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -1726,7 +1726,7 @@ describe('FlagshipVisitor', () => {
                     caid: '5e26ccd8d4106bb1ae2b6455'
                 },
                 {
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getCommonEmptyHeaders(),
                 }
             );
             expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -1738,7 +1738,7 @@ describe('FlagshipVisitor', () => {
                     caid: '5e26ccd8fcde4be7ffe5476f'
                 },
                 {
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getCommonEmptyHeaders(),
                 }
             );
             expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -1750,7 +1750,7 @@ describe('FlagshipVisitor', () => {
                     caid: '5e26ccd8fcde4be7ff55476f'
                 },
                 {
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                    ...assertionHelper.getCommonEmptyHeaders(),
                 }
             );
             expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
@@ -1816,7 +1816,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8cc00f72d5f3cb177'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -1828,7 +1828,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8fcde4be7ffe5476f'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
@@ -1881,7 +1881,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8cc00f72d5f3cb177'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(
@@ -1917,7 +1917,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8cc00f72d5f3cb177'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -1929,7 +1929,7 @@ describe('FlagshipVisitor', () => {
                         caid: '5e26ccd8d4106bb1ae2b6455'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(spyExtractDesiredModifications).toHaveBeenCalledWith(responseObject.data.campaigns, [
@@ -2351,7 +2351,7 @@ describe('FlagshipVisitor', () => {
                         caid: 'blntcamqmdvg04g371h0'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
 
@@ -2364,7 +2364,7 @@ describe('FlagshipVisitor', () => {
                         caid: 'bmjdprsjan0g01uq2csg'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
@@ -2403,7 +2403,7 @@ describe('FlagshipVisitor', () => {
                         caid: 'blntcamqmdvg04g371h0'
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
@@ -2615,7 +2615,7 @@ describe('FlagshipVisitor', () => {
                             visitor_id: visitorInstance.id
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     done();
@@ -2645,7 +2645,7 @@ describe('FlagshipVisitor', () => {
                             visitor_id: visitorInstance.id
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     done();
@@ -2673,7 +2673,7 @@ describe('FlagshipVisitor', () => {
                                         visitor_id: visitorInstance.id
                                     },
                                     {
-                                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                                        ...assertionHelper.getCommonEmptyHeaders(),
                                     }
                                 );
                                 done();
@@ -2715,7 +2715,7 @@ describe('FlagshipVisitor', () => {
                                         visitor_id: visitorInstance.id
                                     },
                                     {
-                                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                                        ...assertionHelper.getCommonEmptyHeaders(),
                                     }
                                 );
 
@@ -3827,7 +3827,7 @@ describe('FlagshipVisitor', () => {
                         aid: null
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(visitorInstance.config.apiKey)
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
                 // NOTE: second call hit '/event' endpoint.

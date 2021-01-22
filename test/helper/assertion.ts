@@ -10,6 +10,12 @@ const assertionHelper = {
             vid: visitorInstance.id
         };
     },
+    getCommonEmptyHeaders: (): { headers: {}; cancelToken: CancelToken } => {
+        return {
+            headers: {},
+            cancelToken: axios.CancelToken.source().token
+        }
+    },
     getApiKeyHeader: (apiKey: string): { headers: { 'x-api-key': string }; cancelToken: CancelToken } => {
         return {
             headers: {

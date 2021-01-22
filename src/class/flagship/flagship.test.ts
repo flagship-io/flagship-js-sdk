@@ -250,7 +250,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'blntcamqmdvg04g371h0'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -262,7 +262,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'bmjdprsjan0g01uq2csg'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -274,7 +274,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'bmjdprsjan0g01uq2ceg'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     done();
@@ -321,7 +321,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'blntcamqmdvg04g371h0'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -333,7 +333,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'bmjdprsjan0g01uq2csg'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -345,7 +345,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'bmjdprsjan0g01uq2ceg'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     done();
@@ -392,7 +392,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'blntcamqmdvg04g371h0'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                            ...assertionHelper.getCommonEmptyHeaders(),
                             ...assertionHelper.getTimeout(`${endPoint}activate`, sdk.config)
                         }
                     );
@@ -405,7 +405,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'bmjdprsjan0g01uq2csg'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                            ...assertionHelper.getCommonEmptyHeaders(),
                             ...assertionHelper.getTimeout(`${endPoint}activate`, sdk.config)
                         }
                     );
@@ -418,7 +418,7 @@ describe('FlagshipVisitor', () => {
                             caid: 'bmjdprsjan0g01uq2ceg'
                         },
                         {
-                            ...assertionHelper.getApiKeyHeader(demoData.apiKey[0]),
+                            ...assertionHelper.getCommonEmptyHeaders(),
                             ...assertionHelper.getTimeout(`${endPoint}activate`, sdk.config)
                         }
                     );
@@ -884,7 +884,7 @@ describe('FlagshipVisitor', () => {
                         visitor_id: demoData.visitor.id[0]
                     },
                     {
-                        ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
 
