@@ -1,7 +1,6 @@
 import axios, { CancelToken } from 'axios';
 
 import { FlagshipSdkConfig, IFlagshipVisitor } from '../../src/types';
-import FlagshipVisitor from '../../src/class/flagshipVisitor/flagshipVisitor';
 
 const assertionHelper = {
     getActivateApiCommonBody: (visitorInstance: IFlagshipVisitor): { [key: string]: string } => {
@@ -10,6 +9,12 @@ const assertionHelper = {
             cid: visitorInstance.envId,
             vid: visitorInstance.id
         };
+    },
+    getCommonEmptyHeaders: (): { headers: {}; cancelToken: CancelToken } => {
+        return {
+            headers: {},
+            cancelToken: axios.CancelToken.source().token
+        }
     },
     getApiKeyHeader: (apiKey: string): { headers: { 'x-api-key': string }; cancelToken: CancelToken } => {
         return {

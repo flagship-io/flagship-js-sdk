@@ -39,10 +39,13 @@ const flagshipSdkHelper = {
 
         checkRequiredSettingsForApiV2(config, log);
         const isNotApiV1 = !config.flagshipApi.includes('/v1/');
-        if (config.apiKey && isNotApiV1) {
+        const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
+        const isCampaignCall = url.includes('/campaigns');
+
+        if (config.apiKey && isNotApiV1 && isCampaignCall) {
             additionalHeaderParams['x-api-key'] = config.apiKey;
         }
-        const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
+
         const cancelTokenSource = axios.CancelToken.source();
         const axiosFct = (): Promise<any> =>
             axios
@@ -56,7 +59,7 @@ const flagshipSdkHelper = {
                             ...queryParams.headers,
                             ...additionalHeaderParams
                         },
-                        timeout: url.includes('/campaigns') ? config.timeout * 1000 : undefined
+                        timeout: isCampaignCall ? config.timeout * 1000 : undefined
                     }
                 )
                 .then((response: DecisionApiResponse) => {
