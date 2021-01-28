@@ -2,8 +2,8 @@
 
 ## ➡️ Version 2.1.9
 
-- Minor changes.
-- Adds `isReference` value in `getModificationInfo` function.
+-   Minor changes.
+-   function `getModificationInfo` output now contains a new attribute `isReference` (`boolean`) telling you if the modification is the reference (`true`) or not (`false`).
 
 ## ➡️ Version 2.1.8
 
