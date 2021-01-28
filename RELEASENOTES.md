@@ -1,5 +1,10 @@
 # Flagship JS SDK - Release notes
 
+## ➡️ Version 2.1.9
+
+- Minor changes.
+- Adds `isReference` value in `getModificationInfo` function.
+
 ## ➡️ Version 2.1.8
 
 ### New features 🎉
