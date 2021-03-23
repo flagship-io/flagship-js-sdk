@@ -2,7 +2,7 @@ import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
 import mockAxios from 'jest-mock-axios';
 import demoData from '../mock/demoData';
 import { internalConfig } from '../../src/config/default';
-import { demoPollingInterval } from '../../src/config/test';
+import { demoPollingInterval } from '../../src/config/test_constants';
 
 export const mockPollingRequest = (
     done,

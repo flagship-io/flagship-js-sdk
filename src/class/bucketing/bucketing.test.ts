@@ -1,11 +1,7 @@
 import mockAxios from 'jest-mock-axios';
 import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
-import testConfig, {
-    demoPollingInterval,
-    bucketingMinimumConfig,
-    bucketingApiMockOtherResponse200,
-    bucketingApiMockOtherResponse304
-} from '../../config/test';
+import testConfig, { bucketingMinimumConfig, bucketingApiMockOtherResponse200, bucketingApiMockOtherResponse304 } from '../../config/test';
+import { demoPollingInterval } from '../../config/test_constants';
 
 import flagshipSdk from '../..';
 import demoData from '../../../test/mock/demoData';
@@ -466,7 +462,7 @@ describe('Bucketing used from visitor instance', () => {
                             visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
 
@@ -480,7 +476,7 @@ describe('Bucketing used from visitor instance', () => {
                             vid: demoData.bucketing.functions.murmur.allocation[68].visitorId
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -493,7 +489,7 @@ describe('Bucketing used from visitor instance', () => {
                             vid: demoData.bucketing.functions.murmur.allocation[68].visitorId // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
 
