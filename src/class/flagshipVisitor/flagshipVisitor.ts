@@ -850,7 +850,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         const optionalAttributes: { [key: string]: string | number | boolean } = {};
         // TODO: move common optional attributes before switch statement (ie: "pageTitle", "documentLocation",...)
         switch (hitData.type.toUpperCase()) {
-            case 'SCREEN':
             case 'SCREENVIEW': {
                 const { documentLocation, pageTitle } = hitData.data;
                 if (!documentLocation || !pageTitle) {
@@ -864,6 +863,23 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 }
                 return {
                     t: 'SCREENVIEW',
+                    dl: documentLocation,
+                    pt: pageTitle
+                };
+            }
+            case 'PAGEVIEW': {
+                const { documentLocation, pageTitle } = hitData.data;
+                if (!documentLocation || !pageTitle) {
+                    if (!documentLocation)
+                        this.log.error(
+                            'sendHits(PageView) - failed because following required attribute "documentLocation" is missing...'
+                        );
+                    if (!pageTitle)
+                        this.log.error('sendHits(PageView) - failed because following required attribute "pageTitle" is missing...');
+                    return null;
+                }
+                return {
+                    t: 'PAGEVIEW',
                     dl: documentLocation,
                     pt: pageTitle
                 };
