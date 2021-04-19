@@ -2,7 +2,8 @@ import mockAxios from 'jest-mock-axios';
 import defaultConfig, { internalConfig } from '../../config/default';
 import { IFlagshipVisitor, IFlagship, FlagshipSdkConfig } from '../../types';
 import demoData from '../../../test/mock/demoData';
-import testConfig, { bucketingMinimumConfig, demoPollingInterval, bucketingApiMockOtherResponse200 } from '../../config/test';
+import testConfig, { bucketingMinimumConfig, bucketingApiMockOtherResponse200 } from '../../config/test';
+import { demoPollingInterval } from '../../config/test_constants';
 import flagshipSdk from '../../index';
 import assertionHelper from '../../../test/helper/assertion';
 import { mockPollingRequest, mockPollingRequestV2 } from '../../../test/helper/testUtils';
@@ -251,7 +252,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -264,7 +265,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -277,7 +278,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
                     done();
@@ -326,7 +327,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -339,7 +340,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -352,7 +353,7 @@ describe('FlagshipVisitor', () => {
                             vid: 'test-perf'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
                     done();
@@ -877,7 +878,7 @@ describe('FlagshipVisitor', () => {
                         visitor_id: demoData.visitor.id[0]
                     },
                     {
-                        ...assertionHelper.getCommonEmptyHeaders(),
+                        ...assertionHelper.getCommonEmptyHeaders()
                     }
                 );
 
