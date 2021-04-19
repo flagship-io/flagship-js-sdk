@@ -94,8 +94,9 @@ export type ModificationsInternalStatus = {
 };
 
 export type HitShape =
-    | { type: 'Screen'; data: ScreenHit } // Deprecated type: 'Screen'
-    | { type: 'ScreenView'; data: ScreenHit }
+    | { type: 'Screen'; data: ScreenViewHit } // Deprecated type: 'Screen'
+    | { type: 'ScreenView'; data: ScreenViewHit }
+    | { type: 'PageView'; data: PageViewHit }
     | { type: 'Transaction'; data: TransactionHit }
     | { type: 'Item'; data: ItemHit }
     | { type: 'Event'; data: EventHit };
@@ -135,7 +136,12 @@ export type EventHit = CommonHit & {
     pageTitle?: string;
 };
 
-export type ScreenHit = CommonHit & {
+export type ScreenViewHit = CommonHit & {
+    documentLocation: string;
+    pageTitle: string;
+};
+
+export type PageViewHit = CommonHit & {
     documentLocation: string;
     pageTitle: string;
 };
