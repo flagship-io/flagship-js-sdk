@@ -2076,10 +2076,10 @@ describe('FlagshipVisitor', () => {
                 statusText: 'OK'
             };
         });
-        it('should send hit of type "transaction" + "item" + "event" + "page" + "screen" if there are in the array argument', (done) => {
+        it('should send hit of type "transaction" + "item" + "event" + "pageview" + "screenview" if there are in the array argument', (done) => {
             try {
                 visitorInstance
-                    .sendHits([demoData.hit.event, demoData.hit.item, demoData.hit.screen, demoData.hit.transaction])
+                    .sendHits([demoData.hit.event, demoData.hit.item, demoData.hit.screenview, demoData.hit.transaction, demoData.hit.pageview])
                     .then((response) => {
                         try {
                             expect(response).not.toBeDefined();
@@ -2087,6 +2087,7 @@ describe('FlagshipVisitor', () => {
                             expect(spyInfoLogs).toHaveBeenNthCalledWith(2, 'sendHits - hit (type"ITEM") send successfully');
                             expect(spyInfoLogs).toHaveBeenNthCalledWith(3, 'sendHits - hit (type"SCREENVIEW") send successfully');
                             expect(spyInfoLogs).toHaveBeenNthCalledWith(4, 'sendHits - hit (type"TRANSACTION") send successfully');
+                            expect(spyInfoLogs).toHaveBeenNthCalledWith(5, 'sendHits - hit (type"PAGEVIEW") send successfully');
                             expect(spyWarnLogs).toBeCalledTimes(0);
                             expect(spyErrorLogs).toBeCalledTimes(0);
                             expect(spyFatalLogs).toBeCalledTimes(0);
@@ -2102,7 +2103,7 @@ describe('FlagshipVisitor', () => {
                 mockAxios.mockResponse();
                 mockAxios.mockResponse();
                 mockAxios.mockResponse();
-                // mockAxios.mockResponse()
+                mockAxios.mockResponse();
                 expect(mockAxios.post).toHaveBeenNthCalledWith(1, 'https://ariane.abtasty.com', {
                     cid: 'bn1ab7m56qolupi5sa0g',
                     vid: 'test-perf',
@@ -2155,7 +2156,15 @@ describe('FlagshipVisitor', () => {
                     ts: 888,
                     tt: 1234444
                 });
-                expect(mockAxios.post).toHaveBeenCalledTimes(4);
+                expect(mockAxios.post).toHaveBeenNthCalledWith(5, 'https://ariane.abtasty.com', {
+                    cid: 'bn1ab7m56qolupi5sa0g',
+                    dl: 'http%3A%2F%2Fabtastylab.com%2F60511af14f5e48764b83d36ddb8ece5a%2F',
+                    ds: 'APP',
+                    t: 'PAGEVIEW',
+                    vid: 'test-perf',
+                    pt: 'YoloPage'
+                });
+                expect(mockAxios.post).toHaveBeenCalledTimes(5);
             } catch (error) {
                 done.fail(error);
             }
@@ -2223,9 +2232,34 @@ describe('FlagshipVisitor', () => {
             });
             expect(mockAxios.post).toBeCalledTimes(0);
         });
-        it('should logs error when hit "screen" not set correctly', (done) => {
-            const brokenHit1 = { ...demoData.hit.screen, data: { ...demoData.hit.screen.data, pageTitle: null } };
-            const brokenHit2 = { ...demoData.hit.screen, data: { ...demoData.hit.screen.data, documentLocation: null } };
+        it('should logs error when hit "pageview" not set correctly', (done) => {
+            const brokenHit1 = { ...demoData.hit.pageview, data: { ...demoData.hit.pageview.data, pageTitle: null } };
+            const brokenHit2 = { ...demoData.hit.pageview, data: { ...demoData.hit.pageview.data, documentLocation: null } };
+            visitorInstance.sendHits([brokenHit1, brokenHit2]).then((response) => {
+                try {
+                    expect(response).not.toBeDefined();
+                    expect(spyInfoLogs).toBeCalledTimes(0);
+                    expect(spyWarnLogs).toBeCalledTimes(0);
+                    expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                        1,
+                        'sendHits(PageView) - failed because following required attribute "pageTitle" is missing...'
+                    );
+                    expect(spyErrorLogs).toHaveBeenNthCalledWith(
+                        2,
+                        'sendHits(PageView) - failed because following required attribute "documentLocation" is missing...'
+                    );
+                    expect(spyErrorLogs).toBeCalledTimes(2);
+                    expect(spyFatalLogs).toBeCalledTimes(0);
+                } catch (error) {
+                    done.fail(error);
+                }
+                done();
+            });
+            expect(mockAxios.post).toBeCalledTimes(0);
+        });
+        it('should logs error when hit "screenview" not set correctly', (done) => {
+            const brokenHit1 = { ...demoData.hit.screenview, data: { ...demoData.hit.screenview.data, pageTitle: null } };
+            const brokenHit2 = { ...demoData.hit.screenview, data: { ...demoData.hit.screenview.data, documentLocation: null } };
             visitorInstance.sendHits([brokenHit1, brokenHit2]).then((response) => {
                 try {
                     expect(response).not.toBeDefined();

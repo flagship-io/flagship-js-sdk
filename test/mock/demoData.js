@@ -2,8 +2,8 @@ import decisionApi from './decisionApi';
 import flagshipVisitor from './flagshipVisitor';
 import event from './hit/event';
 import item from './hit/item';
-import page from './hit/page';
-import screen from './hit/screen';
+import pageview from './hit/pageview';
+import screenview from './hit/screenview';
 import transaction from './hit/transaction';
 import bucketing from './bucketing';
 
@@ -114,8 +114,8 @@ const demoData = {
     hit: {
         event,
         item,
-        page,
-        screen,
+        pageview,
+        screenview,
         transaction
     }
 };
