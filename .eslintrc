@@ -6,7 +6,15 @@
         "jest": true,
         "es6": true
     },
+    "globals": {
+        "localStorage": true
+    },
     "rules": {
+        "@typescript-eslint/interface-name-prefix": [
+            {
+                "prefixWithI": "always"
+            }
+        ],
         "max-len": "off",
         "array-callback-return": "off",
         "@typescript-eslint/camelcase": 0,
