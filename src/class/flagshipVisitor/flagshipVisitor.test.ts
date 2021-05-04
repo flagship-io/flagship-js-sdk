@@ -1242,6 +1242,7 @@ describe('FlagshipVisitor', () => {
                 1,
                 url,
                 {
+                    anonymous_id: null,
                     context: demoData.visitor.cleanContext,
                     trigger_hit: false,
                     visitor_id: demoData.visitor.id[0]
@@ -3461,7 +3462,7 @@ describe('FlagshipVisitor', () => {
                             cancelToken: {},
                             headers: { 'x-api-key': visitorInstance.config.apiKey },
                             params: { exposeAllKeys: true, sendContextEvent: false },
-                            timeout: 2000
+                            timeout: 60000
                         }
                     );
                     // TODO: maybe check what we send to "/events":
@@ -3512,7 +3513,7 @@ describe('FlagshipVisitor', () => {
                                     cancelToken: {},
                                     headers: { 'x-api-key': visitorInstance.config.apiKey },
                                     params: { exposeAllKeys: true, sendContextEvent: false },
-                                    timeout: 2000
+                                    timeout: 60000
                                 }
                             );
                             // TODO: maybe check what we send to "/events":
@@ -3561,7 +3562,7 @@ describe('FlagshipVisitor', () => {
                                             cancelToken: {},
                                             headers: { 'x-api-key': visitorInstance.config.apiKey },
                                             params: { exposeAllKeys: true, sendContextEvent: false },
-                                            timeout: 2000
+                                            timeout: 60000
                                         }
                                     );
 
@@ -3712,7 +3713,7 @@ describe('FlagshipVisitor', () => {
                         cancelToken: {},
                         headers: { 'x-api-key': visitorInstance.config.apiKey },
                         params: { exposeAllKeys: true, sendContextEvent: false },
-                        timeout: 2000
+                        timeout: 60000
                     }
                 );
 
@@ -3751,7 +3752,7 @@ describe('FlagshipVisitor', () => {
                         cancelToken: {},
                         headers: { 'x-api-key': visitorInstance.config.apiKey },
                         params: { exposeAllKeys: true, sendContextEvent: false },
-                        timeout: 2000
+                        timeout: 60000
                     }
                 );
                 // NOTE: second call hit '/event' endpoint.
@@ -3767,7 +3768,7 @@ describe('FlagshipVisitor', () => {
                         cancelToken: {},
                         headers: { 'x-api-key': visitorInstance.config.apiKey },
                         params: { exposeAllKeys: true, sendContextEvent: false },
-                        timeout: 2000
+                        timeout: 60000
                     }
                 );
                 // TODO: maybe check what we send to "/events":
@@ -3847,7 +3848,7 @@ describe('FlagshipVisitor', () => {
                         cancelToken: {},
                         headers: { 'x-api-key': visitorInstance.config.apiKey },
                         params: { exposeAllKeys: true, sendContextEvent: false },
-                        timeout: 2000
+                        timeout: 60000
                     }
                 );
 
@@ -3886,7 +3887,7 @@ describe('FlagshipVisitor', () => {
                         cancelToken: {},
                         headers: { 'x-api-key': visitorInstance.config.apiKey },
                         params: { exposeAllKeys: true, sendContextEvent: false },
-                        timeout: 2000
+                        timeout: 60000
                     }
                 );
                 expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -3917,7 +3918,7 @@ describe('FlagshipVisitor', () => {
                         cancelToken: {},
                         headers: { 'x-api-key': visitorInstance.config.apiKey },
                         params: { exposeAllKeys: true, sendContextEvent: false },
-                        timeout: 2000
+                        timeout: 60000
                     }
                 );
                 // TODO: maybe check what we send to "/events":

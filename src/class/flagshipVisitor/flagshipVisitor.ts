@@ -34,8 +34,7 @@ import {
     TransactionHit,
     ActivatedArchived,
     UnauthenticateVisitorOutput,
-    AuthenticateVisitorOutput
-    ActivatedArchived,
+    AuthenticateVisitorOutput,
     ScreenViewHit,
     PageViewHit
 } from './types';

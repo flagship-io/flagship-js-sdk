@@ -891,7 +891,7 @@ describe('Bucketing - polling', () => {
                 expect(spyVisitorLogs.spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyVisitorLogs.spyWarnLogs).toHaveBeenCalledTimes(0);
 
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(1);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
