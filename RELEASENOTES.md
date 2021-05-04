@@ -1,7 +1,5 @@
 # Flagship JS SDK - Release notes
-
-## ➡️ Version 2.1.9
-
+## ➡️ Version 2.1.13
 ### New features 🎉
 
 -   visitor's `ready` listener callback now expose some data regarding potential error:
@@ -53,6 +51,21 @@ visitorInstance = sdk.newVisitor(null, { ...myVisitorContext }); // SDK will det
 
 // [...]
 ```
+
+## ➡️ Version 2.1.11
+
+- Adds Pageview hit
+- Changes Screen hit to Screenview hit
+- Minor bug fixes
+
+## ➡️ Version 2.1.10
+
+- Bumps axios version from 0.19.2 to 0.21.1
+
+## ➡️ Version 2.1.9
+
+-   Minor changes.
+-   function `getModificationInfo` output now contains a new attribute `isReference` (`boolean`) telling you if the modification is the reference (`true`) or not (`false`).
 
 ## ➡️ Version 2.1.8
 

@@ -23,6 +23,4 @@ export const bucketingApiMockOtherResponse304: { status: number; headers: {} } =
     headers: {} // NOTE: 'last-modified' does not exist on 304
 };
 
-export const demoPollingInterval = 0.005; // 1 000 * 0.022 = 1320 ms (1.3 sec)
-
 export default testConfig;

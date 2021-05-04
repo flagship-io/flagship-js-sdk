@@ -1,11 +1,7 @@
 import mockAxios from 'jest-mock-axios';
 import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
-import testConfig, {
-    demoPollingInterval,
-    bucketingMinimumConfig,
-    bucketingApiMockOtherResponse200,
-    bucketingApiMockOtherResponse304
-} from '../../config/test';
+import testConfig, { bucketingMinimumConfig, bucketingApiMockOtherResponse200, bucketingApiMockOtherResponse304 } from '../../config/test';
+import { demoPollingInterval } from '../../config/test_constants';
 
 import flagshipSdk from '../..';
 import demoData from '../../../test/mock/demoData';
