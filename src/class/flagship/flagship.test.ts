@@ -246,39 +246,36 @@ describe('FlagshipVisitor', () => {
                         2,
                         `${internalConfig.apiV2}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'blntcamqmdvg04g371hg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'blntcamqmdvg04g371h0',
-                            vid: 'test-perf'
+                            caid: 'blntcamqmdvg04g371h0'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders()
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         3,
                         `${internalConfig.apiV2}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq2ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2csg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2csg'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders()
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         4,
                         `${internalConfig.apiV2}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq1ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2ceg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2ceg'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders()
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     done();
@@ -291,9 +288,8 @@ describe('FlagshipVisitor', () => {
                 1,
                 `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                    trigger_hit: true
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -321,39 +317,36 @@ describe('FlagshipVisitor', () => {
                         2,
                         `${mockEndpoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'blntcamqmdvg04g371hg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'blntcamqmdvg04g371h0',
-                            vid: 'test-perf'
+                            caid: 'blntcamqmdvg04g371h0'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders()
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         3,
                         `${mockEndpoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq2ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2csg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2csg'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders()
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         4,
                         `${mockEndpoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq1ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2ceg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2ceg'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders()
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     done();
@@ -366,9 +359,8 @@ describe('FlagshipVisitor', () => {
                 1,
                 `${mockEndpoint}${demoData.envId[0]}/campaigns?mode=normal`,
                 {
-                    context: demoData.visitor.cleanContext,
-                    trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                    trigger_hit: true
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -396,10 +388,9 @@ describe('FlagshipVisitor', () => {
                         2,
                         `${endPoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'blntcamqmdvg04g371hg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'blntcamqmdvg04g371h0',
-                            vid: 'test-perf'
+                            caid: 'blntcamqmdvg04g371h0'
                         },
                         {
                             ...assertionHelper.getCommonEmptyHeaders(),
@@ -410,10 +401,9 @@ describe('FlagshipVisitor', () => {
                         3,
                         `${endPoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq2ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2csg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2csg'
                         },
                         {
                             ...assertionHelper.getCommonEmptyHeaders(),
@@ -424,10 +414,9 @@ describe('FlagshipVisitor', () => {
                         4,
                         `${endPoint}activate`,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             vaid: 'bmjdprsjan0g01uq1ctg',
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            caid: 'bmjdprsjan0g01uq2ceg',
-                            vid: 'test-perf'
+                            caid: 'bmjdprsjan0g01uq2ceg'
                         },
                         {
                             ...assertionHelper.getCommonEmptyHeaders(),
@@ -444,10 +433,8 @@ describe('FlagshipVisitor', () => {
                 1,
                 `${endPoint}${demoData.envId[0]}/campaigns?mode=normal`,
                 {
-                    context: demoData.visitor.cleanContext,
-
-                    trigger_hit: true,
-                    visitor_id: demoData.visitor.id[0]
+                    ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+                    trigger_hit: true
                 },
                 {
                     ...assertionHelper.getCampaignsQueryParams(),
@@ -504,6 +491,26 @@ describe('FlagshipVisitor', () => {
             visitorInstance.once('ready', () => {
                 try {
                     expect(visitorInstance.context).toEqual({ pos: 'es' });
+                    done();
+                } catch (error) {
+                    done.fail(error);
+                }
+            });
+        });
+
+        it('should log an info log when a creating a visitor without specified id', (done) => {
+            sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: false, enableConsoleLogs: true });
+            visitorInstance = sdk.newVisitor(null, {
+                ...demoData.visitor.cleanContext
+            });
+            initSpyLogs(visitorInstance);
+
+            visitorInstance.once('ready', () => {
+                try {
+                    const digitRegex = new RegExp('^\\d+$');
+                    const automaticGenVisitorIdLog = spyInfoConsoleLogs.mock.calls[spyInfoConsoleLogs.mock.calls.length - 2];
+                    expect(automaticGenVisitorIdLog.includes('undefined')).toEqual(false);
+                    expect(digitRegex.test(automaticGenVisitorIdLog[0].split('"')[1])).toEqual(true);
                     done();
                 } catch (error) {
                     done.fail(error);
@@ -878,7 +885,7 @@ describe('FlagshipVisitor', () => {
                         visitor_id: demoData.visitor.id[0]
                     },
                     {
-                        ...assertionHelper.getCommonEmptyHeaders()
+                        ...assertionHelper.getCommonEmptyHeaders(),
                     }
                 );
 
@@ -969,7 +976,7 @@ describe('FlagshipVisitor', () => {
                             expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'updateVisitor - updating visitor (id="test-perf")');
                             expect(spyDebugLogs).toHaveBeenNthCalledWith(
                                 2,
-                                'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true || activateNow=false) detected, trying a synchronize...'
+                                'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true OR/AND activateNow=false) detected, trigger a synchronize...'
                             );
 
                             expect(freshVisitor.fetchedModifications).toEqual(responseObj.data.campaigns);
@@ -1025,7 +1032,7 @@ describe('FlagshipVisitor', () => {
                         expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'updateVisitor - updating visitor (id="test-perf")');
                         expect(spyDebugLogs).toHaveBeenNthCalledWith(
                             2,
-                            'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true || activateNow=false) detected, trying a synchronize...'
+                            'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true OR/AND activateNow=false) detected, trigger a synchronize...'
                         );
 
                         expect(freshVisitor.fetchedModifications).toEqual(null);
@@ -1082,7 +1089,7 @@ describe('FlagshipVisitor', () => {
                         expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'updateVisitor - updating visitor (id="test-perf")');
                         expect(spyDebugLogs).toHaveBeenNthCalledWith(
                             2,
-                            'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true || activateNow=false) detected, trying a synchronize...'
+                            'updateVisitor - visitor(id="test-perf") does not have modifications or context has changed + (fetchNow=true OR/AND activateNow=false) detected, trigger a synchronize...'
                         );
 
                         expect(freshVisitor.config.timeout).toEqual(1);

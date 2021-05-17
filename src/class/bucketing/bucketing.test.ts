@@ -462,7 +462,7 @@ describe('Bucketing used from visitor instance', () => {
                             visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders()
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
 
@@ -470,26 +470,24 @@ describe('Bucketing used from visitor instance', () => {
                         1,
                         activateUrl,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             caid: demoData.bucketing.functions.murmur.allocation[68].variationGroup,
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            vaid: 'bptggipaqi903f3haq2g',
-                            vid: demoData.bucketing.functions.murmur.allocation[68].visitorId
+                            vaid: 'bptggipaqi903f3haq2g'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders()
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
                         2,
                         activateUrl,
                         {
+                            ...assertionHelper.getActivateApiCommonBody(visitorInstance),
                             caid: demoData.bucketing.functions.murmur.allocation[17].variationGroup,
-                            cid: 'bn1ab7m56qolupi5sa0g',
-                            vaid: 'bq4sf09oet0006cfiheg',
-                            vid: demoData.bucketing.functions.murmur.allocation[68].visitorId // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
+                            vaid: 'bq4sf09oet0006cfiheg' // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders()
+                            ...assertionHelper.getCommonEmptyHeaders(),
                         }
                     );
 

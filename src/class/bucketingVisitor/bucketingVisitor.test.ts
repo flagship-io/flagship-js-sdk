@@ -6,6 +6,7 @@ import testConfig from '../../config/test';
 import { FlagshipSdkConfig, IFlagship, IFlagshipBucketingVisitor, IFlagshipVisitor, IFlagshipBucketing } from '../../types';
 import { BucketingApiResponse } from '../bucketing/types';
 import BucketingVisitor from './bucketingVisitor';
+import assertionHelper from '../../../test/helper/assertion';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -182,7 +183,7 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
         cloneCampaign.variationGroups[0].targeting.targetingGroups[0].targetings = campaign.variationGroups[0].targeting.targetingGroups[0].targetings.filter(
             (t) => {
                 //
-                return t.key.includes(type);
+                return !type.includes('Array') ? t.key.includes(type) && !t.key.includes('Array') : t.key.includes(type);
             }
         );
         return {
@@ -190,7 +191,16 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
             campaigns: [cloneCampaign]
         };
     };
-    const assertOperatorBehavior = (operator: string, type: string, shouldReportIssueBetweenValueTypeAndOperator: boolean): void => {
+    const assertOperatorBehavior = (
+        operator: string,
+        type: string,
+        options: { shouldReportIssueBetweenValueTypeAndOperator?: boolean; expectTheVisitorWillTargetTheCampaign?: boolean } = {}
+    ): void => {
+        const defaultOptions = {
+            shouldReportIssueBetweenValueTypeAndOperator: false,
+            expectTheVisitorWillTargetTheCampaign: true
+        };
+        const { shouldReportIssueBetweenValueTypeAndOperator, expectTheVisitorWillTargetTheCampaign } = { ...defaultOptions, ...options };
         const mapping = {
             equals: 'EQUALS',
             notEquals: 'NOT_EQUALS',
@@ -203,11 +213,13 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
             contains: 'CONTAINS',
             notContains: 'NOT_CONTAINS'
         };
-        it(`should compute correctly operator "${operator}" and type "${type}"`, (done) => {
+        it(`should compute correctly operator "${operator}" and type "${type}" [expectTheVisitorWillTargetTheCampaign=${expectTheVisitorWillTargetTheCampaign}]`, (done) => {
             const bucketingContext = getCorrespondingOperatorBucketingContext(
                 operator,
                 type,
-                demoData.visitor.contextBucketingOperatorTestSuccess
+                demoData.visitor[
+                    expectTheVisitorWillTargetTheCampaign ? 'contextBucketingOperatorTestSuccess' : 'contextBucketingOperatorTestFail'
+                ]
             );
             bucketingApiMockResponse = getCorrespondingOperatorApiMockResponse(operator, type);
             bucketInstance = new BucketingVisitor(
@@ -227,28 +239,30 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(spyDebugLogs).toHaveBeenCalledTimes(1);
-                expect(spyWarnLogs).toHaveBeenCalledTimes(2);
+                expect(spyWarnLogs).toHaveBeenCalledTimes(1);
 
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'Bucketing - campaign (id="bptggipaqi903f3haq0g") NOT MATCHING visitor');
                 expect(spyWarnLogs).toHaveBeenNthCalledWith(
                     1,
-                    `getEligibleCampaigns - operator "${mapping[operator]}" is not supported for type "${(type === 'Bool'
+                    `getEligibleCampaigns - operator "${mapping[operator]}" is not supported for type "${(type.includes('Bool')
                         ? 'boolean'
-                        : type
-                    ).toLowerCase()}". Assertion aborted.`
-                );
-                expect(spyWarnLogs).toHaveBeenNthCalledWith(
-                    2,
-                    `getEligibleCampaigns - operator "${mapping[operator]}" is not supported for type "${(type === 'Bool'
-                        ? 'boolean'
-                        : type
+                        : type.replace('Array', '')
                     ).toLowerCase()}". Assertion aborted.`
                 );
             } else {
-                expect(Array.isArray(result) && result.length === 1).toEqual(true);
-                expect(result[0].id === bucketingApiMockResponse.campaigns[0].id).toEqual(true);
+                if (expectTheVisitorWillTargetTheCampaign) {
+                    expect(Array.isArray(result) && result.length === 1).toEqual(true);
+                    expect(result[0].id === bucketingApiMockResponse.campaigns[0].id).toEqual(true);
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                    expect(assertionHelper.containsLogThatContainingMessage('murmur returned value', spyDebugLogs).length).toEqual(1);
+                    expect(assertionHelper.containsLogThatContainingMessage('is matching visitor context', spyDebugLogs).length).toEqual(1);
+                } else {
+                    expect(Array.isArray(result) && result.length === 0).toEqual(true);
+                    expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                    expect(assertionHelper.containsLogThatContainingMessage('murmur returned value', spyDebugLogs).length).toEqual(0);
+                    expect(assertionHelper.containsLogThatContainingMessage('NOT MATCHING visitor', spyDebugLogs).length).toEqual(1);
+                }
 
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
@@ -288,24 +302,47 @@ describe('BucketingVisitor - getEligibleCampaigns', () => {
             operator: o
         }));
 
-    [...getBundleOfType('Bool'), ...getBundleOfType('String'), ...getBundleOfType('Number')].forEach((bt) => {
+    [
+        ...getBundleOfType('Bool'),
+        ...getBundleOfType('String'),
+        ...getBundleOfType('Number'),
+        ...getBundleOfType('BoolArray'),
+        ...getBundleOfType('StringArray'),
+        ...getBundleOfType('NumberArray')
+    ].forEach((bt) => {
         switch (bt.operator) {
             case 'lowerThan': // ONLY BOOL
             case 'lowerThanOrEquals':
             case 'greaterThan':
             case 'greaterThanOrEquals':
-                assertOperatorBehavior(bt.operator, bt.type, bt.type === 'Bool');
+                assertOperatorBehavior(bt.operator, bt.type, { shouldReportIssueBetweenValueTypeAndOperator: bt.type.includes('Bool') });
+                assertOperatorBehavior(bt.operator, bt.type, {
+                    shouldReportIssueBetweenValueTypeAndOperator: bt.type.includes('Bool'),
+                    expectTheVisitorWillTargetTheCampaign: false
+                });
                 break;
 
             case 'startsWith': // BOTH BOOL AND STRING
             case 'endsWith':
             case 'contains':
             case 'notContains':
-                assertOperatorBehavior(bt.operator, bt.type, bt.type === 'Bool' || bt.type === 'Number');
+                assertOperatorBehavior(bt.operator, bt.type, {
+                    shouldReportIssueBetweenValueTypeAndOperator: bt.type.includes('Bool') || bt.type.includes('Number')
+                });
+                assertOperatorBehavior(bt.operator, bt.type, {
+                    shouldReportIssueBetweenValueTypeAndOperator: bt.type.includes('Bool') || bt.type.includes('Number'),
+                    expectTheVisitorWillTargetTheCampaign: false
+                });
                 break;
 
             default:
-                assertOperatorBehavior(bt.operator, bt.type, false);
+                assertOperatorBehavior(bt.operator, bt.type, {
+                    shouldReportIssueBetweenValueTypeAndOperator: false
+                });
+                assertOperatorBehavior(bt.operator, bt.type, {
+                    shouldReportIssueBetweenValueTypeAndOperator: false,
+                    expectTheVisitorWillTargetTheCampaign: false
+                });
         }
     });
 

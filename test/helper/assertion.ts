@@ -1,8 +1,15 @@
 import axios, { CancelToken } from 'axios';
 
-import { FlagshipSdkConfig } from '../../src/types';
+import { FlagshipSdkConfig, IFlagshipVisitor } from '../../src/types';
 
 const assertionHelper = {
+    getActivateApiCommonBody: (visitorInstance: IFlagshipVisitor): { [key: string]: string } => {
+        return {
+            aid: visitorInstance.anonymousId,
+            cid: visitorInstance.envId,
+            vid: visitorInstance.id
+        };
+    },
     getCommonEmptyHeaders: (): { headers: {}; cancelToken: CancelToken } => {
         return {
             headers: {},
@@ -17,6 +24,14 @@ const assertionHelper = {
             cancelToken: axios.CancelToken.source().token
         };
     },
+    getCampaignsCommonBody: (visitorInstance: IFlagshipVisitor): { [key: string]: any } => {
+        return {
+            context: visitorInstance.context,
+            trigger_hit: visitorInstance.config.activateNow,
+            visitor_id: visitorInstance.id,
+            anonymous_id: visitorInstance.anonymousId
+        };
+    },
     getCampaignsQueryParams: (): { params: { exposeAllKeys: boolean; sendContextEvent: boolean } } => {
         return {
             params: {
@@ -27,6 +42,9 @@ const assertionHelper = {
     },
     getTimeout: (url: string, config: FlagshipSdkConfig): { timeout: number } => {
         return { timeout: url.includes('/campaigns') ? config.timeout * 1000 : undefined };
+    },
+    containsLogThatContainingMessage: (message: string, spyTypeLog: any): string[] => {
+        return spyTypeLog?.mock?.calls?.filter((log) => log[0].includes(message)).map((log) => log[0]) || [];
     }
 };
 

@@ -77,8 +77,8 @@ class Flagship implements IFlagship {
             }
         };
 
-        this.log.info(`Creating new visitor (id="${id}")`);
         const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.bucket, id, context, this.panic);
+        this.log.info(`Creating new visitor (id="${flagshipVisitorInstance.id}")`);
         let bucketingFirstPollingTriggered = false;
         if (this.config.fetchNow || this.config.activateNow) {
             this.log.info(logBook[this.config.decisionMode].newVisitorInfo);
@@ -88,7 +88,7 @@ class Flagship implements IFlagship {
                     const triggerVisitorReady = () => {
                         this.log.info(logBook[this.config.decisionMode].modificationSuccess);
                         (flagshipVisitorInstance as any).callEventEndpoint();
-                        flagshipVisitorInstance.emit('ready');
+                        flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput());
                     };
                     const postProcessBucketing = (hasFailed: boolean): void => {
                         if (bucketingFirstPollingTriggered) {
@@ -113,13 +113,13 @@ class Flagship implements IFlagship {
                     if (this.config.decisionMode !== 'Bucketing') {
                         this.log.fatal(logBook[this.config.decisionMode].modificationFailed(response));
                     }
-                    flagshipVisitorInstance.emit('ready');
+                    flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput(response));
                 });
         } else {
             // Before emit('ready'), make sure there is listener to it
             flagshipVisitorInstance.once('newListener', (event, listener) => {
                 if (event === 'ready') {
-                    listener();
+                    listener(flagshipSdkHelper.generateReadyListenerOutput());
                 }
             });
         }
@@ -129,7 +129,9 @@ class Flagship implements IFlagship {
     // Pre-req: envId + visitorId must be the same
     /**
      * @returns {IFlagshipVisitor}
-     * @description Used internally only. Don't use it outside the SDK !
+     * @description Used internally only. Don't use it outside the SDK ! This function must ALWAYS trigger "ready" event.
+     * [When fetchNow/activateNow=true] Update visitor will check if a synchronize is needed based on visitor context changed or no modifications have been fetched before, then it will emit "ready" event.
+     * [When both fetchNow/activateNow=false] It will just emit "ready" event, without any change.
      */
     public updateVisitor(visitorInstance: IFlagshipVisitor, context: FlagshipVisitorContext): IFlagshipVisitor {
         this.log.debug(`updateVisitor - updating visitor (id="${visitorInstance.id}")`);
@@ -142,26 +144,27 @@ class Flagship implements IFlagship {
             this.panic,
             visitorInstance
         );
+
+        // fetch (+activate[optional]) NOW if: (context has changed OR no modifs in cache) AND (fetchNow enabled OR activateNow enabled)
         if (
-            ((!utilsHelper.deepCompare(visitorInstance.context, context) || flagshipVisitorInstance.fetchedModifications === null) &&
-                this.config.fetchNow) ||
-            this.config.activateNow
+            (!utilsHelper.deepCompare(visitorInstance.context, context) || flagshipVisitorInstance.fetchedModifications === null) &&
+            (this.config.fetchNow || this.config.activateNow)
         ) {
             this.log.debug(
-                `updateVisitor - visitor(id="${visitorInstance.id}") does not have modifications or context has changed + (fetchNow=${this.config.fetchNow} || activateNow=${this.config.activateNow}) detected, trying a synchronize...`
+                `updateVisitor - visitor(id="${visitorInstance.id}") does not have modifications or context has changed + (fetchNow=${this.config.fetchNow} OR/AND activateNow=${this.config.activateNow}) detected, trigger a synchronize...`
             );
             flagshipVisitorInstance
                 .synchronizeModifications(this.config.activateNow)
                 .then(() => {
-                    flagshipVisitorInstance.emit('ready');
+                    flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput());
                 })
-                .catch(() => {
-                    flagshipVisitorInstance.emit('ready');
+                .catch((e) => {
+                    flagshipVisitorInstance.emit('ready', flagshipSdkHelper.generateReadyListenerOutput(e));
                 });
         } else {
             flagshipVisitorInstance.once('newListener', (event, listener) => {
                 if (event === 'ready') {
-                    listener();
+                    listener(flagshipSdkHelper.generateReadyListenerOutput());
                 }
             });
         }
