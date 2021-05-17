@@ -54,6 +54,10 @@
         {
             "name": "Guillaume Jacquart",
             "email": "guillaume.jacquart@abtasty.com"
+        },
+        {
+            "name": "Yanis Tam",
+            "email": "yanis@abtasty.com"
         }
     ],
     "keywords": [
@@ -97,7 +101,7 @@
         "webpack-node-externals": "^1.7.2"
     },
     "dependencies": {
-        "@flagship.io/js-sdk-logs": "^0.1.2",
+        "@flagship.io/js-sdk-logs": "^0.1.4",
         "axios": "^0.21.1",
         "events": "^3.1.0",
         "react-native-murmurhash": "^1.1.0",

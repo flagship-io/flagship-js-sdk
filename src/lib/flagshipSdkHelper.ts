@@ -6,8 +6,8 @@ import { BucketingApiResponse } from '../class/bucketing/types';
 import { DecisionApiCampaign, DecisionApiResponse, DecisionApiResponseData, FlagshipVisitorContext } from '../class/flagshipVisitor/types';
 import defaultConfig, { internalConfig } from '../config/default';
 import otherSdkConfig from '../config/otherSdk';
-import { demoPollingInterval } from '../config/test_constants';
-import { FlagshipSdkConfig, IFsPanicMode, PostFlagshipApiCallback } from '../types';
+import { demoPollingInterval } from '../config/test';
+import { FlagshipSdkConfig, IFsPanicMode, PostFlagshipApiCallback, ReadyListenerOutput } from '../types';
 
 const checkRequiredSettingsForApiV2 = (config: FlagshipSdkConfig, log: FsLogger): void => {
     if (config.flagshipApi && config.flagshipApi.includes('/v2/') && !config.apiKey) {
@@ -292,7 +292,11 @@ const flagshipSdkHelper = {
             campaigns: [],
             panic: true
         };
-    }
+    },
+    generateReadyListenerOutput: (error?: Error): ReadyListenerOutput => ({
+        withError: !!error,
+        error
+    })
 };
 
 export default flagshipSdkHelper;

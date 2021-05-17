@@ -1,4 +1,56 @@
 # Flagship JS SDK - Release notes
+## ➡️ Version 2.1.13
+### New features 🎉
+
+-   visitor's `ready` listener callback now expose some data regarding potential error:
+
+    Example:
+
+    before:
+
+    ```javascript
+    visitorInstance.on('ready', (data) => {
+        // data was always undefined...
+    });
+    ```
+
+    now:
+
+    ```javascript
+    visitorInstance.on('ready', (data) => {
+        const { withError, error } = data; // now data has some info !
+        if (withError) {
+            console.error('ouch ! visitor is ready but with error :( \nDetails: ' + error.message);
+        }
+        // [...]
+    });
+    ```
+
+-   The SDK supports the new visitor reconciliation feature named "continuity". Two new functions have been added to the FlagshipVisitor class:
+
+**authenticate**
+
+```javascript
+visitorInstance.authenticate('VISITOR_ID_ALREADY_KNOWN_BY_FLAGSHIP'); // which will link the previous visitor (anonymous) to the already known visitor
+```
+
+**unauthenticate**
+
+```javascript
+visitorInstance.unauthenticate(); // the visitor will be back considered as anonymous if it was previously authenticated (after calling visitorInstance.authenticate('xxx') )
+```
+
+More details on continuity feature in the [SDK documentation]().
+
+-   Create automatically a visitor id when you do not specify.
+
+Example:
+
+```javascript
+visitorInstance = sdk.newVisitor(null, { ...myVisitorContext }); // SDK will detect that no id has been specified and will create automatically one.
+
+// [...]
+```
 
 ## ➡️ Version 2.1.11
 
@@ -31,17 +83,17 @@
 
 -   This new version includes a stand alone version which you can import like this:
 
-    ```javascript
+```javascript
 
-    <script src="https://cdn.jsdelivr.net/npm/@flagship.io/js-sdk@X.X.X/public/index.standalone.js"></script>
-    <script>
-      window.Flagship.init(...)
-      // code...
-    </script>
+<script src="https://cdn.jsdelivr.net/npm/@flagship.io/js-sdk@X.X.X/public/index.standalone.js"></script>
+<script>
+  window.Flagship.init(...)
+  // code...
+</script>
 
-    ```
+```
 
-    Where `X.X.X` should be a version of the JS SDK.
+Where `X.X.X` should be a version of the JS SDK.
 
 ## ➡️ Version 2.1.5
 
@@ -83,20 +135,19 @@
 
 -   Add `flagshipSdk.stopBucketingPolling()` function. It allows to stop the bucketing polling whenever you want.
 
-    Example:
+Example:
 
-    ```javascript
-    flagshipSdk.start('ENV_ID', { fetchNow: false, decisionMode: 'Bucketing', pollingInterval: 5 /*, other settings...*/ });
+```javascript
+flagshipSdk.start('ENV_ID', { fetchNow: false, decisionMode: 'Bucketing', pollingInterval: 5 /*, other settings...*/ });
 
-    // [...]
+// [...]
 
-    flagshipSdk.startBucketingPolling(); // start manually the bucketing (as fetchNow is equal to "false")
+flagshipSdk.startBucketingPolling(); // start manually the bucketing (as fetchNow is equal to "false")
 
-    setTimeout(() => flagshipSdk.stopBucketingPolling(), 100 * 1000); // stop bucketing 100 minutes later...
-    ```
+setTimeout(() => flagshipSdk.stopBucketingPolling(), 100 * 1000); // stop bucketing 100 minutes later...
+```
 
-
-    ```
+````
 
 ### Bug fixes 🐛
 
@@ -108,10 +159,10 @@ Due to bucketing optimization, the bucketing allocate a variation to a visitor d
 
 -   As a result, assuming you have campaign with the following traffic allocation:
 
-    -   50% => `variation1`
-    -   50% => `variation2`
+-   50% => `variation1`
+-   50% => `variation2`
 
-    By upgrading to this version, you might see your visitor switching from `variation1` to `variation2` and vice-versa.
+By upgrading to this version, you might see your visitor switching from `variation1` to `variation2` and vice-versa.
 
 ### Breaking changes #2 ⚠️
 
@@ -119,19 +170,19 @@ Be aware that `apiKey` will be mandatory in the next major release as it will us
 
 -   `start` function signature will change. It will takes `apiKey` (string) as second argument and `settings` is moving as third argument:
 
-    -   **BEFORE**:
+-   **BEFORE**:
 
-    ```javascript
-    flagshipSdk.start('ENV_ID', { apiKey: 'API_KEY' /*, other settings...*/ }); // "apiKey" was not required
-    ```
+```javascript
+flagshipSdk.start('ENV_ID', { apiKey: 'API_KEY' /*, other settings...*/ }); // "apiKey" was not required
+````
 
-    -   **NOW**:
+-   **NOW**:
 
-    ```javascript
-    flagshipSdk.start('ENV_ID', 'API_KEY', {
-        /*some settings...*/
-    }); // "apiKey" IS required and MUST NOT be set in the settings argument
-    ```
+```javascript
+flagshipSdk.start('ENV_ID', 'API_KEY', {
+    /*some settings...*/
+}); // "apiKey" IS required and MUST NOT be set in the settings argument
+```
 
 ### Breaking changes #3 ⚠️
 
@@ -171,9 +222,9 @@ Be aware that `apiKey` will be mandatory in the next major release as it will us
 
 -   Following functions not available anymore:
 
-    -   `setContext` use [`updateContext`](README.md#updateContext) instead.
-    -   `initSdk` use [`start`](README.md#start) instead.
-    -   `getModificationsCache` use [`getModifications`](README.md#getModifications) instead.
+-   `setContext` use [`updateContext`](README.md#updateContext) instead.
+-   `initSdk` use [`start`](README.md#start) instead.
+-   `getModificationsCache` use [`getModifications`](README.md#getModifications) instead.
 
 ### New features 🎉
 

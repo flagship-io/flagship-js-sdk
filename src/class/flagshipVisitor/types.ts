@@ -36,6 +36,10 @@ export type GetModificationsOutput = {
     [key: string]: FlagshipModification;
 };
 
+export type AuthenticateVisitorOutput = Promise<void>;
+
+export type UnauthenticateVisitorOutput = Promise<void>;
+
 export type checkCampaignsActivatedMultipleTimesOutput = {
     activateCampaign: {
         [key: string]: {
