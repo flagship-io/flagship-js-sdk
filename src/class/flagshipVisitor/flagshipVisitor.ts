@@ -29,9 +29,8 @@ import {
     ItemHit,
     ModificationsInternalStatus,
     TransactionHit,
-    ActivatedArchived,
     UnauthenticateVisitorOutput,
-    AuthenticateVisitorOutput
+    AuthenticateVisitorOutput,
     ActivatedArchived,
     ScreenViewHit,
     PageViewHit
@@ -966,9 +965,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 const { documentLocation, pageTitle } = hitData.data as PageViewHit;
                 if (!documentLocation || !pageTitle) {
                     if (!documentLocation)
-                        this.log.error(
-                            'sendHits(PageView) - failed because following required attribute "documentLocation" is missing...'
-                        );
+                        this.log.error('sendHits(PageView) - failed because following required attribute "documentLocation" is missing...');
                     if (!pageTitle)
                         this.log.error('sendHits(PageView) - failed because following required attribute "pageTitle" is missing...');
                     return null;
