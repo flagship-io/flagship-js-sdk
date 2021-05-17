@@ -14,7 +14,9 @@ const utilsHelper = {
             return json1 === json2;
         }
         return false;
-    }
+    },
+    isServer: (): boolean => !(typeof window != 'undefined' && window.document),
+    isClient: (): boolean => !utilsHelper.isServer()
 };
 
 export default utilsHelper;

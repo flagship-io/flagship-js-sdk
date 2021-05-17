@@ -2,7 +2,15 @@ import { FsLogger } from '@flagship.io/js-sdk-logs';
 import { EventEmitter } from 'events';
 
 import defaultConfig, { internalConfig } from '../../config/default';
-import { FlagshipSdkConfig, IFlagship, IFlagshipBucketing, IFlagshipVisitor, IFsPanicMode } from '../../types';
+import {
+    FlagshipSdkConfig,
+    IFlagship,
+    IFlagshipBucketing,
+    IFlagshipVisitor,
+    IFsPanicMode,
+    IFsCacheManager,
+    NewVisitorOptions
+} from '../../types';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 import loggerHelper from '../../lib/loggerHelper';
 import Bucketing from '../bucketing/bucketing';
@@ -11,9 +19,12 @@ import FlagshipVisitor from '../flagshipVisitor/flagshipVisitor';
 import { FlagshipVisitorContext } from '../flagshipVisitor/types';
 import PanicMode from '../panicMode/panicMode';
 import utilsHelper from '../../lib/utils';
+import clientCacheManager from '../cacheManager/clientCacheManager';
 
 class Flagship implements IFlagship {
     config: FlagshipSdkConfig;
+
+    cacheManager: IFsCacheManager;
 
     log: FsLogger;
 
@@ -33,6 +44,10 @@ class Flagship implements IFlagship {
         this.bucket = null;
         this.panic = new PanicMode(this.config);
         this.envId = envId;
+        this.cacheManager = null;
+        if (this.config.enableClientCache && utilsHelper.isClient()) {
+            this.cacheManager = clientCacheManager;
+        }
         if (!apiKey) {
             this.log.warn(
                 'WARNING: "start" function signature will change in the next major release. "start(envId, settings)" will be "start(envId, apiKey, settings)", please make this change ASAP!'
@@ -63,21 +78,30 @@ class Flagship implements IFlagship {
         }
     }
 
-    public newVisitor(id: string, context: FlagshipVisitorContext): IFlagshipVisitor {
+    public newVisitor(id: string | null = null, context: FlagshipVisitorContext, options: NewVisitorOptions = {}): IFlagshipVisitor {
+        const defaultOptions: NewVisitorOptions = {
+            isAuthenticated: null
+        };
+        const { isAuthenticated } = { ...defaultOptions, ...options };
+
+        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, id, this.panic, this.config, {
+            bucket: this.bucket,
+            context,
+            isAuthenticated,
+            cacheManager: this.cacheManager
+        });
         const logBook = {
             API: {
-                newVisitorInfo: `new visitor (id="${id}") calling decision API for initialization (waiting to be ready...)`,
-                modificationSuccess: `new visitor (id="${id}") decision API finished (ready !)`,
+                newVisitorInfo: `new visitor (id="${flagshipVisitorInstance.id}") calling decision API for initialization (waiting to be ready...)`,
+                modificationSuccess: `new visitor (id="${flagshipVisitorInstance.id}") decision API finished (ready !)`,
                 modificationFailed: (error: Error): string =>
-                    `new visitor (id="${id}") decision API failed during initialization with error "${error}"`
+                    `new visitor (id="${flagshipVisitorInstance.id}") decision API failed during initialization with error "${error}"`
             },
             Bucketing: {
-                newVisitorInfo: `new visitor (id="${id}") waiting for existing bucketing data (waiting to be ready...)`,
-                modificationSuccess: `new visitor (id="${id}") (ready !)`
+                newVisitorInfo: `new visitor (id="${flagshipVisitorInstance.id}") waiting for existing bucketing data (waiting to be ready...)`,
+                modificationSuccess: `new visitor (id="${flagshipVisitorInstance.id}") (ready !)`
             }
         };
-
-        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, this.config, this.bucket, id, context, this.panic);
         this.log.info(`Creating new visitor (id="${flagshipVisitorInstance.id}")`);
         let bucketingFirstPollingTriggered = false;
         if (this.config.fetchNow || this.config.activateNow) {
@@ -133,17 +157,23 @@ class Flagship implements IFlagship {
      * [When fetchNow/activateNow=true] Update visitor will check if a synchronize is needed based on visitor context changed or no modifications have been fetched before, then it will emit "ready" event.
      * [When both fetchNow/activateNow=false] It will just emit "ready" event, without any change.
      */
-    public updateVisitor(visitorInstance: IFlagshipVisitor, context: FlagshipVisitorContext): IFlagshipVisitor {
+    public updateVisitor(
+        visitorInstance: IFlagshipVisitor,
+        payload: { context?: FlagshipVisitorContext; isAuthenticated?: boolean }
+    ): IFlagshipVisitor {
+        const defaultPayload = {
+            context: visitorInstance.context,
+            isAuthenticated: visitorInstance.isAuthenticated
+        };
+        const { context, isAuthenticated } = { ...defaultPayload, ...payload };
         this.log.debug(`updateVisitor - updating visitor (id="${visitorInstance.id}")`);
-        const flagshipVisitorInstance = new FlagshipVisitor(
-            this.envId,
-            this.config,
-            this.bucket,
-            visitorInstance.id,
+        const flagshipVisitorInstance = new FlagshipVisitor(this.envId, visitorInstance.id, this.panic, this.config, {
+            bucket: this.bucket,
+            previousVisitorInstance: visitorInstance,
             context,
-            this.panic,
-            visitorInstance
-        );
+            isAuthenticated,
+            cacheManager: this.cacheManager
+        });
 
         // fetch (+activate[optional]) NOW if: (context has changed OR no modifs in cache) AND (fetchNow enabled OR activateNow enabled)
         if (
@@ -190,11 +220,11 @@ class Flagship implements IFlagship {
         }
         if (this.bucket !== null && this.bucket.isPollingRunning) {
             this.log.warn(
-                `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" minute(s).`
+                `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" second(s).`
             );
             return {
                 success: false,
-                reason: `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" minute(s).`
+                reason: `startBucketingPolling - bucket already polling with interval set to "${this.config.pollingInterval}" second(s).`
             };
         }
         this.log.error('startBucketingPolling - bucket not initialized, make sure "decisionMode" is set to "Bucketing"');

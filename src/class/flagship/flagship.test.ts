@@ -508,7 +508,9 @@ describe('FlagshipVisitor', () => {
             visitorInstance.once('ready', () => {
                 try {
                     const digitRegex = new RegExp('^\\d+$');
-                    const automaticGenVisitorIdLog = spyInfoConsoleLogs.mock.calls[spyInfoConsoleLogs.mock.calls.length - 2];
+                    const automaticGenVisitorIdLog = spyInfoConsoleLogs.mock.calls.filter((call) =>
+                        call[0].includes('automatically created one')
+                    )[0];
                     expect(automaticGenVisitorIdLog.includes('undefined')).toEqual(false);
                     expect(digitRegex.test(automaticGenVisitorIdLog[0].split('"')[1])).toEqual(true);
                     done();
@@ -1075,9 +1077,15 @@ describe('FlagshipVisitor', () => {
                 // change a bit the settings
                 sdk = flagshipSdk.start(demoData.envId[0], demoData.apiKey[0], { ...testConfig, fetchNow: true, timeout: 1 });
                 initSpyLogs(sdk);
-                const freshVisitor = sdk.updateVisitor(visitorInstance, { ...demoData.visitor.cleanContext, pos: { deep: 'context' } });
-                mockAxios.mockResponse(responseObj);
-                mockAxios.mockResponse(responseObj);
+                const freshVisitor = sdk.updateVisitor(visitorInstance, {
+                    context: { ...demoData.visitor.cleanContext, pos: { deep: 'context' } }
+                });
+                mockAxios.mockResponseFor(
+                    internalConfig.campaignNormalEndpoint
+                        .replace('@ENV_ID@', visitorInstance.envId)
+                        .replace('@API_URL@', visitorInstance.config.flagshipApi),
+                    responseObj
+                );
                 freshVisitor.once('ready', () => {
                     try {
                         expect(spyDebugLogs).toHaveBeenCalledTimes(2);

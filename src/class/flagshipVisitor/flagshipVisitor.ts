@@ -2,6 +2,7 @@ import { FsLogger, FlagshipCommon } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
 import { EventEmitter } from 'events';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
+
 import loggerHelper from '../../lib/loggerHelper';
 import {
     FlagshipSdkConfig,
@@ -9,7 +10,9 @@ import {
     IFlagshipBucketingVisitor,
     IFlagshipVisitor,
     IFsPanicMode,
-    PostFlagshipApiCallback
+    PostFlagshipApiCallback,
+    IFsCacheManager,
+    IFsVisitorProfile
 } from '../../types';
 import BucketingVisitor from '../bucketingVisitor/bucketingVisitor';
 import {
@@ -31,7 +34,6 @@ import {
     TransactionHit,
     UnauthenticateVisitorOutput,
     AuthenticateVisitorOutput,
-    ActivatedArchived,
     ScreenViewHit,
     PageViewHit
 } from './types';
@@ -43,6 +45,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     anonymousId: string | null;
 
+    cacheManager: IFsCacheManager;
+
     log: FsLogger;
 
     envId: string;
@@ -50,6 +54,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     context: FlagshipVisitorContext;
 
     isAllModificationsFetched: boolean;
+
+    isAuthenticated: boolean;
 
     bucket: IFlagshipBucketingVisitor | null;
 
@@ -61,20 +67,55 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
     constructor(
         envId: string,
-        config: FlagshipSdkConfig,
-        bucket: IFlagshipBucketing | null,
         id: string,
-        context: FlagshipVisitorContext = {},
         panic: IFsPanicMode,
-        previousVisitorInstance: IFlagshipVisitor = null
+        config: FlagshipSdkConfig,
+        optional: {
+            bucket?: IFlagshipBucketing | null;
+            context?: FlagshipVisitorContext | {};
+            isAuthenticated?: boolean;
+            previousVisitorInstance?: IFlagshipVisitor | null;
+            cacheManager?: IFsCacheManager | null;
+        } = {}
     ) {
         super();
+        const defaultOptionalValue = {
+            bucket: null,
+            context: {},
+            isAuthenticated: false,
+            previousVisitorInstance: null,
+            cacheManager: null
+        };
+        const { bucket, context, previousVisitorInstance, isAuthenticated, cacheManager } = {
+            ...defaultOptionalValue,
+            ...Object.keys(optional).reduce((reducer, key) => {
+                return typeof optional[key] === 'undefined' || optional[key] === null ? reducer : { ...reducer, [key]: optional[key] };
+            }, {})
+        };
+        this.cacheManager = cacheManager;
         this.panic = panic;
         this.config = config;
-        this.id = id || FlagshipVisitor.createVisitorId();
-        this.anonymousId = null;
-        this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
-        if (!id) {
+        this.isAuthenticated = isAuthenticated;
+        const earlyLog = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:*initiliazing*`); // this is to do some logs before knowing the actual visitor id.
+        const cacheData = this.checkIfCanConsiderCacheData(id, this.getCache({ customLog: earlyLog }));
+        this.setVisitorId(id || cacheData?.id || FlagshipVisitor.createVisitorId());
+        this.anonymousId = cacheData?.anonymousId || null;
+
+        // if cache detected with existing data
+        if (!!cacheData) {
+            // if dev specified that visitor is authenticated but no anonymous id found (=PU)
+            if (this.isAuthenticated && !this.anonymousId) {
+                this.log.warn(
+                    'detected "isAuthenticated=true" but the SDK found an inconsistency from cache. It seems the visitor only had an unauthenticate experience and never has been authenticate before. As a result, the visitor will still be considered anonymous.'
+                );
+            } else if (!this.isAuthenticated && this.anonymousId) {
+                this.log.info(
+                    'detected "isAuthenticated=false" + previous authenticate experience for this visitor. From there, the SDK will consider its previous unauthenticate experience.'
+                );
+                this.unauthenticate();
+            }
+        }
+        if (!id && !cacheData) {
             this.log.info(`no id specified during visitor creation. The SDK has automatically created one: "${this.id}"`);
         }
         this.envId = envId;
@@ -96,11 +137,66 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         if (this.config.decisionMode === 'Bucketing') {
             this.bucket = new BucketingVisitor(this.envId, this.id, this.context, this.config, bucket);
         }
+
+        this.updateCache();
     }
 
     private setVisitorId(id: string): void {
         this.id = id;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
+    }
+
+    private checkIfCanConsiderCacheData(id: string, vProfile: IFsVisitorProfile | null): IFsVisitorProfile | null {
+        // no need to continue if no cache found
+        if (!vProfile) {
+            return null;
+        }
+
+        // no need to continue if id does not exist
+        if (!id) {
+            return vProfile;
+        }
+
+        // should consider if match based on anonymousId's value in this case
+        if (!this.isAuthenticated && id === vProfile.anonymousId) {
+            return vProfile;
+        }
+
+        // obviously check the id otherwise...
+        if (id === vProfile.id) {
+            return vProfile;
+        }
+
+        return null;
+    }
+
+    private getCache(options: { customLog?: FsLogger } = {}): IFsVisitorProfile | null {
+        const defaultOptions = {
+            customLog: this.log
+        };
+        const { customLog } = { ...defaultOptions, ...options };
+        if (!this.cacheManager) {
+            customLog.debug('getCache - no cache manager found.');
+            return null;
+        }
+
+        return this.cacheManager.loadVisitorProfile(this.id);
+    }
+
+    private updateCache(): void {
+        const profile: IFsVisitorProfile = {
+            id: this.id,
+            anonymousId: this.anonymousId,
+            context: this.context,
+            campaigns: this.fetchedModifications
+        };
+
+        if (!this.cacheManager) {
+            this.log.debug('updateCache - no cache manager found.');
+            return;
+        }
+
+        return this.cacheManager.saveVisitorProfile(this.id, profile);
     }
 
     private static createVisitorId(): string {
@@ -123,6 +219,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         this.anonymousId = this.id;
         this.setVisitorId(id);
+        this.isAuthenticated = true;
+        this.updateCache();
 
         const { fetchNow, activateNow } = this.config;
         const updateMsg = `authenticate - visitor passed from anonymous (id=${this.anonymousId}) to authenticated (id=${this.id}).`;
@@ -142,7 +240,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
      * @return {UnauthenticateVisitorOutput} A promise to handle async behavior.
      * @since 1.1.0
      */
-    public unauthenticate(visitorId?: string): UnauthenticateVisitorOutput {
+    public unauthenticate(visitorId?: string | null): UnauthenticateVisitorOutput {
         let errorMsg;
         if (!this.anonymousId) {
             errorMsg = `unauthenticate - Your visitor never has been authenticated.`;
@@ -152,6 +250,8 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         const previousAuthenticatedId = this.id;
         this.setVisitorId(visitorId || this.anonymousId);
         this.anonymousId = null;
+        this.isAuthenticated = false;
+        this.updateCache();
 
         const { fetchNow, activateNow } = this.config;
         const updateMsg = `unauthenticate - visitor passed from authenticated (id=${previousAuthenticatedId}) to anonymous (id=${this.id}).`;

@@ -43,9 +43,12 @@ const assertionHelper = {
     getTimeout: (url: string, config: FlagshipSdkConfig): { timeout: number } => {
         return { timeout: url.includes('/campaigns') ? config.timeout * 1000 : undefined };
     },
+    extractLogsThatReportedMessage: (message: string, spyConsoleLogs: any): any[] => {
+        return spyConsoleLogs.mock.calls.filter((call) => (call[0] as string).toLowerCase().includes(message.toLowerCase()));
+    },
     containsLogThatContainingMessage: (message: string, spyTypeLog: any): string[] => {
         return spyTypeLog?.mock?.calls?.filter((log) => log[0].includes(message)).map((log) => log[0]) || [];
-    }
+    },
 };
 
 export default assertionHelper;
