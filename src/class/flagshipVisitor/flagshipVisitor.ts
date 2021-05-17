@@ -35,7 +35,8 @@ import {
     UnauthenticateVisitorOutput,
     AuthenticateVisitorOutput,
     ScreenViewHit,
-    PageViewHit
+    PageViewHit,
+    ActivatedArchived
 } from './types';
 
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
