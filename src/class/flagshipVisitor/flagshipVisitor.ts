@@ -1028,54 +1028,46 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         const optionalAttributes: { [key: string]: string | number | boolean } = {};
         // TODO: move common optional attributes before switch statement (ie: "pageTitle", "documentLocation",...)
         switch (hitData.type.toUpperCase()) {
-            case 'SCREEN': {
-                const { documentLocation, pageTitle } = hitData.data;
-                if (!documentLocation || !pageTitle) {
-                    if (!documentLocation)
-                        this.log.error(
-                            'sendHits(ScreenView) - failed because following required attribute "documentLocation" is missing...'
-                        );
-                    if (!pageTitle)
-                        this.log.error('sendHits(ScreenView) - failed because following required attribute "pageTitle" is missing...');
-                    return null;
-                }
-                return {
-                    t: 'SCREENVIEW',
-                    dl: documentLocation,
-                    pt: pageTitle
-                };
-            }
+            case 'SCREEN':
             case 'SCREENVIEW': {
                 const { documentLocation, pageTitle } = hitData.data as ScreenViewHit;
-                if (!documentLocation || !pageTitle) {
-                    if (!documentLocation)
-                        this.log.error(
-                            'sendHits(ScreenView) - failed because following required attribute "documentLocation" is missing...'
-                        );
-                    if (!pageTitle)
-                        this.log.error('sendHits(ScreenView) - failed because following required attribute "pageTitle" is missing...');
+                if (!documentLocation) {
+                    this.log.error(
+                        `sendHits(${hitData.type}) - failed because following required attribute "documentLocation" is missing...`
+                    );
                     return null;
                 }
-                return {
+
+                const data: { t: String; dl: String; pt?: string } = {
                     t: 'SCREENVIEW',
-                    dl: documentLocation,
-                    pt: pageTitle
+                    dl: documentLocation
                 };
+
+                if (pageTitle) {
+                    data.pt = pageTitle;
+                }
+
+                return data;
             }
             case 'PAGEVIEW': {
                 const { documentLocation, pageTitle } = hitData.data as PageViewHit;
-                if (!documentLocation || !pageTitle) {
-                    if (!documentLocation)
-                        this.log.error('sendHits(PageView) - failed because following required attribute "documentLocation" is missing...');
-                    if (!pageTitle)
-                        this.log.error('sendHits(PageView) - failed because following required attribute "pageTitle" is missing...');
+                if (!documentLocation) {
+                    this.log.error(
+                        `sendHits(${hitData.type}) - failed because following required attribute "documentLocation" is missing...`
+                    );
                     return null;
                 }
-                return {
-                    t: 'PAGEVIEW',
-                    dl: documentLocation,
-                    pt: pageTitle
+
+                const data: { t: String; dl: String; pt?: string } = {
+                    t: hitData.type == 'PageView' ? 'PAGEVIEW' : 'SCREENVIEW',
+                    dl: documentLocation
                 };
+
+                if (pageTitle) {
+                    data.pt = pageTitle;
+                }
+
+                return data;
             }
             case 'TRANSACTION': {
                 const {
@@ -1228,6 +1220,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                             ...customParams
                         };
                         payloads.push(payload);
+                        this.log.debug(`sending hit ${JSON.stringify(payload)}`);
                         return axios.post(url, payload).then(() => ({ skipped: false, ...payload }));
                     }
                     this.log.debug(`sendHits - skip request to "${url}" because current hit not set correctly`);

@@ -462,7 +462,7 @@ describe('Bucketing used from visitor instance', () => {
                             visitor_id: demoData.bucketing.functions.murmur.allocation[68].visitorId
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
 
@@ -475,7 +475,7 @@ describe('Bucketing used from visitor instance', () => {
                             vaid: 'bptggipaqi903f3haq2g'
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
                     expect(mockAxios.post).toHaveBeenNthCalledWith(
@@ -487,7 +487,7 @@ describe('Bucketing used from visitor instance', () => {
                             vaid: 'bq4sf09oet0006cfiheg' // same id as demoData.bucketing.functions.murmur.allocation[17].visitorId
                         },
                         {
-                            ...assertionHelper.getCommonEmptyHeaders(),
+                            ...assertionHelper.getCommonEmptyHeaders()
                         }
                     );
 
@@ -667,7 +667,7 @@ describe('Bucketing - polling', () => {
                         expect(spySdkLogs.spyInfoLogs).toHaveBeenNthCalledWith(2, 'stopBucketingPolling - bucketing is already stopped');
 
                         done();
-                    }, Math.floor(60000 * demoPollingInterval * 1.5));
+                    }, Math.floor(2000 * demoPollingInterval * 1.5));
                 } catch (error) {
                     done.fail(error.stack);
                 }

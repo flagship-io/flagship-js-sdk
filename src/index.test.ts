@@ -65,7 +65,7 @@ describe('Flagship initialization', () => {
 
         expect(splitElement1[2]).toEqual('Unknown key "unknownSettings" detected (with value="hello world"). This key has been ignored...');
         expect(splitElement2[2]).toEqual(
-            '"timeout" setting is incorrect (value specified =>"hello"). The default value (=60 seconds) has been set instead.'
+            '"timeout" setting is incorrect (value specified =>"hello"). The default value (=2 seconds) has been set instead.'
         );
     });
 

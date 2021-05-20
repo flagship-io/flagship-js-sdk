@@ -10,7 +10,7 @@ const defaultConfig: FlagshipSdkConfig = {
     flagshipApi: 'https://decision-api.flagship.io/v1/',
     pollingInterval: null, // seconds
     apiKey: null, // TODO: remove next major release
-    timeout: 60, // seconds
+    timeout: 2, // seconds
     initialBucketing: null,
     initialModifications: null,
     internal: {
