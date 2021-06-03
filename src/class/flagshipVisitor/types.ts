@@ -98,9 +98,10 @@ export type ModificationsInternalStatus = {
 };
 
 export type HitShape =
-    | { type: 'Screen'; data: ScreenViewHit } // Deprecated type: 'Screen'
-    | { type: 'ScreenView'; data: ScreenViewHit }
-    | { type: 'PageView'; data: PageViewHit }
+    | { type: 'Screen'; data: ScreenViewHit }
+    | { type: 'ScreenView'; data: ScreenViewHit } // Deprecated type: 'ScreenView'
+    | { type: 'Page'; data: PageViewHit }
+    | { type: 'PageView'; data: PageViewHit } // Deprecated type: 'PageView'
     | { type: 'Transaction'; data: TransactionHit }
     | { type: 'Item'; data: ItemHit }
     | { type: 'Event'; data: EventHit };

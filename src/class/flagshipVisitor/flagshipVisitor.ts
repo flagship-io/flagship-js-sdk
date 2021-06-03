@@ -1049,6 +1049,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
                 return data;
             }
+            case 'PAGE':
             case 'PAGEVIEW': {
                 const { documentLocation, pageTitle } = hitData.data as PageViewHit;
                 if (!documentLocation) {
