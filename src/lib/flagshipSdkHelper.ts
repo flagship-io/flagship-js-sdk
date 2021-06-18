@@ -1,6 +1,7 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
 import axios from 'axios';
 import { validate } from 'validate.js';
+import { version } from '../../package.json';
 
 import { BucketingApiResponse } from '../class/bucketing/types';
 import { DecisionApiCampaign, DecisionApiResponse, DecisionApiResponseData, FlagshipVisitorContext } from '../class/flagshipVisitor/types';
@@ -41,6 +42,8 @@ const flagshipSdkHelper = {
         const isNotApiV1 = !config.flagshipApi.includes('/v1/');
         const url = endpoint.includes(config.flagshipApi) ? endpoint : config.flagshipApi + endpoint;
         const isCampaignCall = url.includes('/campaigns');
+        additionalHeaderParams['x-sdk-client'] = 'js';
+        additionalHeaderParams['x-sdk-version'] = version;
 
         if (config.apiKey && isNotApiV1 && isCampaignCall) {
             additionalHeaderParams['x-api-key'] = config.apiKey;
