@@ -1,4 +1,13 @@
 # Flagship JS SDK - Release notes
+## ➡️ Version 2.2.3
+Bug bug fixes & improvements
+
+## ➡️ Version 2.2.2
+Minor bug fixes & improvements
+
+## ➡️ Version 2.2.1
+Minor bug fixes & improvements
+
 ## ➡️ Version 2.1.13
 
 ### New features 🎉
