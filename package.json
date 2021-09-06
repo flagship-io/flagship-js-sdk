@@ -12,7 +12,7 @@
         "README.md",
         "package.json"
     ],
-    "types": "dist/index.d.ts",
+    "types": "dist/src/index.d.ts",
     "engines": {
         "npm": ">=3",
         "node": ">=6"
