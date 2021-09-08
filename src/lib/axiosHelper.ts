@@ -7,4 +7,5 @@ const instance = axios.create({
     httpsAgent: new HttpsAgent({ keepAlive: true })
 });
 
+export const defaultAxios = axios;
 export default instance;
