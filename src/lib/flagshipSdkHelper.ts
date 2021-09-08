@@ -1,5 +1,5 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-import axios from 'axios';
+import axios from './axiosHelper';
 import { validate } from 'validate.js';
 import { version } from '../../package.json';
 

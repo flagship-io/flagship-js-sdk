@@ -1,4 +1,5 @@
-import axios, { CancelToken } from 'axios';
+import { CancelToken } from 'axios';
+import axios from '../../src/lib/axiosHelper';
 
 import { FlagshipSdkConfig, IFlagshipVisitor } from '../../src/types';
 
@@ -14,7 +15,7 @@ const assertionHelper = {
         return {
             headers: {},
             cancelToken: axios.CancelToken.source().token
-        }
+        };
     },
     getApiKeyHeader: (apiKey: string): { headers: { 'x-api-key': string }; cancelToken: CancelToken } => {
         return {
@@ -48,7 +49,7 @@ const assertionHelper = {
     },
     containsLogThatContainingMessage: (message: string, spyTypeLog: any): string[] => {
         return spyTypeLog?.mock?.calls?.filter((log) => log[0].includes(message)).map((log) => log[0]) || [];
-    },
+    }
 };
 
 export default assertionHelper;
