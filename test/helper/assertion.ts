@@ -1,5 +1,5 @@
 import { CancelToken } from 'axios';
-import axios from '../../src/lib/axiosHelper';
+import { defaultAxios } from '../../src/lib/axiosHelper';
 
 import { FlagshipSdkConfig, IFlagshipVisitor } from '../../src/types';
 
@@ -14,7 +14,7 @@ const assertionHelper = {
     getCommonEmptyHeaders: (): { headers: {}; cancelToken: CancelToken } => {
         return {
             headers: {},
-            cancelToken: axios.CancelToken.source().token
+            cancelToken: defaultAxios.CancelToken.source().token
         };
     },
     getApiKeyHeader: (apiKey: string): { headers: { 'x-api-key': string }; cancelToken: CancelToken } => {
@@ -22,7 +22,7 @@ const assertionHelper = {
             headers: {
                 'x-api-key': apiKey
             },
-            cancelToken: axios.CancelToken.source().token
+            cancelToken: defaultAxios.CancelToken.source().token
         };
     },
     getCampaignsCommonBody: (visitorInstance: IFlagshipVisitor): { [key: string]: any } => {
