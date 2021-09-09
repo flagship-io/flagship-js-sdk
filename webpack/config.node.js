@@ -10,7 +10,7 @@ module.exports = merge(baseConfig, {
     },
     externals: [
         nodeExternals({
-            whitelist: ['axios', 'validate.js']
+            whitelist: ['axios', 'validate.js', 'http', 'https']
         })
     ]
 });
