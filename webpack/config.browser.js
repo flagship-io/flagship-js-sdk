@@ -1,6 +1,6 @@
 const merge = require('webpack-merge');
 const baseConfig = require('./config.base.js');
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
+const nodeExternals = require('webpack-node-externals');
 
 module.exports = merge(baseConfig, {
     target: 'web',
@@ -8,5 +8,9 @@ module.exports = merge(baseConfig, {
         filename: 'index.browser.js',
         libraryTarget: 'umd'
     },
-    plugins: [new NodePolyfillPlugin()]
+    externals: [
+        nodeExternals({
+            whitelist: ['axios', 'validate.js', 'events']
+        })
+    ]
 });
