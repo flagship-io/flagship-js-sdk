@@ -1,5 +1,5 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-import axios from 'axios';
+import axios, { defaultAxios } from './axiosHelper';
 import { validate } from 'validate.js';
 import { version } from '../../package.json';
 
@@ -49,7 +49,7 @@ const flagshipSdkHelper = {
             additionalHeaderParams['x-api-key'] = config.apiKey;
         }
 
-        const cancelTokenSource = axios.CancelToken.source();
+        const cancelTokenSource = defaultAxios.CancelToken.source();
         const axiosFct = (): Promise<any> =>
             axios
                 .post(

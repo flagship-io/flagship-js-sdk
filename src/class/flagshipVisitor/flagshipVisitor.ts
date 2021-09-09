@@ -1,5 +1,5 @@
 import { FsLogger, FlagshipCommon } from '@flagship.io/js-sdk-logs';
-import axios from 'axios';
+import axios from '../../lib/axiosHelper';
 import { EventEmitter } from 'events';
 import flagshipSdkHelper from '../../lib/flagshipSdkHelper';
 

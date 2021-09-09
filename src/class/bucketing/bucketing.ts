@@ -1,7 +1,7 @@
 import { FsLogger } from '@flagship.io/js-sdk-logs';
-import Axios, { AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import { EventEmitter } from 'events';
-
+import Axios from '../../lib/axiosHelper';
 import { internalConfig } from '../../config/default';
 import { FlagshipSdkConfig, IFlagshipBucketing, IFsPanicMode, IFsCacheManager } from '../../types';
 import loggerHelper from '../../lib/loggerHelper';
