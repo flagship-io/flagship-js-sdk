@@ -26,7 +26,6 @@ jobs:
               id: coverageTest
               run: npm run test:coverage
               continue-on-error: true
-              timeout-minutes: 2
             - name: Backup coverage test step
               if: ${{ steps.coverageTest.conclusion == 'failure' }}
               run: npm run test:coverage
@@ -36,4 +35,4 @@ jobs:
                   file: ./coverage/clover.xml # optional
                   flags: unittests # optional
                   name: codecov-flagship-sdk-coverage # optional
-                  fail_ci_if_error: true # optional (default = false)
+                  #fail_ci_if_error: true # optional (default = false)
