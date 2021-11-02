@@ -26,6 +26,7 @@ jobs:
               id: coverageTest
               run: npm run test:coverage
               continue-on-error: true
+              timeout-minutes: 2
             - name: Backup coverage test step
               if: ${{ steps.coverageTest.conclusion == 'failure' }}
               run: npm run test:coverage
