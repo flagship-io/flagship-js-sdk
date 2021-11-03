@@ -31,7 +31,7 @@ jobs:
               if: ${{ steps.coverageTest.conclusion == 'failure' }}
               run: npm run test:coverage
             - name: Codecov
-              uses: codecov/codecov-action@v1
+              uses: codecov/codecov-action@v2
               with:
                   token: dfb7a964-e070-475b-9dcf-a0527442c4a5 # not required for public repos but required for node not using Travis-CI, CircleCI or AppVeyor. 
                   #file: ./coverage/clover.xml # optional
