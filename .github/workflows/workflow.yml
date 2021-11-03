@@ -30,10 +30,11 @@ jobs:
             - name: Backup coverage test step
               if: ${{ steps.coverageTest.conclusion == 'failure' }}
               run: npm run test:coverage
-            - uses: codecov/codecov-action@v1
+            - name: Codecov
+              uses: codecov/codecov-action@v1
               with:
-                  token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos but required for node not using Travis-CI, CircleCI or AppVeyor. 
-                  file: ./coverage/clover.xml # optional
+                  token: dfb7a964-e070-475b-9dcf-a0527442c4a5 # not required for public repos but required for node not using Travis-CI, CircleCI or AppVeyor. 
+                  #file: ./coverage/clover.xml # optional
                   flags: unittests # optional
-                  name: codecov-flagship-sdk-coverage # optional
+                  #name: codecov-flagship-sdk-coverage # optional
                   #fail_ci_if_error: true # optional (default = false)
