@@ -34,7 +34,7 @@ jobs:
               uses: codecov/codecov-action@v2
               with:
                   token: 81659c52-ddd8-445c-bd97-cdb37706b4db # not required for public repos but required for node not using Travis-CI, CircleCI or AppVeyor. 
-                  file: ./coverage/clover.xml # optional
+                  #file: ./coverage/clover.xml # optional
                   flags: unittests # optional
-                  name: codecov-flagship-sdk-coverage # optional
+                  #name: codecov-flagship-sdk-coverage # optional
                   #fail_ci_if_error: true # optional (default = false)
