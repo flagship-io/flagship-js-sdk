@@ -34,7 +34,7 @@ jobs:
               uses: codecov/codecov-action@v2
               with:
                   # not required for public repos but required for node not using Travis-CI, CircleCI or AppVeyor. 
-                  file: ./coverage/coverage-summary.json # optional
+                  files: ./coverage/coverage-summary.json,./coverage/lcov.info # optional
                   flags: unittests # optional
                   #name: codecov-flagship-sdk-coverage # optional
                   #fail_ci_if_error: true # optional (default = false)
