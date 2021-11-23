@@ -38,6 +38,7 @@ import {
     PageViewHit,
     ActivatedArchived
 } from './types';
+import { AxiosError } from 'axios';
 
 class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     config: FlagshipSdkConfig;
@@ -1277,9 +1278,12 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                     this.log.debug(`callEventEndpoint - returns status=${response.status}`);
                     resolve(response.status);
                 })
-                .catch((error: Error) => {
-                    this.log.error(`callEventEndpoint - failed with error="${error}"`);
-                    reject(error);
+                .catch((error: Error | AxiosError) => {
+                    this.log.error(`callEventEndpoint - failed with error="${error.message}"`);
+                    if ('response' in error) {
+                        resolve(error.response.status);
+                    }
+                    resolve(400);
                 });
         });
     }
