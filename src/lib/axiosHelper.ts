@@ -1,11 +1,13 @@
 import axios from 'axios';
-import { Agent as HttpsAgent } from 'https';
-import { Agent as HttpAgent } from 'http';
 
-const instance = axios.create({
-    httpAgent: new HttpAgent({ keepAlive: true }),
-    httpsAgent: new HttpsAgent({ keepAlive: true })
-});
+const instance = axios.create({});
+
+if (typeof window === 'undefined') {
+    const { Agent: HttpAgent } = require('http');
+    const { Agent: HttpAgents } = require('https');
+    instance.defaults.httpAgent = new HttpAgent({ keepAlive: true });
+    instance.defaults.httpsAgent = new HttpAgents({ keepAlive: true });
+}
 
 export const defaultAxios = axios;
 export default instance;
