@@ -1,4 +1,4 @@
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const nodeExternals = require('webpack-node-externals');
 const baseConfig = require('./config.base.js');
 
@@ -10,7 +10,7 @@ module.exports = merge(baseConfig, {
     },
     externals: [
         nodeExternals({
-            whitelist: ['axios', 'validate.js']
+            allowlist: ['axios', 'validate.js']
         })
     ]
 });

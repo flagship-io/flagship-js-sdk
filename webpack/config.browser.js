@@ -1,9 +1,15 @@
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const baseConfig = require('./config.base.js');
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = merge(baseConfig, {
     target: 'web',
+    resolve: {
+        alias: {
+            http: false,
+            https: false
+        }
+    },
     output: {
         filename: 'index.browser.js',
         libraryTarget: 'umd'
@@ -11,7 +17,7 @@ module.exports = merge(baseConfig, {
     externals: [
         nodeExternals({
             importType: 'umd',
-            whitelist: ['axios', 'validate.js', 'events', '@flagship.io/js-sdk-logs']
+            allowlist: ['axios', 'validate.js', 'events', '@flagship.io/js-sdk-logs']
         })
     ]
 });
