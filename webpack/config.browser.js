@@ -10,7 +10,8 @@ module.exports = merge(baseConfig, {
     },
     externals: [
         nodeExternals({
-            whitelist: ['axios', 'validate.js']
+            importType: 'umd',
+            whitelist: ['axios', 'validate.js', 'events', '@flagship.io/js-sdk-logs']
         })
     ]
 });
