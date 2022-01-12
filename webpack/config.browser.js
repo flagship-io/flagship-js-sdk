@@ -12,7 +12,9 @@ module.exports = merge(baseConfig, {
     },
     output: {
         filename: 'index.browser.js',
-        libraryTarget: 'umd'
+        libraryTarget: 'umd',
+        library: 'flagship',
+        libraryExport: 'default'
     },
     externals: [
         nodeExternals({

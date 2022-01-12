@@ -7,6 +7,7 @@
         "noUnusedLocals": true,
         "resolveJsonModule": true,
         "declaration": true,
+        "esModuleInterop": true,
         "target": "es5"
     },
     "types": ["mocha", "jest"],

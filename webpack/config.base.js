@@ -11,7 +11,6 @@ module.exports = {
     output: {
         filename: 'index.js',
         path: path.resolve(__dirname, '../dist'),
-        library: 'flagship',
         libraryExport: 'default'
     },
     module: {
@@ -48,7 +47,6 @@ module.exports = {
             }
         ]
     },
-    plugins: [new webpack.DefinePlugin({ 'global.GENTLY': false })],
     resolve: {
         extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js']
     }
