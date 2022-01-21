@@ -343,12 +343,13 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
 
         Object.entries(detailsModifications || internalModifications).forEach(async ([key, value]) => {
             const activationRequested = (!!value.isActivateNeeded as boolean) || activateAll;
+            const isRequested = value.isRequested === undefined || !!value.isRequested;
             const isAlreadyActivatedValue = isAlreadyActivated({
                 vgId: value.variationGroupId[0],
                 vId: value.variationId[0],
                 archived: internalModifications[key].activated
             });
-            if (activationRequested && !isAlreadyActivatedValue) {
+            if (activationRequested && !isAlreadyActivatedValue && isRequested) {
                 let alreadyExist = false;
                 activateBooks.forEach(({ vId, vgId }, index) => {
                     if (vId === value.variationId[0] && vgId === value.variationGroupId[0]) {
@@ -642,7 +643,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
                 activateAllModifications
             );
             this.log.debug(`getModificationsPostProcess - detailsModifications:\n${JSON.stringify(detailsModifications)}`);
-
             this.triggerActivateIfNeeded(detailsModifications as DecisionApiResponseDataFullComputed);
             return desiredModifications;
         }
@@ -671,7 +671,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             return desiredModifications;
         }
         const response = this.fetchAllModifications({
-            activate: !!activateAllModifications,
             loadFromCache: true
         }) as DecisionApiResponseData;
         return this.getModificationsPostProcess(response, modificationsRequested, activateAllModifications);
