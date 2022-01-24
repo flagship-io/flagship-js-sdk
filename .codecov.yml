@@ -1,0 +1,3 @@
+codecov:
+  token: 81659c52-ddd8-445c-bd97-cdb37706b4db
+  require_ci_to_pass: yes
