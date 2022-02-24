@@ -146,6 +146,9 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
     private setVisitorId(id: string): void {
         this.id = id;
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
+
+        // reset internal modifications when visitor ID changed
+        this.modificationsInternalStatus = null
     }
 
     private checkIfCanConsiderCacheData(id: string, vProfile: IFsVisitorProfile | null): IFsVisitorProfile | null {
