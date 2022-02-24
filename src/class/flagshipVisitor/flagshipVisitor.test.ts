@@ -2,6 +2,7 @@ import mockAxios from 'jest-mock-axios';
 import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
 import { internalConfig } from '../../config/default';
 import { IFlagshipVisitor, IFlagship, IFsVisitorProfile } from '../../types';
+import { version } from '../../../package.json';
 
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
@@ -13,6 +14,7 @@ import { BucketingApiResponse } from '../bucketing/types';
 import assertionHelper from '../../../test/helper/assertion';
 import utilsHelper from '../../lib/utils';
 import { CLIENT_CACHE_KEY } from '../cacheManager/clientCacheManager';
+import axios from 'axios';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -3455,8 +3457,12 @@ describe('FlagshipVisitor', () => {
                             visitor_id: currentVisitorId
                         },
                         {
-                            cancelToken: {},
-                            headers: { 'x-api-key': visitorInstance.config.apiKey },
+                            cancelToken: new axios.CancelToken(() => {}),
+                            headers: {
+                                'x-api-key': visitorInstance.config.apiKey,
+                                'x-sdk-client': 'js',
+                                'x-sdk-version': version
+                            },
                             params: { exposeAllKeys: true, sendContextEvent: false },
                             timeout: 2000
                         }
@@ -3506,8 +3512,12 @@ describe('FlagshipVisitor', () => {
                                     anonymous_id: currentVisitorId
                                 },
                                 {
-                                    cancelToken: {},
-                                    headers: { 'x-api-key': visitorInstance.config.apiKey },
+                                    cancelToken: new axios.CancelToken(() => {}),
+                                    headers: {
+                                        'x-api-key': visitorInstance.config.apiKey,
+                                        'x-sdk-client': 'js',
+                                        'x-sdk-version': version
+                                    },
                                     params: { exposeAllKeys: true, sendContextEvent: false },
                                     timeout: 2000
                                 }
@@ -3555,8 +3565,12 @@ describe('FlagshipVisitor', () => {
                                             anonymous_id: null
                                         },
                                         {
-                                            cancelToken: {},
-                                            headers: { 'x-api-key': visitorInstance.config.apiKey },
+                                            cancelToken: new axios.CancelToken(() => {}),
+                                            headers: {
+                                                'x-api-key': visitorInstance.config.apiKey,
+                                                'x-sdk-client': 'js',
+                                                'x-sdk-version': version
+                                            },
                                             params: { exposeAllKeys: true, sendContextEvent: false },
                                             timeout: 2000
                                         }
@@ -3706,8 +3720,12 @@ describe('FlagshipVisitor', () => {
                         anonymous_id: null
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
@@ -3745,8 +3763,12 @@ describe('FlagshipVisitor', () => {
                         anonymous_id: null
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
@@ -3761,8 +3783,12 @@ describe('FlagshipVisitor', () => {
                         anonymous_id: anonymousId
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
@@ -3841,8 +3867,12 @@ describe('FlagshipVisitor', () => {
                         trigger_hit: false // because already activated before
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
@@ -3880,8 +3910,12 @@ describe('FlagshipVisitor', () => {
                         anonymous_id: null
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
@@ -3911,8 +3945,12 @@ describe('FlagshipVisitor', () => {
                         trigger_hit: false // because already activated before
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
