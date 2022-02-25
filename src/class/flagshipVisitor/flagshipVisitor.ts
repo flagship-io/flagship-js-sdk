@@ -148,7 +148,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         this.log = loggerHelper.getLogger(this.config, `Flagship SDK - visitorId:${this.id}`);
 
         // reset internal modifications when visitor ID changed
-        this.modificationsInternalStatus = null
+        this.modificationsInternalStatus = null;
     }
 
     private checkIfCanConsiderCacheData(id: string, vProfile: IFsVisitorProfile | null): IFsVisitorProfile | null {
@@ -343,7 +343,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         if (!this.isVisitorCacheExist()) {
             return;
         }
-
         Object.entries(detailsModifications || internalModifications).forEach(async ([key, value]) => {
             const activationRequested = (!!value.isActivateNeeded as boolean) || activateAll;
             const isRequested = value.isRequested === undefined || !!value.isRequested;
@@ -871,7 +870,6 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
             }
             this.log.warn(warningMsg);
         }
-
         // PART 2: Handle activate (if needed)
         if (this.fetchedModifications) {
             this.triggerActivateIfNeeded(analysedModifications);
@@ -888,6 +886,7 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         const save = (dataToSave: DecisionApiCampaign[] = null): void => {
             this.fetchedModifications = flagshipSdkHelper.validateDecisionApiData(dataToSave, this.log);
             this.modificationsInternalStatus = this.fetchedModifications === null ? null : this.getModificationsInternalStatus();
+            this.updateCache();
         };
 
         const callback = (campaigns: DecisionApiCampaign[] | null = data): void => {
