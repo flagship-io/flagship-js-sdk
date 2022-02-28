@@ -1,4 +1,5 @@
 import { CancelToken } from 'axios';
+import { version } from '../../package.json';
 import { defaultAxios } from '../../src/lib/axiosHelper';
 
 import { FlagshipSdkConfig, IFlagshipVisitor } from '../../src/types';
@@ -11,16 +12,24 @@ const assertionHelper = {
             vid: visitorInstance.id
         };
     },
-    getCommonEmptyHeaders: (): { headers: {}; cancelToken: CancelToken } => {
+    getCommonEmptyHeaders: (): { headers: {}; cancelToken: CancelToken; timeout: undefined } => {
         return {
-            headers: {},
+            headers: {
+                'x-sdk-client': 'js',
+                'x-sdk-version': version
+            },
+            timeout: undefined,
             cancelToken: defaultAxios.CancelToken.source().token
         };
     },
-    getApiKeyHeader: (apiKey: string): { headers: { 'x-api-key': string }; cancelToken: CancelToken } => {
+    getApiKeyHeader: (
+        apiKey: string
+    ): { headers: { 'x-api-key': string; 'x-sdk-client': string; 'x-sdk-version': string }; cancelToken: CancelToken } => {
         return {
             headers: {
-                'x-api-key': apiKey
+                'x-api-key': apiKey,
+                'x-sdk-client': 'js',
+                'x-sdk-version': version
             },
             cancelToken: defaultAxios.CancelToken.source().token
         };

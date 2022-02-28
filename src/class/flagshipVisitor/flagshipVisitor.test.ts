@@ -2,6 +2,7 @@ import mockAxios from 'jest-mock-axios';
 import { HttpResponse } from 'jest-mock-axios/dist/lib/mock-axios-types';
 import { internalConfig } from '../../config/default';
 import { IFlagshipVisitor, IFlagship, IFsVisitorProfile } from '../../types';
+import { version } from '../../../package.json';
 
 import demoData from '../../../test/mock/demoData';
 import testConfig from '../../config/test';
@@ -13,6 +14,7 @@ import { BucketingApiResponse } from '../bucketing/types';
 import assertionHelper from '../../../test/helper/assertion';
 import utilsHelper from '../../lib/utils';
 import { CLIENT_CACHE_KEY } from '../cacheManager/clientCacheManager';
+import axios from 'axios';
 
 let sdk: IFlagship;
 let visitorInstance: IFlagshipVisitor;
@@ -100,13 +102,13 @@ describe('FlagshipVisitor', () => {
         it('should alert when trying to save in cache an invalid payload', async (done) => {
             visitorInstance.saveModificationsInCache({}); // Mock a previous fetch
 
-            expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+            expect(spyDebugLogs).toHaveBeenCalledTimes(2);
             expect(spyErrorLogs).toHaveBeenCalledTimes(1);
             expect(spyFatalLogs).toHaveBeenCalledTimes(0);
             expect(spyInfoLogs).toHaveBeenCalledTimes(0);
             expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
-            expect(spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications: "null"');
+            expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'saveModificationsInCache - saving in cache those modifications: "null"');
             expect(spyErrorLogs).toHaveBeenNthCalledWith(
                 1,
                 'validateDecisionApiData - received unexpected decision api data of type "object"'
@@ -170,7 +172,7 @@ describe('FlagshipVisitor', () => {
             visitorInstance.saveModificationsInCache(demoData.decisionApi.normalResponse.oneModifInMoreThanOneCampaign.campaigns); // Mock a previous fetch
             const output = visitorInstance.checkCampaignsActivatedMultipleTimes(); // simulate nothing
 
-            expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+            expect(spyDebugLogs).toHaveBeenCalledTimes(2);
             expect(spyWarnLogs).toHaveBeenCalledTimes(0);
             expect(spyErrorLogs).toHaveBeenCalledTimes(0);
             expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -185,14 +187,14 @@ describe('FlagshipVisitor', () => {
             visitorInstance.fetchedModifications = null;
             const output = visitorInstance.checkCampaignsActivatedMultipleTimes(); // simulate nothing
 
-            expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+            expect(spyDebugLogs).toHaveBeenCalledTimes(3);
             expect(spyWarnLogs).toHaveBeenCalledTimes(0);
             expect(spyErrorLogs).toHaveBeenCalledTimes(0);
             expect(spyFatalLogs).toHaveBeenCalledTimes(0);
             expect(spyInfoLogs).toHaveBeenCalledTimes(0);
 
             expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                2,
+                3,
                 'checkCampaignsActivatedMultipleTimes: Error "this.fetchedModifications" or/and "this.modificationsInternalStatus" is empty'
             );
 
@@ -205,14 +207,14 @@ describe('FlagshipVisitor', () => {
             visitorInstance.modificationsInternalStatus = null;
             const output = visitorInstance.checkCampaignsActivatedMultipleTimes(); // simulate nothing
 
-            expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+            expect(spyDebugLogs).toHaveBeenCalledTimes(3);
             expect(spyWarnLogs).toHaveBeenCalledTimes(0);
             expect(spyErrorLogs).toHaveBeenCalledTimes(0);
             expect(spyFatalLogs).toHaveBeenCalledTimes(0);
             expect(spyInfoLogs).toHaveBeenCalledTimes(0);
 
             expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                2,
+                3,
                 'checkCampaignsActivatedMultipleTimes: Error "this.fetchedModifications" or/and "this.modificationsInternalStatus" is empty'
             );
 
@@ -275,7 +277,7 @@ describe('FlagshipVisitor', () => {
                 mockAxios.mockError('fail');
                 mockAxios.mockError('fail');
 
-                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(2);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(3);
@@ -326,14 +328,14 @@ describe('FlagshipVisitor', () => {
 
                 mockAxios.mockResponse(defaultActivateModificationResponse);
 
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
 
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    2,
+                    3,
                     'Modification key(s) "modif1" successfully activate. with status code "200"'
                 );
 
@@ -349,18 +351,18 @@ describe('FlagshipVisitor', () => {
 
                 mockAxios.mockResponse(defaultActivateModificationResponse);
 
-                expect(spyDebugLogs).toHaveBeenCalledTimes(5);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(7);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
 
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    4,
+                    6,
                     'triggerActivateIfNeeded - detecting a new variation (id="blntcamqmdvg04g777hg") (variationGroupId="blntcamqmdvg04g777h0") which activates the same key as another older variation'
                 );
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    5,
+                    7,
                     'Modification key(s) "modif1" successfully activate. with status code "200"'
                 );
 
@@ -650,7 +652,7 @@ describe('FlagshipVisitor', () => {
             expect(mockAxios.post).toHaveBeenCalledTimes(1);
             expect(spyActivateCampaign).toHaveBeenCalledTimes(0);
 
-            expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+            expect(spyDebugLogs).toHaveBeenCalledTimes(2);
             expect(spyInfoLogs).toHaveBeenCalledTimes(0);
             expect(spyErrorLogs).toHaveBeenCalledTimes(0);
             expect(spyFatalLogs).toHaveBeenCalledTimes(0);
@@ -822,26 +824,27 @@ describe('FlagshipVisitor', () => {
                 status: 200,
                 statusText: 'OK'
             };
+
             visitorInstance.fetchAllModifications({ activate: true, campaignCustomID: 'bmjdprsjan0g01uq2ceg' }).then(({ data, status }) => {
                 expect(status).toBe(200);
                 expect(spyActivateCampaign).toHaveBeenCalledTimes(1);
                 done();
             });
             mockAxios.mockResponse(responseObj);
-            const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
-            expect(mockAxios.post).toHaveBeenNthCalledWith(
-                1,
-                url,
-                {
-                    ...assertionHelper.getCampaignsCommonBody(visitorInstance),
-                    trigger_hit: true
-                },
-                {
-                    ...assertionHelper.getCampaignsQueryParams(),
-                    ...assertionHelper.getTimeout(url, sdk.config),
-                    ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
-                }
-            );
+            // const url = `${internalConfig.apiV2}${demoData.envId[0]}/campaigns?mode=normal`;
+            // expect(mockAxios.post).toHaveBeenNthCalledWith(
+            //     1,
+            //     url,
+            //     {
+            //         ...assertionHelper.getCampaignsCommonBody(visitorInstance),
+            //         trigger_hit: true
+            //     },
+            //     {
+            //         ...assertionHelper.getCampaignsQueryParams(),
+            //         ...assertionHelper.getTimeout(url, sdk.config),
+            //         ...assertionHelper.getApiKeyHeader(demoData.apiKey[0])
+            //     }
+            // );
         });
 
         it('should get all modifications and then activate individually each campaign if activate=true', (done) => {
@@ -1031,12 +1034,12 @@ describe('FlagshipVisitor', () => {
             );
             expect(spyErrorLogs).toHaveBeenCalledTimes(0);
             expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-            expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+            expect(spyDebugLogs).toHaveBeenCalledTimes(3);
             // expect(spyDebugLogs).toHaveBeenNthCalledWith(
             //     2,
             //     'checkCampaignsActivatedMultipleTimes: Error this.fetchedModifications is empty'
             // );
-            expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'Modification key(s) "psp" successfully activate. with status code "200"');
+            expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'Modification key(s) "psp" successfully activate. with status code "200"');
             expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
             expect(mockAxios.post).toHaveBeenCalledTimes(2);
@@ -1562,7 +1565,7 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
                 done();
             } catch (error) {
                 done.fail(error);
@@ -1615,9 +1618,9 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    2,
+                    3,
                     'Here the details:,\n- because key "toto" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.'
                 );
                 done();
@@ -1657,7 +1660,7 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
                 done();
             } catch (error) {
                 done.fail(error);
@@ -1727,13 +1730,13 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    2,
+                    3,
                     'Here the details:,,\n- because key "toto" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.'
                 );
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    3,
+                    4,
                     'Here the details:,,\n- because key "titi" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.'
                 );
                 done();
@@ -1821,22 +1824,22 @@ describe('FlagshipVisitor', () => {
             expect(spyErrorLogs).toHaveBeenCalledTimes(0);
             expect(spyFatalLogs).toHaveBeenCalledTimes(0);
             expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-            expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+            expect(spyDebugLogs).toHaveBeenCalledTimes(5);
             expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                2,
+                3,
                 expect.stringContaining(
                     'because key "toto" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.'
                 )
             );
 
             expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                3,
+                4,
                 expect.stringContaining(
                     'because key "titi" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested'
                 )
             );
             expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                4,
+                5,
                 expect.stringContaining(
                     'because key "tata" is also include inside campaign id="5e26ccd803533a89c3acbbbb" where key(s) "tyty " is/are also requested'
                 )
@@ -1897,9 +1900,9 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    2,
+                    3,
                     'Here the details:,\n- because key "toto" is also include inside campaign id="5e26ccd803533a89c3acda5c" where key(s) "tata " is/are also requested.'
                 );
                 done();
@@ -1939,7 +1942,7 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
                 done();
             } catch (error) {
                 done.fail(error);
@@ -1983,7 +1986,7 @@ describe('FlagshipVisitor', () => {
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(2);
 
                 done();
             } catch (error) {
@@ -2329,7 +2332,7 @@ describe('FlagshipVisitor', () => {
             );
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(0);
-                expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
+                expect(spyFetchModifs).toHaveBeenCalledWith({ loadFromCache: true });
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(1);
@@ -2337,8 +2340,8 @@ describe('FlagshipVisitor', () => {
                     1,
                     'Unable to activate modification "testUnexistingKey" because it does not exist on any existing campaign...'
                 );
-                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
-                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - loadFromCache enabled');
+                expect(spyDebugLogs).toHaveBeenCalledTimes(5);
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'fetchAllModifications - loadFromCache enabled');
                 expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
                 expect(cacheResponse).toMatchObject({ testUnexistingKey: 'NOOOOO' });
                 done();
@@ -2369,17 +2372,17 @@ describe('FlagshipVisitor', () => {
             ]);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(0);
-                expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
+                expect(spyFetchModifs).toHaveBeenCalledWith({ loadFromCache: true });
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
 
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(3);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
 
                 // expect(spyDebugLogs).toHaveBeenNthCalledWith(1, ''); // saving in cache those modifications [...]
-                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - loadFromCache enabled');
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'fetchAllModifications - loadFromCache enabled');
                 // expect(spyDebugLogs).toHaveBeenNthCalledWith(3, ''); // getModificationsPostProcess - detailsModifications [...]
 
                 expect(visitorInstance.fetchedModifications).toEqual(responseObject.data.campaigns);
@@ -2395,7 +2398,7 @@ describe('FlagshipVisitor', () => {
             const cacheResponse = visitorInstance.getModifications(demoData.flagshipVisitor.getModifications.args.noActivate);
             try {
                 expect(mockAxios.post).toHaveBeenCalledTimes(0);
-                expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
+                expect(spyFetchModifs).toHaveBeenCalledWith({ loadFromCache: true });
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(2); // because of key conflict (checked in another UT)
@@ -2439,15 +2442,15 @@ describe('FlagshipVisitor', () => {
                         ...assertionHelper.getCommonEmptyHeaders()
                     }
                 );
-                expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
+                expect(spyFetchModifs).toHaveBeenCalledWith({ loadFromCache: true });
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(1);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(5);
-                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - loadFromCache enabled');
+                expect(spyDebugLogs).toHaveBeenCalledTimes(6);
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'fetchAllModifications - loadFromCache enabled');
 
                 expect(spyDebugLogs).toHaveBeenNthCalledWith(
-                    5,
+                    6,
                     'extractModificationIndirectKeysFromCampaign - detected more than one campaign with same id "bmjdprsjan0g01uq2crg"'
                 );
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
@@ -2478,11 +2481,11 @@ describe('FlagshipVisitor', () => {
                         ...assertionHelper.getCommonEmptyHeaders()
                     }
                 );
-                expect(spyFetchModifs).toHaveBeenCalledWith({ activate: false, loadFromCache: true });
+                expect(spyFetchModifs).toHaveBeenCalledWith({ loadFromCache: true });
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
                 expect(spyFatalLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(3);
-                expect(spyDebugLogs).toHaveBeenCalledTimes(4);
+                expect(spyDebugLogs).toHaveBeenCalledTimes(5);
                 expect(spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
 
@@ -2498,7 +2501,7 @@ describe('FlagshipVisitor', () => {
                     3,
                     'Unable to activate modification "testUnexistingKey" because it does not exist on any existing campaign...'
                 );
-                expect(spyDebugLogs).toHaveBeenNthCalledWith(2, 'fetchAllModifications - loadFromCache enabled');
+                expect(spyDebugLogs).toHaveBeenNthCalledWith(3, 'fetchAllModifications - loadFromCache enabled');
 
                 expect(visitorInstance.fetchedModifications).toMatchObject(responseObject.data.campaigns);
                 expect(cacheResponse).toMatchObject({ algorithmVersion: 'new', psp: 'dalenys', testUnexistingKey: 'YOLOOOO' });
@@ -2574,7 +2577,7 @@ describe('FlagshipVisitor', () => {
             const cacheResponse = visitorInstance.getModifications();
             try {
                 expect(spyFetchModifs).toHaveBeenCalledTimes(1);
-                expect(spyFetchModifs).toHaveBeenNthCalledWith(1, { activate: false, loadFromCache: true });
+                expect(spyFetchModifs).toHaveBeenNthCalledWith(1, { loadFromCache: true });
                 expect(spyErrorLogs).toHaveBeenCalledTimes(1);
                 expect(spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(spyWarnLogs).toHaveBeenCalledTimes(0);
@@ -3098,11 +3101,11 @@ describe('FlagshipVisitor', () => {
                         expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                         expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                         expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                        expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
+                        expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(3);
 
                         // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications');
                         expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(
-                            2,
+                            3,
                             'fetchAllModifications - activateNow enabled with bucketing mode. Following keys "testCache, btn-color, btn-text, txt-color" will be activated.'
                         );
 
@@ -3164,7 +3167,7 @@ describe('FlagshipVisitor', () => {
                     expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
 
                     expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
                     expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
@@ -3204,7 +3207,7 @@ describe('FlagshipVisitor', () => {
                     expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
 
                     expect(panicModeSpy.spyWarnLogs).toHaveBeenCalledTimes(0);
                     expect(panicModeSpy.spyInfoLogs).toHaveBeenCalledTimes(1);
@@ -3455,8 +3458,12 @@ describe('FlagshipVisitor', () => {
                             visitor_id: currentVisitorId
                         },
                         {
-                            cancelToken: {},
-                            headers: { 'x-api-key': visitorInstance.config.apiKey },
+                            cancelToken: new axios.CancelToken(() => {}),
+                            headers: {
+                                'x-api-key': visitorInstance.config.apiKey,
+                                'x-sdk-client': 'js',
+                                'x-sdk-version': version
+                            },
                             params: { exposeAllKeys: true, sendContextEvent: false },
                             timeout: 2000
                         }
@@ -3468,7 +3475,7 @@ describe('FlagshipVisitor', () => {
                     expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                     expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
 
                     // expect(visitorSpy.spyDebugLogs).toHaveBeenNthCalledWith(1, 'saveModificationsInCache - saving in cache those modifications:');
 
@@ -3506,8 +3513,12 @@ describe('FlagshipVisitor', () => {
                                     anonymous_id: currentVisitorId
                                 },
                                 {
-                                    cancelToken: {},
-                                    headers: { 'x-api-key': visitorInstance.config.apiKey },
+                                    cancelToken: new axios.CancelToken(() => {}),
+                                    headers: {
+                                        'x-api-key': visitorInstance.config.apiKey,
+                                        'x-sdk-client': 'js',
+                                        'x-sdk-version': version
+                                    },
                                     params: { exposeAllKeys: true, sendContextEvent: false },
                                     timeout: 2000
                                 }
@@ -3519,7 +3530,7 @@ describe('FlagshipVisitor', () => {
                             expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                             expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                             expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+                            expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
 
                             expect(
                                 assertionHelper.containsLogThatContainingMessage(
@@ -3531,7 +3542,7 @@ describe('FlagshipVisitor', () => {
                             expect(
                                 assertionHelper.extractLogsThatReportedMessage('updateCache - no cache manager found.', spyInfoConsoleLogs)
                                     .length
-                            ).toEqual(2);
+                            ).toEqual(4);
 
                             expect(visitorInstance.anonymousId).toEqual(currentVisitorId);
                             expect(visitorInstance.id).toEqual(demoData.envId[0]);
@@ -3555,8 +3566,12 @@ describe('FlagshipVisitor', () => {
                                             anonymous_id: null
                                         },
                                         {
-                                            cancelToken: {},
-                                            headers: { 'x-api-key': visitorInstance.config.apiKey },
+                                            cancelToken: new axios.CancelToken(() => {}),
+                                            headers: {
+                                                'x-api-key': visitorInstance.config.apiKey,
+                                                'x-sdk-client': 'js',
+                                                'x-sdk-version': version
+                                            },
                                             params: { exposeAllKeys: true, sendContextEvent: false },
                                             timeout: 2000
                                         }
@@ -3569,7 +3584,7 @@ describe('FlagshipVisitor', () => {
                                     expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                                     expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                                     expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+                                    expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
 
                                     expect(
                                         assertionHelper.containsLogThatContainingMessage(
@@ -3706,8 +3721,12 @@ describe('FlagshipVisitor', () => {
                         anonymous_id: null
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
@@ -3720,7 +3739,7 @@ describe('FlagshipVisitor', () => {
                 expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
 
                 expect(
                     assertionHelper.containsLogThatContainingMessage(
@@ -3745,8 +3764,12 @@ describe('FlagshipVisitor', () => {
                         anonymous_id: null
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
@@ -3761,8 +3784,12 @@ describe('FlagshipVisitor', () => {
                         anonymous_id: anonymousId
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
@@ -3774,7 +3801,7 @@ describe('FlagshipVisitor', () => {
                 expect(visitorSpy.spyInfoLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyErrorLogs).toHaveBeenCalledTimes(0);
                 expect(visitorSpy.spyFatalLogs).toHaveBeenCalledTimes(0);
-                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(1);
+                expect(visitorSpy.spyDebugLogs).toHaveBeenCalledTimes(2);
 
                 expect(
                     assertionHelper.containsLogThatContainingMessage(
@@ -3785,7 +3812,7 @@ describe('FlagshipVisitor', () => {
 
                 expect(
                     assertionHelper.extractLogsThatReportedMessage('updateCache - no cache manager found.', spyInfoConsoleLogs).length
-                ).toEqual(2);
+                ).toEqual(4);
 
                 expect(visitorInstance.anonymousId).toEqual(anonymousId);
                 expect(visitorInstance.id).toEqual(demoData.envId[0]);
@@ -3841,8 +3868,12 @@ describe('FlagshipVisitor', () => {
                         trigger_hit: false // because already activated before
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
@@ -3880,8 +3911,12 @@ describe('FlagshipVisitor', () => {
                         anonymous_id: null
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
@@ -3911,8 +3946,12 @@ describe('FlagshipVisitor', () => {
                         trigger_hit: false // because already activated before
                     },
                     {
-                        cancelToken: {},
-                        headers: { 'x-api-key': visitorInstance.config.apiKey },
+                        cancelToken: new axios.CancelToken(() => {}),
+                        headers: {
+                            'x-api-key': visitorInstance.config.apiKey,
+                            'x-sdk-client': 'js',
+                            'x-sdk-version': version
+                        },
                         params: { exposeAllKeys: true, sendContextEvent: false },
                         timeout: 2000
                     }
