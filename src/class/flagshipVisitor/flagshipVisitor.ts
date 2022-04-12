@@ -231,7 +231,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         const updateMsg = `authenticate - visitor passed from anonymous (id=${this.anonymousId}) to authenticated (id=${this.id}).`;
 
         if (fetchNow || activateNow) {
-            return this.synchronizeModifications().then(() => this.log.info(updateMsg));
+            return this.synchronizeModifications()
+                .then(() => this.log.info(updateMsg))
+                .catch((err) => {
+                    return this.log.error('synchronizeModifications - ' + err);
+                });
         }
         this.log.info(`${updateMsg} Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`);
 
@@ -261,7 +265,11 @@ class FlagshipVisitor extends EventEmitter implements IFlagshipVisitor {
         const { fetchNow, activateNow } = this.config;
         const updateMsg = `unauthenticate - visitor passed from authenticated (id=${previousAuthenticatedId}) to anonymous (id=${this.id}).`;
         if (fetchNow || activateNow) {
-            return this.synchronizeModifications().then(() => this.log.info(updateMsg));
+            return this.synchronizeModifications()
+                .then(() => this.log.info(updateMsg))
+                .catch((err) => {
+                    return this.log.error('synchronizeModifications - ' + err);
+                });
         }
         this.log.info(`${updateMsg} Make sure to manually call "synchronize()" function in order to get the last visitor's modifications.`);
 
